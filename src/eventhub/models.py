@@ -132,3 +132,14 @@ class APIToken(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     expires_at=models.DateTimeField()
     revoked_at=models.DateTimeField(null=True,blank=True)
+
+class JudgeParticipationRecord(models.Model):
+    """Issued participation snapshot. Public verification reveals scoped metadata."""
+    event=models.ForeignKey(Event,on_delete=models.PROTECT)
+    judge=models.ForeignKey(Judge,on_delete=models.PROTECT)
+    issued_at=models.DateTimeField(auto_now_add=True)
+    review_count=models.PositiveIntegerField()
+    payload=models.JSONField()
+    signature=models.CharField(max_length=64)
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['event','judge'],name='unique_judge_participation_record')]
