@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: dogfood
+      POSTGRES_USER: dogfood
+      POSTGRES_PASSWORD: local-demo-only
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dogfood -d dogfood"]
+      interval: 2s
+      retries: 20
+  portal:
+    build: .
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      DATABASE_URL: postgres://dogfood:local-demo-only@db:5432/dogfood
+      DJANGO_SECRET_KEY: local-demo-key-not-for-production
+      DJANGO_DEBUG: '0'
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres_data:

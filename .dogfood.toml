@@ -1,0 +1,19 @@
+[portal]
+base_url = "http://localhost:8080"
+
+[tiers]
+claimed = ["T1", "T2"]
+pitch = "A self-hosted judging portal with backend role isolation and fixture-backed scoring."
+
+[auth]
+organizer = "Cookie: sessionid=org_rg_rewrite_fixture_2026"
+participant = "Cookie: sessionid=prt_rg_rewrite_fixture_2026"
+judge_a = "Cookie: sessionid=ja_rg_rewrite_fixture_2026"
+judge_b = "Cookie: sessionid=jb_rg_rewrite_fixture_2026"
+
+[routes]
+gallery = "/projects"
+submit = "/projects/new"
+judge_scores = "/api/judge/scores"
+peer_scores = "/api/judge/scores?judge=jdg_01"
+csv_export = "/api/export.csv"

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.sql
+*backup*
+snapshot.json
+.idea/
+.vscode/
+acceptance-local*.txt
