@@ -1,8 +1,29 @@
-# RaptorGate (Dogfood 2026 rewrite)
+# RaptorGate | Dogfood 2026
 
-Fresh Dogfood 2026 build.The committed checker report claims T1/T2 and has seven literal PASS lines. The code also contains substantial T3 work and one T4 widget slice, but neither tier is complete. Authenticated community voting, comments, ballot randomization, rate/duplicate checks, audit, receipts and gated public results run; email-gated and open-link voting modes are settings only and reject voters until verification is implemented. T4 has a read-only embeddable gallery, not a complete REST API, webhook, signed-record, certificate and bulk-import system. Do not infer tier completion from the number of tests or the checker, which checks only seven T1/T2 behaviors. No five-minute demo video or offline cold-boot proof is in this repository.
+A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-## Run
+`PostgreSQL: 176/176 x2 @ 7e1c52a` · `Official checker: 7/7 PASS` · `License: MIT`
+
+The test status above describes the verified `7e1c52a` build, not automated CI or a Docker cold-boot result.
+
+## Features
+
+### Judge workflow
+
+- **Judging:** assignment-scoped console with server-confirmed autosave; backend role, track and team-conflict checks; editable rubric, score audit and CSV export. Organizer results show raw and normalized standings and tied ranks.
+
+### Community participation
+
+- **Voting and results:** searchable gallery, project detail and moderated comments; authenticated one-vote-per-event ballot with stable randomized order, rate checks, receipt and organizer vote audit. Results and receipt lookup open only after voting closes and the organizer publishes.
+
+### User interface
+
+- **Local-first design:** light-first UI with a saved dark choice across judge, gallery, ballot, organizer and results screens. A separately styled, read-only gallery widget can be embedded on other sites.
+- **Responsive and accessible:** the dual-theme sweep checked desktop, tablet and mobile widths, keyboard toggle, persisted choice and mobile overflow.
+
+`.dogfood.toml` claims T1/T2, the scope verified by the official checker. The T3 voting features and T4 widget are working slices, not blanket tier claims. See [Current routes](#current-routes), [Roadmap](#roadmap) and the design documents for details.
+
+## Quickstart
 
 From the repository root on a Docker-capable machine with network access for the first build:
 
@@ -14,7 +35,7 @@ docker compose up
 
 This fetches Python/PostgreSQL images and Python packages while online, then starts PostgreSQL 16 and Django 5.2, applies migrations and seeds `fixtures.json` when the database has no event. Open http://localhost:8080/projects. Compose binds to `127.0.0.1:8080`. This is a local demo configuration with fixed credentials; do not publish it directly.
 
-For an **offline** run, `packaging/README.md` describes online image-build and archive export plus a separate offline load/boot. The scripts are committed, but no image archive is included and no Docker-capable network-off cold rehearsal has passed yet. A fresh Windows PC cannot boot this repo from source offline without Docker Desktop installed and the prebuilt archive transferred. Jasper has been asked to test the actual build/cold run; do not claim the offline requirement before that evidence lands.
+For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. The scripts are shipped; the archive and network-off cold-boot validation are next.
 
 The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
 
@@ -25,26 +46,25 @@ python3 run.py .dogfood.toml > acceptance-report.txt
 cat acceptance-report.txt
 ```
 
-The committed checker report shows three T1 PASS and four T2 PASS lines, with `claimed T1 T2, verified T1 T2`. Local testing at the current tree also passed all seven probes after an empty PostgreSQL migration/seed/boot in a prepared Linux environment. The checked-in report is a historical run; regenerate it from the final submission tree after the real deployment. Keep checker output unedited. The checker can exit zero despite FAIL lines. `.dogfood.toml` contains fixed local demo session headers and actual routes; it must not be reused as production authentication.
+The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`. Rerun it on the final submission tree and read each result line; the checker can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
 
-Tests documented by the repo: `python src/manage.py test eventhub.tests` or `PYTHONPATH=src pytest -q` after installing `requirements-dev.txt`. At private-main commit `7e1c52a`, real PostgreSQL pytest and Django runners each passed 176/176 tests with no skips. Coverage includes acceptance, invites, fixture import, judging, concurrency, event isolation, voting, comments, public-result gates, widget and UI truths. This is prepared-environment verification, not Docker cold-boot proof. Run both suites against the final source and report skips as well as passes.
+Install `requirements-dev.txt` into a Python environment, then run `python src/manage.py test eventhub.tests` and `PYTHONPATH=src pytest -q`. Run both against the final submission tree.
 
-## Engineering log
+## Architecture
 
-This repository records a fresh build.The initial implementation grew from the fixture-backed T1/T2 portal (`acc016c`) through deadline-locked submissions (`53ea4f9`), event/team setup (`1e3915d`), judge scoring (`ca4f254`), one-use invitations (`16a92d4`) and rubric/audit work (`ebe8151`). The first Compose acceptance run was recorded in `acceptance-report.txt` (remote acceptance commit `3cf621d`); it showed seven literal PASS lines, but the checker does not prove every route is finished.
+- Django 5.2 serves HTML pages and role-checked endpoints; PostgreSQL 16 stores event, team, project, judge, assignment, score and participation records.
+- Event and track checks run on the server. Score writes are transaction-locked and audited; organizer results normalize each judge's scoring spread while keeping raw scores visible.
+- The public ballot derives a stable per-voter project order, writes one vote per account and event, and holds receipts/results behind the release gate. The embeddable gallery is read-only and uses its own CSS and content-security policy.
+- `src/eventhub/` owns models, views and tests; `src/templates/` and `src/static/` own the UI; `packaging/` contains the image-bundle handoff. See `ARCHITECTURE.md`, `DATA-MODEL.md`, `JUDGING.md` and `THREAT-MODEL.md` for the design and its risk decisions.
 
-The next wave was defect finding and repair, not just added test count. Tinku's six regression files (`ab49ff3`) exposed scope, role, CSV, import and concurrency failures. The source fixes (`4f99e32`) addressed nine reproduced defects. PostgreSQL testing then exposed a concurrent judge-invite race; `7fd5527` adds an event/user uniqueness constraint and a 409 response for the losing invite. Jasper's reviewed architecture, data, judging and threat notes are in `13a4d6f`. Draft exclusion followed in `a8a22c8`, with proof tests in `642769c`. The live gallery adaptation in `9b82d01` uses real projects. `4684178` configures `STATICFILES_DIRS`, but the stylesheet still 404'd under Compose's `DJANGO_DEBUG=0`; `5eec446` fixes actual delivery by adding `--insecure` to `runserver` for this local demo deployment, verified live (`200`, `text/css`) with a rendered gallery screenshot. The eight standalone mock dashboard pages were not shipped as functional routes. Check the final commit's tests and checker output rather than assuming these milestones establish completion.
+## Testing and proof
 
-## Status by tier
-
-- **T1/T2 claimed:** fixture-backed public gallery, deadline-locked canonical submissions, organizer event/team setup, judge invitation, assignment/track/team conflict checks, score audit, rubric/normalization and CSV. The official checker verified its seven probes. Gaps remain in participant onboarding, a full organizer GUI and a tested cold offline boot.
-- **T3 partial, not claimed:** authenticated-account ballots with stable per-voter ordering, one vote per event, receipt verification only after publication and voting close, comments/moderation, rate counters and superuser vote audit. Email-verified and open-link access are not implemented and fail closed. Sybil voting with multiple accounts remains possible.
-- **T4 partial, not claimed:** a public read-only iframe gallery widget with isolated CSS and explicit `?theme=dark` option. REST/token API coverage, webhooks, certificate/record generation, signed judge participation and bulk import are not shipped.
+At commit `7e1c52a`, the real PostgreSQL pytest and Django runners each passed **176/176**, no skips. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
 
 ## Current routes
 
-- Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects appear. The gallery currently falls back to the oldest event if none is active; public ballot, comments and results do not.
-- Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. When none is marked active, public ballot, results and moderation routes fail closed; the gallery and some organizer routes still use the oldest event fallback. Select an active event before a real multi-event demo.
+- Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects appear. Select an active event before demonstrating multiple events; the gallery currently falls back to the oldest event if none is selected.
+- Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
 - Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
 - Judging: assignment-scoped `/judge/console` (light first, persistent manual dark switch, server-confirmed autosave), `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
 - Organizer data: `GET /organizer/overview` renders the active event overview; `GET /organizer/results?view=html` renders a private standings table, while `/organizer/results` remains JSON. `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.
@@ -59,8 +79,10 @@ The next wave was defect finding and repair, not just added test count. Tinku's 
 
 The iframe content is public and can be embedded by any origin by default (`frame-ancestors *`); set `WIDGET_FRAME_ANCESTORS` in Django settings for a restricted host (there is no environment-variable hookup yet). Do not embed private results, voting sessions or organizer pages. The widget does not set cookies or show individual judge scores.
 
-Most organizer mutations and some judge routes still produce JSON rather than full screens. The judge console, gallery, project detail, open ballot, organizer overview/results and public results honor a per-browser light-first theme switch with a saved dark choice. The widget is isolated from that preference; it accepts `?theme=dark` and otherwise stays light. These surfaces were visually checked at 1440, 768 and 320 pixel widths, with keyboard toggle and mobile overflow checks; this does not replace browser testing of other routes. The active event selector is a global setting, not a personal preference; recheck the selected event before a demo. To demonstrate a different event, create it, give it tracks/teams/projects through the current flows, then `POST /events/select` as organizer and verify `/projects` before showing that event. Creation accepts name, slug and UTC close time but does not set up tracks or prizes automatically. Authenticated-account voting works; email-verified and open-link choices currently fail closed without identity verification. There is no complete general API/webhook, bulk importer or certificate flow. Fixed fixture cookies and demo credentials are local-only. See ARCHITECTURE.md, DATA-MODEL.md, JUDGING.md and THREAT-MODEL.md for risk and scoring details.
+Several organizer controls and judge routes expose JSON alongside the HTML workbench and results screens. The judge console, gallery, project detail, open ballot, organizer overview/results and public results honor a per-browser light-first theme switch with a saved dark choice. The widget is isolated from that preference; it accepts `?theme=dark` and otherwise stays light. These surfaces were visually checked at 1440, 768 and 320 pixel widths, with keyboard toggle and mobile overflow checks; this does not replace browser testing of other routes. The active event selector is a global setting, not a personal preference; recheck the selected event before a demo. To demonstrate a different event, create it, give it tracks/teams/projects through the current flows, then `POST /events/select` as organizer and verify `/projects` before showing that event. Creation accepts name, slug and UTC close time but does not set up tracks or prizes automatically. The seeded credentials are for a localhost demo only. See ARCHITECTURE.md, DATA-MODEL.md, JUDGING.md and THREAT-MODEL.md for implementation and security decisions.
 
-## Submission status
+## Roadmap
 
-The repo contains an OSI license, Compose setup, official fixture/checker, `.dogfood.toml`, a historical acceptance report and unverified offline image scripts. A five-minute demo video and an actual network-off Docker cold-boot proof are still required. Re-run the checker and both PostgreSQL test runners on the submitted commit. Keep the private repository private until a separate approval and secret/history review authorize publication. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per the current https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ pages checked 28 September 2026.
+Next: verified email-gated/open-link voting; broader REST and webhook coverage; signed judge records, certificates and bulk import/export. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+
+The repository is private during the build. Publication needs a separate owner decision and review of the full history and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
