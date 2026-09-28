@@ -45,6 +45,8 @@ class Judge(models.Model):
     user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='judge_roles')
     tracks=models.ManyToManyField(Track,related_name='judges')
     invited_at=models.DateTimeField(null=True,blank=True)
+    invite_token=models.CharField(max_length=64,blank=True,null=True,unique=True)
+    invite_expires_at=models.DateTimeField(blank=True,null=True)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_judge_in_event')]
 

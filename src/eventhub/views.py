@@ -230,3 +230,54 @@ def publish_results(request):
             return JsonResponse({'error':'Submissions remain open'},status=409)
         event.published=True;event.results_publish_at=timezone.now();event.save(update_fields=['published','results_publish_at'])
     return JsonResponse({'published':True})
+
+@login_required
+def invite_judge(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    if request.method!='POST': return HttpResponseNotAllowed(['POST'])
+    event=active_event()
+    email=request.POST.get('email','').strip().lower()
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    try: validate_email(email)
+    except ValidationError: return JsonResponse({'error':'Valid email required'},status=400)
+    track_ids=request.POST.getlist('tracks')
+    if not track_ids or len(set(track_ids))!=len(track_ids):
+        return JsonResponse({'error':'Choose one or more distinct tracks'},status=400)
+    tracks=list(event.tracks.filter(slug__in=track_ids)) if event else []
+    if len(tracks)!=len(track_ids):
+        return JsonResponse({'error':'Track outside this event'},status=400)
+    import secrets
+    from django.contrib.auth import get_user_model
+    from django.utils.text import slugify
+    from datetime import timedelta
+    User=get_user_model()
+    with transaction.atomic():
+        # The account is not usable until the invitee chooses their own password.
+        user,created=User.objects.get_or_create(username='invited:'+email,defaults={'email':email})
+        if created: user.set_unusable_password();user.save(update_fields=['password'])
+        if Judge.objects.filter(event=event,user=user).exists():
+            return JsonResponse({'error':'Judge already invited'},status=409)
+        slug='judge-'+secrets.token_hex(5)
+        token=secrets.token_urlsafe(24)
+        judge=Judge.objects.create(event=event,slug=slug,user=user,invited_at=timezone.now(),invite_token=token,invite_expires_at=timezone.now()+timedelta(days=7))
+        judge.tracks.set(tracks)
+    return JsonResponse({'accept_path':'/judge/accept/'+token,'judge':judge.slug},status=201)
+
+
+def accept_judge(request,token):
+    if request.method!='POST': return render(request,'judge_accept.html')
+    from django.contrib.auth.password_validation import validate_password
+    from django.core.exceptions import ValidationError
+    password=request.POST.get('password','')
+    if password!=request.POST.get('confirm',''):
+        return JsonResponse({'error':'Passwords do not match'},status=400)
+    with transaction.atomic():
+        judge=Judge.objects.select_for_update().filter(invite_token=token).select_related('user').first()
+        if not judge or not judge.invite_expires_at or judge.invite_expires_at<=timezone.now():
+            return JsonResponse({'error':'Invite invalid or expired'},status=404)
+        try: validate_password(password,judge.user)
+        except ValidationError as exc: return JsonResponse({'error':exc.messages},status=400)
+        judge.user.set_password(password);judge.user.save(update_fields=['password'])
+        judge.invite_token=None;judge.invite_expires_at=None;judge.save(update_fields=['invite_token','invite_expires_at'])
+    return JsonResponse({'accepted':True,'judge':judge.slug})
