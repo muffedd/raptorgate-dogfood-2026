@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 219/219 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 222/222 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -63,7 +63,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At the current signup/audit-fix source, real PostgreSQL pytest and Django runners each passed **219/219**, no skips. SQLite runs can collect fewer tests and skip PostgreSQL-only concurrency cases; do not compare their totals with the PostgreSQL runs. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
+At the current verification-slice source, real PostgreSQL pytest and Django runners each passed **222/222**, no skips. SQLite runs can collect fewer tests and skip PostgreSQL-only concurrency cases; do not compare their totals with the PostgreSQL runs. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
 
 ## Current routes
 
@@ -78,6 +78,7 @@ At the current signup/audit-fix source, real PostgreSQL pytest and Django runner
 - Partial JSON API: see `API.md`; project and published standings reads are public, judge assignment reads require a bearer token. Issuance/revocation require an authenticated session and CSRF. This is not complete REST.
 - Participation record snapshot: organizer-only issue after published voting close, public verify if `RECORD_SIGNING_KEY` is set; this is not a certificate. See `PARTICIPATION-RECORDS.md`.
 - Results-published webhook: operator-configured HTTPS callback queued on first publication, delivered by a separate management command, with HMAC body signature and organizer-only attempt status. See `WEBHOOKS.md`; this is one event type, not full webhook coverage.
+- Public verification page: `GET/POST /verify` checks a pasted signed certificate JSON against its Ed25519 signature and this site's published issuance, an accepted vote receipt after results release, or a numeric HMAC participation-record ID using the site-held key. These are distinct claims, not proof of overall fairness. `python verify.py certificate.json --trusted-public-key <trusted-base64url-key>` checks the certificate signature offline with only `cryptography`; without a separately trusted key, issuer identity remains unverified.
 - Portable JSON judge certificate: organizer-only `POST /organizer/certificates/issue` after public results, public `GET /certificates/<id>.json`. Private signing key required; embedded public key must be pinned through a trusted event channel. See `CERTIFICATES.md`.
 - Embeddable public gallery: `GET /embed/<event-slug>/gallery` is a read-only, event-scoped iframe page with its own CSS and CSP. Example on a trusted host page, using the real event slug:
 
