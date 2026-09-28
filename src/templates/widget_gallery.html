@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ event.title }} - Projects</title>
+  <link rel="stylesheet" href="{% static 'widget.css' %}">
+</head>
+<body class="widget-body">
+<main class="widget-main">
+  <h1 class="widget-title">{{ event.title }}</h1>
+  <p class="widget-count">{{ projects|length }} project{{ projects|length|pluralize }}</p>
+  <ul class="widget-list">
+    {% for project in projects %}
+    <li class="widget-card">
+      <div class="widget-card-head">
+        <h2 class="widget-card-title">{{ project.title }}</h2>
+        <span class="widget-track">{{ project.track.name }}</span>
+      </div>
+      {% if project.summary %}<p class="widget-summary">{{ project.summary }}</p>{% endif %}
+      <p class="widget-meta">
+        <span class="widget-team">{{ project.team.name }}</span>
+        {% if project.repo_url %}<a class="widget-repo" href="{{ project.repo_url }}" rel="noopener noreferrer">Repository</a>{% endif %}
+      </p>
+    </li>
+    {% empty %}
+    <li class="widget-empty">No projects yet.</li>
+    {% endfor %}
+  </ul>
+</main>
+</body>
+</html>
