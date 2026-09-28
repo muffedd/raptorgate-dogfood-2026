@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 226/226 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 228/228 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -63,7 +63,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this review-cycle source, both full runners passed on real PostgreSQL: **226/226 Django tests** and **226/226 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is an earlier capture; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
+At this review-cycle source, both full runners passed on real PostgreSQL: **228/228 Django tests** and **228/228 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is an earlier capture; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -80,6 +80,12 @@ Selected regression cases that can be inspected in `src/eventhub/tests/`:
 | Results expander | Raw and normalized means, judge count, rank movement and unscored state are aggregate-only. The public page does not expose judge identities, comments or individual ballots; it stays gated before publication. `test_results_explainer.py`. |
 
 Other suites exercise event and track isolation, team and judge permissions, concurrent first submissions/scores, rubric/ranking ties, ballot identity modes and duplicate/rate controls, results release gates, widget isolation, CSV import, certificates, records, the partial API and publication webhook. Test counts describe executed cases, not proof of full T3/T4 tier completion.
+
+### UI accessibility sweep (September 29, 2026)
+
+A live Chrome/axe-core 4.13.0 sweep covered the public gallery, signup, verification, published results and project detail, plus organizer overview, private results and vote-signals pages at desktop width. Those eight rendered light-theme pages reported **zero automated WCAG 2 A/AA, WCAG 2.1 A/AA and axe best-practice violations** with 31-38 passing rules each at the first post-fix desktop run. Dark-theme retests on the same routes, plus signup, reported zero violations after color and scroll-focus fixes (31-43 passing rules). A separate mobile-width dark-theme pass found low contrast in selected navigation, track badges and results expander summaries; those dark colors were corrected and retested. It also found a horizontally scrollable organizer standings table lacking keyboard focus; the table wrapper now has a named focusable region. This is an automated snapshot, not a WCAG compliance certificate. Native `<details>/<summary>` expands with keyboard; focused links and controls follow DOM order. Manual desktop/mobile pixel checks inspected the verify, results expander and organizer signals pages. No meaningful images on these pages require alt text; text-only logos are links.
+
+The sweep prompted fixes that automated checks alone miss: a visible-on-focus “Skip to main content” link and labeled navigation landmark; a stronger shared focus outline (including `<summary>`); project-specific accessible names for repeated “Cast vote” buttons; helper text tied to the verify textarea; and larger mobile text for small metadata and ballot actions. `test_accessibility.py` covers the durable landmark, label and native-expander structure. Some older plain-form pages, the isolated widget and the full judge workbench were outside this eight-page live sweep. A keyboard pass confirmed the /verify Tab order (skip link, brand, navigation, theme, select, textarea, submit) and the results expander opening/closing with Enter. Screen-reader, zoom and contrast behavior across every route still need a full manual audit before claiming conformance.
 
 ### Improvements in this review cycle
 
