@@ -6,7 +6,7 @@ CRITERIA={'functionality':0.4,'quality':0.35,'innovation':0.25}
 
 def weighted_score(criteria,weights=None):
     weights=weights or CRITERIA
-    if any(key not in criteria or not isinstance(criteria[key],int) or not 1<=criteria[key]<=5 for key in weights):
+    if any(key not in criteria or type(criteria[key]) is not int or not 1<=criteria[key]<=5 for key in weights):
         return None
     return sum(criteria[key]*weight for key,weight in weights.items())
 

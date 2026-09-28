@@ -88,12 +88,12 @@ def export_csv(request):
     for s in Score.objects.filter(project__event=event,judge__event=event).select_related('project__team','project__track','judge').order_by('project__slug','judge__slug'):
         c=s.criteria
         safe=lambda v: "'"+v if isinstance(v,str) and v.lstrip().startswith(('=','+','-','@')) else v
-        writer.writerow([safe(s.project.slug),safe(s.project.title),safe(s.project.team.name),safe(s.project.track.name),safe(s.judge.slug),c.get('functionality',''),c.get('quality',''),c.get('innovation','')])
+        writer.writerow([safe(v) for v in (s.project.slug,s.project.title,s.project.team.name,s.project.track.name,s.judge.slug,c.get('functionality',''),c.get('quality',''),c.get('innovation',''))])
     return HttpResponse(stream.getvalue(),content_type='text/csv; charset=utf-8')
 
 @login_required
 def create_event(request):
-    if not request.user.is_staff: return JsonResponse({'error':'Organizer role required'},status=403)
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
     if request.method!='POST': return render(request,'event_form.html')
     from django.utils.dateparse import parse_datetime
     import re
@@ -188,6 +188,8 @@ def score_project(request,project_slug):
     from .models import Assignment, ScoreAudit
     if not Assignment.objects.filter(judge=judge,project=project).exists():
         return JsonResponse({'error':'Assignment required'},status=403)
+    if not judge.tracks.filter(pk=project.track_id).exists():
+        return JsonResponse({'error':'Judge is not assigned to this track'},status=403)
     if project.team.members.filter(pk=request.user.pk).exists():
         return JsonResponse({'error':'Cannot score own team'},status=403)
     fields=('functionality','quality','innovation')
@@ -256,8 +258,8 @@ def invite_judge(request):
         # The account is not usable until the invitee chooses their own password.
         user,created=User.objects.get_or_create(username='invited:'+email,defaults={'email':email})
         if created: user.set_unusable_password();user.save(update_fields=['password'])
-        if Judge.objects.filter(event=event,user=user).exists():
-            return JsonResponse({'error':'Judge already invited'},status=409)
+        if Judge.objects.filter(user=user).exists():
+            return JsonResponse({'error':'Judge account already exists; do not reset its password via a new invite'},status=409)
         slug='judge-'+secrets.token_hex(5)
         token=secrets.token_urlsafe(24)
         judge=Judge.objects.create(event=event,slug=slug,user=user,invited_at=timezone.now(),invite_token=token,invite_expires_at=timezone.now()+timedelta(days=7))

@@ -4,7 +4,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 from eventhub.models import Event, Judge, Project, Score, Team, Track
@@ -29,7 +29,13 @@ class Command(BaseCommand):
             return
         data=json.loads((Path(__file__).resolve().parents[4]/'fixtures.json').read_text())
         e=data['event']
-        event,_=Event.objects.update_or_create(slug=e['id'],defaults={'title':e['name'],'submissions_close':datetime.fromisoformat(e['submissions_close'].replace('Z','+00:00'))})
+        close=datetime.fromisoformat(e['submissions_close'].replace('Z','+00:00'))
+        if timezone.is_naive(close):
+            raise CommandError('Fixture submissions_close must include a timezone')
+        required={'functionality','quality','innovation'}
+        if any(set(row['criteria']) != required or any(type(v) is not int or not 1 <= v <= 5 for v in row['criteria'].values()) for row in data['scores']):
+            raise CommandError('Fixture scores must contain integer criteria from 1 to 5')
+        event,_=Event.objects.update_or_create(slug=e['id'],defaults={'title':e['name'],'submissions_close':close})
         tracks={}
         for row in data['tracks']:
             tracks[row['id']],_=Track.objects.update_or_create(event=event,slug=row['id'],defaults={'name':row['name']})
