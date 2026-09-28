@@ -24,6 +24,8 @@ class Command(BaseCommand):
     def handle(self,*args,**opts):
         if opts['if_empty'] and Event.objects.exists():
             self.stdout.write('Existing event kept; seed skipped.')
+            for role,(_,token) in SESSIONS.items():
+                self.stdout.write(f'{role}: Cookie: sessionid={token}')
             return
         data=json.loads((Path(__file__).resolve().parents[4]/'fixtures.json').read_text())
         e=data['event']
