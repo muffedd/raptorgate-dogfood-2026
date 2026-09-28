@@ -1,0 +1,3 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Results - RaptorGate{% endblock %}
+{% block content %}<h1>{{ event.title }} results</h1><ol>{% for row in standings %}<li>{{ row.title }} - {% if row.normalized is not None %}{{ row.normalized }}{% else %}Unscored{% endif %}</li>{% endfor %}</ol>{% endblock %}

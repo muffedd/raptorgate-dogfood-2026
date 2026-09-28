@@ -10,16 +10,26 @@ from django.utils import timezone
 from .models import Event, Judge, Project, Score, Team
 
 
-def active_event():
-    return Event.objects.order_by('id').first()
+def active_event(request=None):
+    return Event.objects.filter(active=True).order_by('id').first() or Event.objects.order_by('id').first()
 
+
+@login_required
+def select_event(request):
+    if not request.user.is_superuser: return JsonResponse({"error":"Organizer role required"},status=403)
+    if request.method != "POST": return HttpResponseNotAllowed(["POST"])
+    with transaction.atomic():
+        event = get_object_or_404(Event,slug=request.POST.get("event", ""))
+        Event.objects.filter(active=True).update(active=False)
+        Event.objects.filter(pk=event.pk).update(active=True)
+    return JsonResponse({"active_event":event.slug})
 
 def home(request):
     return gallery(request)
 
 
 def gallery(request):
-    event=active_event()
+    event=active_event(request)
     rows=Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).select_related('track','team') if event else []
     query=request.GET.get('q','').strip()
     track=request.GET.get('track','').strip()
@@ -30,7 +40,7 @@ def gallery(request):
 
 @login_required
 def submit(request):
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     if request.method!='POST':
         return render(request,'submit.html',{'event':event,'form':ProjectForm(event=event)})
@@ -65,7 +75,7 @@ def submit(request):
 def judge_scores(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error':'Sign in required'},status=401)
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     judge=Judge.objects.filter(event=event,user=request.user).first()
     if not judge: return JsonResponse({'error':'Judge role required'},status=403)
@@ -81,7 +91,7 @@ def export_csv(request):
         return JsonResponse({'error':'Sign in required'},status=401)
     if not request.user.is_superuser:
         return JsonResponse({'error':'Organizer role required'},status=403)
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     stream=StringIO(); writer=csv.writer(stream)
     writer.writerow(['project_id','project_title','team','track','judge','functionality','quality','innovation'])
@@ -112,7 +122,7 @@ def create_event(request):
 @login_required
 def create_team(request):
     if request.method!='POST': return render(request,'team_form.html')
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     name=request.POST.get('name','').strip()
     if not name or len(name)>160: return JsonResponse({'error':'Team name required'},status=400)
@@ -127,7 +137,7 @@ def create_team(request):
 
 @login_required
 def team_invite(request,slug):
-    event=active_event()
+    event=active_event(request)
     team=get_object_or_404(Team,event=event,slug=slug)
     if not team.members.filter(pk=request.user.pk).exists():
         return JsonResponse({'error':'Team member required'},status=403)
@@ -154,7 +164,7 @@ def join_team(request,token):
 
 @login_required
 def judge_assignments(request):
-    event=active_event()
+    event=active_event(request)
     judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
     if not judge: return JsonResponse({'error':'Judge role required'},status=403)
     from .models import Assignment
@@ -166,7 +176,7 @@ def judge_assignments(request):
 def assign_judge(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
-    event=active_event()
+    event=active_event(request)
     judge=get_object_or_404(Judge,event=event,slug=request.POST.get('judge',''))
     project=get_object_or_404(Project,event=event,slug=request.POST.get('project',''),duplicate_of__isnull=True,draft=False)
     if not judge.tracks.filter(pk=project.track_id).exists():
@@ -181,7 +191,7 @@ def assign_judge(request):
 @login_required
 def score_project(request,project_slug):
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
-    event=active_event()
+    event=active_event(request)
     judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
     if not judge: return JsonResponse({'error':'Judge role required'},status=403)
     project=get_object_or_404(Project,event=event,slug=project_slug,duplicate_of__isnull=True,draft=False)
@@ -214,7 +224,7 @@ def score_project(request,project_slug):
 @login_required
 def results(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     from .ranking import standings
     return JsonResponse({'published':event.published,'standings':standings(event)})
@@ -224,7 +234,7 @@ def results(request):
 def publish_results(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     with transaction.atomic():
         event=Event.objects.select_for_update().get(pk=event.pk)
@@ -237,7 +247,7 @@ def publish_results(request):
 def invite_judge(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
-    event=active_event()
+    event=active_event(request)
     email=request.POST.get('email','').strip().lower()
     from django.core.validators import validate_email
     from django.core.exceptions import ValidationError
@@ -294,7 +304,7 @@ def accept_judge(request,token):
 @login_required
 def edit_rubric(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
-    event=active_event()
+    event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     if request.method=='GET': return JsonResponse({'rubric':event.rubric or {'functionality':0.4,'quality':0.35,'innovation':0.25}})
     if request.method!='POST': return HttpResponseNotAllowed(['GET','POST'])
@@ -314,7 +324,7 @@ def edit_rubric(request):
 @login_required
 def audit_log(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
-    event=active_event()
+    event=active_event(request)
     from .models import ScoreAudit
     rows=ScoreAudit.objects.filter(score__project__event=event,score__judge__event=event).select_related('score__project','score__judge','editor').order_by('-written_at','-pk') if event else []
     return JsonResponse({'entries':[{'project':x.score.project.slug,'judge':x.score.judge.slug,'editor':x.editor.username,'before':x.previous,'after':x.current,'at':x.written_at.isoformat()} for x in rows]})

@@ -1,0 +1,4 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Vote - RaptorGate{% endblock %}
+{% block content %}<h1>Vote in {{ event.title }}</h1><p>One vote per account during the voting window.</p>
+{% for project in projects %}<article class="card"><h2><a href="{% url 'project_detail' project.slug %}?event={{ event.slug }}">{{ project.title }}</a></h2><p>{{ project.summary }}</p><form action="{% url 'vote' %}" method="post">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><input type="hidden" name="project" value="{{ project.slug }}"><button class="btn">Vote for this project</button></form></article>{% endfor %}{% endblock %}

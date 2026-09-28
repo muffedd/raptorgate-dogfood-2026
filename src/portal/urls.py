@@ -1,18 +1,25 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views
+from eventhub import views, public_views
 urlpatterns=[
  path('admin/',admin.site.urls),
+ path('ballot',public_views.ballot,name='ballot'),
+ path('vote',public_views.vote,name='vote'),
+ path('results',public_views.public_results,name='public_results'),
+ path('organizer/vote-audit',public_views.vote_audit,name='vote_audit'),
+ path('organizer/comments/<int:pk>/hide',public_views.moderate_comment,name='moderate_comment'),
  path('login/',auth_views.LoginView.as_view(template_name='login.html'),name='login'),
  path('logout/',auth_views.LogoutView.as_view(),name='logout'),
  path('',views.home,name='home'),
  path('projects',views.gallery,name='gallery'),
  path('projects/new',views.submit,name='submit'),
+ path('projects/<slug:slug>',public_views.project_detail,name='project_detail'),
  path('teams/new',views.create_team,name='create_team'),
  path('teams/<slug:slug>/invite',views.team_invite,name='team_invite'),
  path('join/<str:token>',views.join_team,name='join_team'),
  path('events/new',views.create_event,name='create_event'),
+ path('events/select',views.select_event,name='select_event'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
  path('api/export.csv',views.export_csv,name='export_csv'),
  path('judge/assignments',views.judge_assignments,name='judge_assignments'),

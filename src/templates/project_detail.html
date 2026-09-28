@@ -1,0 +1,3 @@
+{% extends "dashboard_base.html" %}
+{% block title %}{{ project.title }} - RaptorGate{% endblock %}
+{% block content %}<h1>{{ project.title }}</h1><p>{{ project.summary }}</p><h2>Comments</h2>{% for comment in comments %}<article><strong>{{ comment.author.username }}</strong><p>{{ comment.body }}</p></article>{% empty %}<p>No comments yet.</p>{% endfor %}<form method="post">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><label>Comment<textarea name="body" required maxlength="2000"></textarea></label><button class="btn">Post comment</button></form>{% endblock %}
