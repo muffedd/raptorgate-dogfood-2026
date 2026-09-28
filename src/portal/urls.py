@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks, verify_public
+from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks, verify_public, vote_signals
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -15,6 +15,7 @@ urlpatterns=[
  path('results',public_views.public_results,name='public_results'),
  path('verify',verify_public.verify_page,name='verify_page'),
  path('organizer/vote-audit',public_views.vote_audit,name='vote_audit'),
+ path('organizer/vote-signals',vote_signals.signals,name='vote_signals'),
  path('organizer/comments/<int:pk>/hide',public_views.moderate_comment,name='moderate_comment'),
  path('signup/',views.signup,name='signup'),
  path('login/',auth_views.LoginView.as_view(template_name='login.html'),name='login'),

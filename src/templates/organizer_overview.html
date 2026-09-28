@@ -1,6 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Overview | {{ event.title }}{% endblock %}
-{% block nav %}<a href="{% url 'organizer_overview' %}" aria-current="page">Overview</a><a href="{% url 'results' %}?view=html">Results</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
+{% block nav %}<a href="{% url 'organizer_overview' %}" aria-current="page">Overview</a><a href="{% url 'results' %}?view=html">Results</a><a href="{% url 'vote_signals' %}">Vote signals</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block content %}
 <header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Event overview</h1><p class="rg-result-lede">Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Draft results{% endif %}</span></header>

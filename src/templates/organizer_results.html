@@ -1,6 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Organizer results | {{ event.title }}{% endblock %}
-{% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'results' %}?view=html" aria-current="page">Results</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
+{% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'results' %}?view=html" aria-current="page">Results</a><a href="{% url 'vote_signals' %}">Vote signals</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block content %}
 <header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Judging results</h1><p class="rg-result-lede">{{ project_count }} eligible projects · {{ score_count }} recorded score rows · {{ assigned_count }} live assignments</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Private preview{% endif %}</span></header>

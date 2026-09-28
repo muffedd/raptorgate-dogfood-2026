@@ -35,3 +35,11 @@ class ParticipantSignupTests(TestCase):
         self.client.force_login(get_user_model().objects.create_user(username='existing'))
         self.assertRedirects(self.client.post('/signup/', self.payload()), '/projects')
         self.assertFalse(get_user_model().objects.filter(username='newparticipant').exists())
+
+    def test_privilege_fields_injected_into_public_form_are_ignored(self):
+        response = self.client.post('/signup/', self.payload(is_staff='on', is_superuser='on'))
+        self.assertEqual(response.status_code, 302)
+        user = get_user_model().objects.get(username='newparticipant')
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+        self.assertFalse(Judge.objects.filter(user=user).exists())
