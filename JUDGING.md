@@ -6,7 +6,7 @@ Reviewed `src/eventhub/ranking.py`, `views.py`, `models.py` and judging/rubric t
 
 An organizer (Django superuser) creates a judge invitation for selected event tracks, then explicitly assigns each canonical project to a judge. The assignment route rejects a judge outside the project's track or on the project's team. The score-write route independently requires that judge's assignment and current membership in the project's track, and rejects self-scoring; it accepts integer 1-5 values for all three criteria. The score-read API scopes records to the authenticated judge's user/event and denies requests naming a peer. A participant has no judge role. An audit row records previous and current criterion maps, editor and time on each score write. Comments are not included in the audit maps, so a comment edit is not independently recoverable there. There is no assignment balancing algorithm or complete progress dashboard.
 
-The committed acceptance report passes T1 x3 and T2 x4, including own scores, peer denial, participant denial and organizer CSV. These seven checks do not test assignment fairness, track reads across all endpoints, normalization quality or UI completeness.
+The committed acceptance report passes T1 x3 and T2 x4, including own scores, peer denial, participant denial and organizer CSV. These seven checks do not test assignment fairness, track reads across all endpoints, normalization quality or UI completeness. The checker's closed-submission probe receives HTTP 403, but CSRF middleware may reject that POST before deadline logic; a separate app test confirms the deadline handler rejects a late edit with CSRF disabled.
 
 ## Weighted score
 
