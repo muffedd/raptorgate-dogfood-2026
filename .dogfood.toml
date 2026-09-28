@@ -3,7 +3,7 @@ base_url = "http://localhost:8080"
 
 [tiers]
 claimed = ["T1", "T2"]
-pitch = "A self-hosted judging portal with backend role isolation and fixture-backed scoring."
+pitch = "Fixture-backed local judging portal with isolated scoring, authenticated community voting and a read-only embeddable gallery; T3/T4 remain partial."
 
 [auth]
 organizer = "Cookie: sessionid=org_rg_rewrite_fixture_2026"
