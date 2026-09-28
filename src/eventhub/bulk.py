@@ -74,27 +74,27 @@ def import_projects_csv(request):
         cleaned.append((slug, title, summary, repo, team_slug, track_slug))
     try:
         with transaction.atomic():
-        event = Event.objects.select_for_update().filter(active=True).first()
-        if event is None:
-            return JsonResponse({'error': 'No active event'}, status=404)
-        if event.published or timezone.now() >= event.submissions_close:
-            return JsonResponse({'error': 'Import is closed'}, status=409)
-        teams = {x.slug:x for x in Team.objects.filter(event=event, slug__in={r[4] for r in cleaned})}
-        tracks = {x.slug:x for x in Track.objects.filter(event=event, slug__in={r[5] for r in cleaned})}
-        if any(team not in teams or track not in tracks for *_, team, track in cleaned):
-            return JsonResponse({'error': 'Team or track outside active event'}, status=400)
-        if Project.objects.filter(event=event, slug__in=seen).exists():
-            return JsonResponse({'error': 'Project slug already exists'}, status=409)
-        team_slugs = [r[4] for r in cleaned]
-        if len(set(team_slugs)) != len(team_slugs) or Project.objects.filter(
-            event=event, team__slug__in=team_slugs, duplicate_of__isnull=True
-        ).exists():
-            return JsonResponse({'error': 'Each team may have one canonical project'}, status=409)
-        Project.objects.bulk_create([
-            Project(event=event, slug=slug, title=title, summary=summary, repo_url=repo,
-                    team=teams[team], track=tracks[track], submitted_at=timezone.now())
-            for slug, title, summary, repo, team, track in cleaned
-        ])
+            event = Event.objects.select_for_update().filter(active=True).first()
+            if event is None:
+                return JsonResponse({'error': 'No active event'}, status=404)
+            if event.published or timezone.now() >= event.submissions_close:
+                return JsonResponse({'error': 'Import is closed'}, status=409)
+            teams = {x.slug:x for x in Team.objects.filter(event=event, slug__in={r[4] for r in cleaned})}
+            tracks = {x.slug:x for x in Track.objects.filter(event=event, slug__in={r[5] for r in cleaned})}
+            if any(team not in teams or track not in tracks for *_, team, track in cleaned):
+                return JsonResponse({'error': 'Team or track outside active event'}, status=400)
+            if Project.objects.filter(event=event, slug__in=seen).exists():
+                return JsonResponse({'error': 'Project slug already exists'}, status=409)
+            team_slugs = [r[4] for r in cleaned]
+            if len(set(team_slugs)) != len(team_slugs) or Project.objects.filter(
+                event=event, team__slug__in=team_slugs, duplicate_of__isnull=True
+            ).exists():
+                return JsonResponse({'error': 'Each team may have one canonical project'}, status=409)
+            Project.objects.bulk_create([
+                Project(event=event, slug=slug, title=title, summary=summary, repo_url=repo,
+                        team=teams[team], track=tracks[track], submitted_at=timezone.now())
+                for slug, title, summary, repo, team, track in cleaned
+            ])
     except IntegrityError:
         return JsonResponse({'error': 'Project slug or team already exists'}, status=409)
     return JsonResponse({'created': len(cleaned)}, status=201)
