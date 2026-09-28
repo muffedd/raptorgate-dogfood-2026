@@ -15,4 +15,9 @@ urlpatterns=[
  path('events/new',views.create_event,name='create_event'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
  path('api/export.csv',views.export_csv,name='export_csv'),
+ path('judge/assignments',views.judge_assignments,name='judge_assignments'),
+ path('judge/score/<slug:project_slug>',views.score_project,name='score_project'),
+ path('organizer/assign',views.assign_judge,name='assign_judge'),
+ path('organizer/results',views.results,name='results'),
+ path('organizer/publish',views.publish_results,name='publish_results'),
 ]

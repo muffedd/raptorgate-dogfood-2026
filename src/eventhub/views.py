@@ -151,3 +151,82 @@ def join_team(request,token):
             return JsonResponse({'error':'Invite expired or invalid'},status=404)
         team.members.add(request.user)
     return JsonResponse({'team':team.slug})
+
+@login_required
+def judge_assignments(request):
+    event=active_event()
+    judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
+    if not judge: return JsonResponse({'error':'Judge role required'},status=403)
+    from .models import Assignment
+    rows=Assignment.objects.filter(judge=judge,project__event=event).select_related('project').order_by('project__slug')
+    return JsonResponse({'assignments':[{'project':x.project.slug,'title':x.project.title} for x in rows]})
+
+
+@login_required
+def assign_judge(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    if request.method!='POST': return HttpResponseNotAllowed(['POST'])
+    event=active_event()
+    judge=get_object_or_404(Judge,event=event,slug=request.POST.get('judge',''))
+    project=get_object_or_404(Project,event=event,slug=request.POST.get('project',''),duplicate_of__isnull=True)
+    if not judge.tracks.filter(pk=project.track_id).exists():
+        return JsonResponse({'error':'Judge is not assigned to this track'},status=400)
+    if project.team.members.filter(pk=judge.user_id).exists():
+        return JsonResponse({'error':'Judge cannot score own team'},status=400)
+    from .models import Assignment
+    _,created=Assignment.objects.get_or_create(judge=judge,project=project)
+    return JsonResponse({'assigned':created,'project':project.slug})
+
+
+@login_required
+def score_project(request,project_slug):
+    if request.method!='POST': return HttpResponseNotAllowed(['POST'])
+    event=active_event()
+    judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
+    if not judge: return JsonResponse({'error':'Judge role required'},status=403)
+    project=get_object_or_404(Project,event=event,slug=project_slug,duplicate_of__isnull=True)
+    from .models import Assignment, ScoreAudit
+    if not Assignment.objects.filter(judge=judge,project=project).exists():
+        return JsonResponse({'error':'Assignment required'},status=403)
+    if project.team.members.filter(pk=request.user.pk).exists():
+        return JsonResponse({'error':'Cannot score own team'},status=403)
+    fields=('functionality','quality','innovation')
+    try:
+        criteria={name:int(request.POST[name]) for name in fields}
+    except (ValueError,KeyError,TypeError):
+        return JsonResponse({'error':'Every score must be an integer from 1 to 5'},status=400)
+    if any(not 1<=value<=5 for value in criteria.values()):
+        return JsonResponse({'error':'Every score must be from 1 to 5'},status=400)
+    comment=request.POST.get('comment','')[:2000]
+    with transaction.atomic():
+        score=Score.objects.select_for_update().filter(judge=judge,project=project).first()
+        previous=dict(score.criteria) if score else None
+        if score:
+            score.criteria=criteria;score.comment=comment;score.save(update_fields=['criteria','comment','updated_at'])
+        else:
+            score=Score.objects.create(judge=judge,project=project,criteria=criteria,comment=comment)
+        ScoreAudit.objects.create(score=score,editor=request.user,previous=previous,current=dict(criteria))
+    return JsonResponse({'project':project.slug,'criteria':criteria})
+
+
+@login_required
+def results(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    event=active_event()
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    from .ranking import standings
+    return JsonResponse({'published':event.published,'standings':standings(event)})
+
+
+@login_required
+def publish_results(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    if request.method!='POST': return HttpResponseNotAllowed(['POST'])
+    event=active_event()
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    with transaction.atomic():
+        event=Event.objects.select_for_update().get(pk=event.pk)
+        if timezone.now()<event.submissions_close:
+            return JsonResponse({'error':'Submissions remain open'},status=409)
+        event.published=True;event.results_publish_at=timezone.now();event.save(update_fields=['published','results_publish_at'])
+    return JsonResponse({'published':True})
