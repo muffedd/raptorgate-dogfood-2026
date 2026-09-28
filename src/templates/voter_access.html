@@ -1,0 +1,15 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Verify voter access | RaptorGate{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a>{% endblock %}
+{% block content %}
+<section class="public-hero"><p class="eyebrow">Community ballot / {{ event.title }}</p>
+{% if mode == 'open' %}
+<h1>Confirm your voting link</h1><p class="hero-lede">This link can be used once. Confirm to open your ballot. Do not share it after claiming.</p>
+<form method="post" action="{% url 'redeem_open_link' %}">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><input type="hidden" name="token" value="{{ token }}"><button class="btn" type="submit">Claim voting access</button></form>
+{% else %}
+<h1>Verify your email</h1><p class="hero-lede">Get a six-digit code by email. Each verified address may vote once in this event.</p>
+<form method="post" action="{% url 'request_email_code' %}">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><label for="vote-email">Email</label><input id="vote-email" name="email" type="email" required maxlength="254"><button class="btn" type="submit">Send voting code</button></form>
+<form method="post" action="{% url 'redeem_email_code' %}">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><label for="verify-email">Same email</label><input id="verify-email" name="email" type="email" required maxlength="254"><label for="verify-code">Six-digit code</label><input id="verify-code" name="code" inputmode="numeric" pattern="[0-9]{6}" required maxlength="6"><button class="btn" type="submit">Verify and open ballot</button></form>
+{% endif %}
+</section>
+{% endblock %}

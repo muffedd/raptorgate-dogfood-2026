@@ -43,6 +43,9 @@ def action_allowed(event, key, action, ip, limit=12):
 def voter_key(request, event):
     if event.voting_access == "authenticated" and request.user.is_authenticated:
         return "user:" + str(request.user.pk)
+    if event.voting_access in ('open','email'):
+        from .voter_access import session_voter_key
+        return session_voter_key(request,event)
     return None
 
 

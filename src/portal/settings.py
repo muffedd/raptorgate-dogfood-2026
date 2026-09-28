@@ -24,3 +24,11 @@ STATIC_URL='static/'
 STATICFILES_DIRS=[BASE_DIR/'static']
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 LOGIN_URL='/login/'
+
+EMAIL_BACKEND = os.environ.get('VOTER_EMAIL_BACKEND', '')
+VOTER_EMAIL_FROM = os.environ.get('VOTER_EMAIL_FROM', '')
+EMAIL_HOST = os.environ.get('VOTER_SMTP_HOST', '')
+EMAIL_PORT = int(os.environ.get('VOTER_SMTP_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('VOTER_SMTP_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('VOTER_SMTP_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('VOTER_SMTP_TLS', '1') == '1'

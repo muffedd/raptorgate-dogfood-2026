@@ -111,3 +111,15 @@ class PublicActionAttempt(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     class Meta:
         indexes=[models.Index(fields=['event','actor_key','action','created_at'])]
+
+class VoterAccess(models.Model):
+    """One-use open invite or email challenge. Never persist plaintext secrets."""
+    event=models.ForeignKey(Event,on_delete=models.CASCADE)
+    kind=models.CharField(max_length=10,choices=[('open','Open link'),('email','Email')])
+    identity=models.CharField(max_length=254,blank=True)
+    secret_hash=models.CharField(max_length=64,unique=True)
+    expires_at=models.DateTimeField()
+    redeemed_at=models.DateTimeField(null=True,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['event','kind','identity'],name='unique_voter_access_identity',condition=models.Q(kind='email'))]
