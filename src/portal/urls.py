@@ -21,5 +21,7 @@ urlpatterns=[
  path('judge/score/<slug:project_slug>',views.score_project,name='score_project'),
  path('organizer/assign',views.assign_judge,name='assign_judge'),
  path('organizer/results',views.results,name='results'),
+ path('organizer/rubric',views.edit_rubric,name='edit_rubric'),
+ path('organizer/audit',views.audit_log,name='audit_log'),
  path('organizer/publish',views.publish_results,name='publish_results'),
 ]

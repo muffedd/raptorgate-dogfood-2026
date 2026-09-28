@@ -281,3 +281,31 @@ def accept_judge(request,token):
         judge.user.set_password(password);judge.user.save(update_fields=['password'])
         judge.invite_token=None;judge.invite_expires_at=None;judge.save(update_fields=['invite_token','invite_expires_at'])
     return JsonResponse({'accepted':True,'judge':judge.slug})
+
+@login_required
+def edit_rubric(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    event=active_event()
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    if request.method=='GET': return JsonResponse({'rubric':event.rubric or {'functionality':0.4,'quality':0.35,'innovation':0.25}})
+    if request.method!='POST': return HttpResponseNotAllowed(['GET','POST'])
+    import math
+    try:
+        weights={name:float(request.POST[name]) for name in ('functionality','quality','innovation')}
+    except (ValueError,KeyError,TypeError):
+        return JsonResponse({'error':'Provide all three numeric weights'},status=400)
+    if any(not math.isfinite(x) or x<=0 for x in weights.values()):
+        return JsonResponse({'error':'Weights must be finite and positive'},status=400)
+    if abs(sum(weights.values())-1)>1e-9:
+        return JsonResponse({'error':'Weights must sum to 1'},status=400)
+    event.rubric=weights;event.save(update_fields=['rubric'])
+    return JsonResponse({'rubric':weights})
+
+
+@login_required
+def audit_log(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    event=active_event()
+    from .models import ScoreAudit
+    rows=ScoreAudit.objects.filter(score__project__event=event,score__judge__event=event).select_related('score__project','score__judge','editor').order_by('-written_at','-pk') if event else []
+    return JsonResponse({'entries':[{'project':x.score.project.slug,'judge':x.score.judge.slug,'editor':x.editor.username,'before':x.previous,'after':x.current,'at':x.written_at.isoformat()} for x in rows]})

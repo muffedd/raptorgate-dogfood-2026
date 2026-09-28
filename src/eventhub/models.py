@@ -7,6 +7,7 @@ class Event(models.Model):
     submissions_close=models.DateTimeField()
     results_publish_at=models.DateTimeField(null=True,blank=True)
     published=models.BooleanField(default=False)
+    rubric=models.JSONField(default=dict)
 
 class Track(models.Model):
     event=models.ForeignKey(Event,on_delete=models.CASCADE,related_name='tracks')
