@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates
+from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -32,6 +32,7 @@ urlpatterns=[
  path('api/v1/projects',api.projects,name='api_projects'),
  path('api/v1/results',api.results,name='api_results'),
  path('api/v1/judge/assignments',api.assignments,name='api_assignments'),
+ path('organizer/webhooks/deliveries',webhooks.deliveries,name='webhook_deliveries'),
  path('organizer/certificates/issue',certificates.issue,name='issue_judge_certificate'),
  path('certificates/<int:pk>.json',certificates.download,name='download_judge_certificate'),
  path('organizer/records/issue',records.issue,name='issue_judge_record'),

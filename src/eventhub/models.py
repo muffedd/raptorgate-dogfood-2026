@@ -154,3 +154,14 @@ class JudgeCertificate(models.Model):
     signature=models.CharField(max_length=128)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','judge'],name='unique_judge_certificate')]
+
+class WebhookDelivery(models.Model):
+    """Durable operator-configured callback. Stores no URL or signing key."""
+    event=models.ForeignKey(Event,on_delete=models.PROTECT)
+    kind=models.CharField(max_length=40)
+    payload=models.JSONField()
+    attempts=models.PositiveIntegerField(default=0)
+    last_status=models.CharField(max_length=50,blank=True)
+    delivered_at=models.DateTimeField(null=True,blank=True)
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['event','kind'],name='unique_event_webhook_kind')]

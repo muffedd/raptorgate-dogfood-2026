@@ -269,7 +269,11 @@ def publish_results(request):
         event=Event.objects.select_for_update().get(pk=event.pk)
         if timezone.now()<event.submissions_close:
             return JsonResponse({'error':'Submissions remain open'},status=409)
+        first_publish=not event.published
         event.published=True;event.results_publish_at=timezone.now();event.save(update_fields=['published','results_publish_at'])
+        if first_publish:
+            from .webhooks import queue_publication
+            queue_publication(event)
     return JsonResponse({'published':True})
 
 @login_required
