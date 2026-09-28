@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 176/176 x2 @ 7e1c52a` · `Official checker: 7/7 PASS` · `License: MIT`
 
-See `CREDITS.md` for named contributions. The test status above describes the verified `7e1c52a` build, not automated CI or a Docker cold-boot result.
+The test status above describes the verified `7e1c52a` build, not automated CI or a Docker cold-boot result.
 
 ## Features
 
