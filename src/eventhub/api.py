@@ -42,7 +42,7 @@ def revoke_token(request,pk):
 
 def active_event(request):
     slug=request.GET.get('event')
-    event=Event.objects.filter(active=True).first()
+    event=Event.objects.filter(active=True).order_by('id').first() or Event.objects.order_by('id').first()
     return event if event and (not slug or slug==event.slug) else None
 
 

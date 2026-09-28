@@ -61,8 +61,18 @@ class APISliceTests(TestCase):
         self.assertEqual(self.client.get('/api/v1/judge/assignments',**header).status_code,401)
         self.assertEqual(self.client.post('/api/v1/tokens',{'name':'x'}).status_code,401)
 
-    def test_no_active_event_fail_closed(self):
+    def test_seeded_first_event_is_usable_without_selection(self):
         token=self.token(self.judge_user)
         Event.objects.filter(pk=self.event.pk).update(active=False)
+        self.assertEqual(self.client.get('/api/v1/projects').json()['event'],self.event.slug)
+        self.assertEqual(self.client.get('/api/v1/judge/assignments',HTTP_AUTHORIZATION='Bearer '+token['token']).json()['assignments'][0]['project'],'p')
+        self.assertEqual(self.client.get('/api/v1/projects?event=foreign').status_code,404)
+
+    def test_no_event_fails_closed(self):
+        token=self.token(self.judge_user)
+        Score.objects.all().delete()
+        Assignment.objects.all().delete()
+        Project.objects.all().delete()
+        Event.objects.all().delete()
         self.assertEqual(self.client.get('/api/v1/projects').status_code,404)
         self.assertEqual(self.client.get('/api/v1/judge/assignments',HTTP_AUTHORIZATION='Bearer '+token['token']).status_code,404)
