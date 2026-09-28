@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from eventhub.models import Assignment, Event, Judge, Project, Score, ScoreAudit, Team, Track
 from eventhub.ranking import weighted_score, standings
@@ -89,3 +89,30 @@ class JudgingTests(TestCase):
         rows=standings(self.event)
         self.assertEqual(rows[0]['normalized'],3.0)
         self.assertEqual(rows[0]['raw'],4.0)
+
+class ConcurrentFirstScoreTests(TransactionTestCase):
+    """Real PostgreSQL race: first score must not raise a uniqueness 500."""
+    def test_two_first_scores_serialize(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from django.db import connection
+        if connection.vendor != 'postgresql': self.skipTest('Requires PostgreSQL row locks')
+        event=Event.objects.create(slug='score-race',title='Score race',submissions_close=timezone.now()-timedelta(days=1))
+        track=Track.objects.create(event=event,slug='track',name='Track')
+        team=Team.objects.create(event=event,slug='team',name='Team')
+        project=Project.objects.create(event=event,team=team,track=track,slug='project',title='Project')
+        user=get_user_model().objects.create_user(username='race-judge')
+        judge=Judge.objects.create(event=event,slug='judge',user=user); judge.tracks.add(track)
+        Assignment.objects.create(judge=judge,project=project)
+        def post():
+            from django.test import Client
+            client=Client();client.force_login(user)
+            try:
+                return client.post('/judge/score/project',{'functionality':'4','quality':'3','innovation':'5'}).status_code
+            finally:
+                from django.db import connections
+                connections.close_all()
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            statuses=list(executor.map(lambda _:post(),range(2)))
+        self.assertEqual(statuses,[200,200])
+        self.assertEqual(Score.objects.filter(judge=judge,project=project).count(),1)
+        self.assertEqual(ScoreAudit.objects.filter(score__judge=judge,score__project=project).count(),2)

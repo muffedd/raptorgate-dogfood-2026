@@ -112,3 +112,14 @@ class AntiAbuseTests(TestCase):
         self.assertEqual(self.client.post('/vote',data).status_code,201)
         for i in range(7): self.assertEqual(self.client.post('/vote',data).status_code,409)
         self.assertEqual(self.client.post('/vote',data).status_code,429)
+
+class InactiveEventIsolationTests(TestCase):
+    def test_guessed_event_slug_cannot_vote_or_read_comment_in_inactive_event(self):
+        active=Event.objects.create(slug='active',title='Active',active=True,submissions_close=timezone.now()-timedelta(days=1),voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1))
+        inactive=Event.objects.create(slug='inactive',title='Inactive',submissions_close=timezone.now()-timedelta(days=1),voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1))
+        t=Track.objects.create(event=inactive,slug='t',name='T'); team=Team.objects.create(event=inactive,slug='t',name='T')
+        Project.objects.create(event=inactive,team=team,track=t,slug='private-project',title='Private project')
+        self.client.force_login(get_user_model().objects.create_user(username='voter'))
+        self.assertEqual(self.client.get('/ballot?event=inactive').status_code,404)
+        self.assertEqual(self.client.post('/vote',{'event':'inactive','project':'private-project'}).status_code,404)
+        self.assertEqual(self.client.get('/projects/private-project?event=inactive').status_code,404)

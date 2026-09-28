@@ -211,6 +211,13 @@ def score_project(request,project_slug):
         return JsonResponse({'error':'Every score must be from 1 to 5'},status=400)
     comment=request.POST.get('comment','')[:2000]
     with transaction.atomic():
+        # Lock an existing row even on the first score, before the score row exists.
+        # PostgreSQL serializes concurrent first submissions for this project.
+        project=Project.objects.select_for_update().get(pk=project.pk)
+        if project.event_id != event.pk or project.duplicate_of_id or project.draft:
+            return JsonResponse({'error':'Project is not eligible'},status=403)
+        if not Assignment.objects.filter(judge=judge,project=project).exists() or not judge.tracks.filter(pk=project.track_id).exists() or project.team.members.filter(pk=request.user.pk).exists():
+            return JsonResponse({'error':'Assignment or track permission changed'},status=403)
         score=Score.objects.select_for_update().filter(judge=judge,project=project).first()
         previous=dict(score.criteria) if score else None
         if score:

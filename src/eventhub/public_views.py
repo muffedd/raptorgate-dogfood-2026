@@ -14,9 +14,11 @@ from .ranking import standings
 
 def event_for_request(request):
     slug = request.GET.get("event") or request.POST.get("event")
-    if slug:
-        return get_object_or_404(Event, slug=slug)
-    return Event.objects.filter(active=True).order_by("id").first() or Event.objects.order_by("id").first()
+    # Public callers may not switch into a non-active event by guessing its slug.
+    event = Event.objects.filter(active=True).order_by("id").first() or Event.objects.order_by("id").first()
+    if slug and (not event or slug != event.slug):
+        return None
+    return event
 
 def eligible(event):
     return Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False)
@@ -129,7 +131,8 @@ def public_results(request):
 def vote_audit(request):
     if not request.user.is_authenticated or not request.user.is_superuser:
         return HttpResponseForbidden()
-    event=event_for_request(request)
+    slug=request.GET.get("event")
+    event=get_object_or_404(Event,slug=slug) if slug else event_for_request(request)
     if not event:
         return JsonResponse({"error":"No event"}, status=404)
     rows=PublicVoteAudit.objects.filter(event=event).select_related("project").order_by("-created_at","-pk")[:500]
