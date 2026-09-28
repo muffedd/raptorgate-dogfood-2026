@@ -40,4 +40,18 @@ def standings(event):
         value=row['normalized']
         row['rank']=None if value is None else (ordered[position-2]['rank'] if position>1 and value==last_value else position)
         last_value=value
+    # A second ordering describes rank movement without exposing judge IDs,
+    # ballots or individual-score distributions. Ties use the same competition ranks.
+    raw_ordered=sorted((r for r in rows if r['raw'] is not None),key=lambda r:(-r['raw'],r['project']))
+    raw_ranks={}
+    last_raw=None
+    last_rank=None
+    for position,row in enumerate(raw_ordered,1):
+        last_rank = last_rank if row['raw'] == last_raw else position
+        raw_ranks[row['project']]=last_rank
+        last_raw=row['raw']
+    for row in ordered:
+        row['raw_rank']=raw_ranks.get(row['project'])
+        row['rank_movement']=raw_ranks[row['project']]-row['rank'] if row['rank'] is not None else None
+        row['rank_movement_abs']=abs(row['rank_movement']) if row['rank_movement'] is not None else None
     return ordered
