@@ -308,3 +308,35 @@ textarea {
 .inline-form input { font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); }
 .inline-form button { align-self: flex-end; }
 @media(max-width: 680px) { .site-nav { margin-left: 0; } .table { display: block; overflow-x: auto; } }
+
+/* Public ballot: restrained editorial rhythm, not a dashboard masquerading as a vote. */
+.public-ballot { --bg:#f7f7f3; --ink:#1d282b; --accent:#17594e; --line:#dbe0d9; }
+.public-ballot .site-header { background:#f7f7f3; }
+.public-ballot .site-main { padding-top:0; max-width:1120px; }
+.public-hero { padding:76px 0 53px; border-bottom:1px solid var(--line); }
+.eyebrow { color:var(--accent); text-transform:uppercase; font-family:var(--mono); font-size:11px; letter-spacing:.17em; font-weight:700; margin:0 0 16px; }
+.public-hero h1 { max-width:760px; font-size:clamp(38px,5vw,68px); letter-spacing:-.065em; line-height:1.04; font-weight:630; margin:0 0 22px; }
+.hero-lede { max-width:610px; color:#56645f; font-size:18px; line-height:1.6; margin:0 0 25px; }
+.ballot-meta { display:flex; gap:10px; flex-wrap:wrap; font:12px var(--mono); color:#53625c; }
+.ballot-meta span { border:1px solid #cbd5ce; background:#eef1eb; border-radius:999px; padding:8px 12px; }
+.section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding:34px 0 20px; }
+.section-heading h2 { font-size:22px; letter-spacing:-.035em; margin:0; }
+.section-heading p { margin:0; color:#68736e; font-size:13px; }
+.ballot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.ballot-card { display:flex; flex-direction:column; min-height:255px; background:#fff; border:1px solid #dde3dc; border-radius:12px; padding:23px 25px 20px; box-shadow:0 3px 14px rgba(20,46,35,.035); transition:border-color .16s, transform .16s; }
+.ballot-card:hover { border-color:#98b4a7; transform:translateY(-2px); }
+.ballot-card-top,.ballot-card-bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.ballot-index { color:#8e9a94; font:12px var(--mono); }
+.track-pill { color:#2c6255; background:#edf4ef; border:1px solid #d8e7dc; padding:5px 10px; border-radius:999px; font-size:11px; font-weight:650; }
+.ballot-card h3 { font-size:25px; letter-spacing:-.04em; line-height:1.14; margin:22px 0 8px; }
+.ballot-card h3 a { color:var(--ink); text-decoration:none; }
+.ballot-card h3 a:hover { color:var(--accent); }
+.ballot-description { color:#5e6b64; margin:0 0 20px; line-height:1.5; }
+.ballot-card-bottom { border-top:1px solid #e8ece7; padding-top:17px; margin-top:auto; }
+.ballot-card-bottom form { margin:0; }
+.team-label { font-size:12px; color:#7c8980; }
+.ballot-card .btn { background:var(--accent); border-color:var(--accent); border-radius:7px; font-size:12px; padding:9px 12px; white-space:nowrap; }
+.ballot-card .btn:hover { background:#0e463d; }
+.ballot-card .btn span { padding-left:7px; }
+@media(max-width:700px){ .public-hero { padding:54px 0 35px; }.ballot-grid { grid-template-columns:1fr; }.section-heading { display:block; }.section-heading p { margin-top:5px; }.ballot-card { min-height:235px; }.public-hero h1 { font-size:42px; } }
+@media(prefers-reduced-motion:reduce){ .ballot-card { transition:none; }.ballot-card:hover { transform:none; } }

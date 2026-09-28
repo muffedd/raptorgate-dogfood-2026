@@ -335,3 +335,37 @@ def audit_log(request):
     from .models import ScoreAudit
     rows=ScoreAudit.objects.filter(score__project__event=event,score__judge__event=event).select_related('score__project','score__judge','editor').order_by('-written_at','-pk') if event else []
     return JsonResponse({'entries':[{'project':x.score.project.slug,'judge':x.score.judge.slug,'editor':x.editor.username,'before':x.previous,'after':x.current,'at':x.written_at.isoformat()} for x in rows]})
+
+@login_required
+def judge_console(request, project_slug=None):
+    """Server-rendered workbench scoped to this judge's active-event assignments."""
+    from .models import Assignment
+    event=active_event(request)
+    judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
+    if not judge:
+        return JsonResponse({'error':'Judge role required'},status=403)
+    rows=list(Assignment.objects.filter(judge=judge,project__event=event,
+        project__duplicate_of__isnull=True,project__draft=False,
+        project__track__judges=judge).select_related('project__team','project__track')
+        .order_by('project__title','project__pk').distinct())
+    scores=Score.objects.filter(judge=judge,project_id__in=[row.project_id for row in rows])
+    saved={score.project_id:score for score in scores}
+    if project_slug:
+        current=next((row for row in rows if row.project.slug==project_slug),None)
+        if current is None:
+            from django.http import Http404
+            raise Http404('Project not assigned to this judge')
+    else:
+        current=rows[0] if rows else None
+    position=rows.index(current) if current else -1
+    return render(request,'judge_console.html',{
+        'event':event,'judge':judge,'queue':[(row, row.project_id in saved) for row in rows],
+        'current':current.project if current else None,'score':saved.get(current.project_id) if current else None,
+        'position':position+1,'total':len(rows),'completed':len(saved),
+        'remaining':len(rows)-len(saved),'progress_segments':[project.pk in saved for project in (row.project for row in rows)],
+        'previous':rows[position-1].project if position>0 else None,
+        'following':rows[position+1].project if current and position+1<len(rows) else None,
+        'criteria':[{'key':key,'label':key.capitalize(),'weight':round(weight*100),
+                     'selected':saved.get(current.project_id).criteria.get(key) if current and current.project_id in saved else None}
+                    for key,weight in (event.rubric or {'functionality':0.4,'quality':0.35,'innovation':0.25}).items()],
+    })

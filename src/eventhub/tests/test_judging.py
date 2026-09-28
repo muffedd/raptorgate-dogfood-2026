@@ -100,6 +100,31 @@ class JudgingTests(TestCase):
         self.assertEqual(rows[0]['normalized'],3.0)
         self.assertEqual(rows[0]['raw'],4.0)
 
+    def test_console_assigned_only_and_saved_truth(self):
+        self.assign()
+        self.client.force_login(self.judge_user)
+        response=self.client.get('/judge/console')
+        self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Project')
+        self.assertContains(response,'Not scored')
+        self.assertContains(response,'Not saved')
+        self.assertNotContains(response,'peer scores')
+        self.client.post('/judge/score/prj',self.payload())
+        response=self.client.get('/judge/console/prj')
+        self.assertContains(response,'Saved')
+        self.assertContains(response,'name="functionality" value="4" required checked')
+        self.assertContains(response,'name="quality" value="3" required checked')
+        self.assertContains(response,'name="innovation" value="5" required checked')
+
+    def test_console_denies_other_judge_and_unassigned_project(self):
+        self.assign()
+        self.client.force_login(self.peer_user)
+        self.assertEqual(self.client.get('/judge/console').status_code,200)
+        self.assertContains(self.client.get('/judge/console'),'queue is empty')
+        self.assertEqual(self.client.get('/judge/console/prj').status_code,404)
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.get('/judge/console').status_code,403)
+
 class ConcurrentFirstScoreTests(TransactionTestCase):
     """Real PostgreSQL race: first score must not raise a uniqueness 500."""
     def test_two_first_scores_serialize(self):
@@ -126,3 +151,51 @@ class ConcurrentFirstScoreTests(TransactionTestCase):
         self.assertEqual(statuses,[200,200])
         self.assertEqual(Score.objects.filter(judge=judge,project=project).count(),1)
         self.assertEqual(ScoreAudit.objects.filter(score__judge=judge,score__project=project).count(),2)
+
+class ConsoleSecurityTests(TestCase):
+    def test_console_does_not_show_off_track_or_another_event(self):
+        now=timezone.now()
+        active=Event.objects.create(slug='active',title='Active',submissions_close=now,active=True)
+        other=Event.objects.create(slug='other',title='Other',submissions_close=now)
+        user=get_user_model().objects.create_user(username='judge-console')
+        judge=Judge.objects.create(event=active,slug='judge',user=user)
+        track=Track.objects.create(event=active,slug='first',name='First')
+        second=Track.objects.create(event=active,slug='second',name='Second')
+        judge.tracks.add(track)
+        team=Team.objects.create(event=active,slug='team',name='Team')
+        good=Project.objects.create(event=active,slug='good',title='Allowed title',track=track,team=team)
+        bad=Project.objects.create(event=active,slug='bad',title='Off track secret',track=second,team=team)
+        Assignment.objects.create(judge=judge,project=good)
+        Assignment.objects.create(judge=judge,project=bad)
+        foreign_track=Track.objects.create(event=other,slug='first',name='First')
+        foreign_team=Team.objects.create(event=other,slug='team',name='Team')
+        foreign=Project.objects.create(event=other,slug='foreign',title='Other event secret',track=foreign_track,team=foreign_team)
+        Assignment.objects.create(judge=judge,project=foreign)
+        self.client.force_login(user)
+        page=self.client.get('/judge/console')
+        self.assertContains(page,'Allowed title')
+        self.assertNotContains(page,'Off track secret')
+        self.assertNotContains(page,'Other event secret')
+        self.assertEqual(self.client.get('/judge/console/bad').status_code,404)
+        self.assertEqual(self.client.get('/judge/console/foreign').status_code,404)
+
+class ConsoleTemplateTruthTests(TestCase):
+    def test_console_progress_is_segmented_and_honest(self):
+        event=Event.objects.create(slug='console-progress',title='Progress Event',submissions_close=timezone.now(),active=True)
+        track=Track.objects.create(event=event,slug='dev',name='Developer tools')
+        team=Team.objects.create(event=event,slug='team',name='Team')
+        user=get_user_model().objects.create_user(username='progress-judge')
+        judge=Judge.objects.create(event=event,slug='judge',user=user);judge.tracks.add(track)
+        first=Project.objects.create(event=event,team=team,track=track,slug='first',title='Alpha')
+        second=Project.objects.create(event=event,team=team,track=track,slug='second',title='Beta')
+        Assignment.objects.create(judge=judge,project=first)
+        Assignment.objects.create(judge=judge,project=second)
+        self.client.force_login(user)
+        empty=self.client.get('/judge/console')
+        self.assertContains(empty,'0 of 2 complete · 2 remaining')
+        self.assertContains(empty,'rg-progress-segment',count=2)
+        self.assertNotContains(empty,'rg-progress-segment is-complete')
+        Score.objects.create(judge=judge,project=first,criteria={'functionality':4,'quality':4,'innovation':4})
+        saved=self.client.get('/judge/console')
+        self.assertContains(saved,'1 of 2 complete · 1 remaining')
+        self.assertContains(saved,'rg-progress-segment is-complete',count=1)

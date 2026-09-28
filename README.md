@@ -1,6 +1,6 @@
 # RaptorGate (Dogfood 2026 rewrite)
 
-This implementation was started in the build window. The checked-in acceptance report claims T1 and T2 and shows all seven official probes passing. That does not establish completion of every T1/T2 feature. The organizer and judge workflows are mostly JSON endpoints, not a complete UI; no demo video is in the reviewed tree.
+This implementation was started in the build window. The checked-in acceptance report claims T1 and T2 and shows all seven official probes passing. That does not establish completion of every T1/T2 feature. Most organizer workflows are JSON endpoints; judging also has an assignment-scoped web console; no demo video is in the reviewed tree.
 
 ## Run
 
@@ -14,7 +14,7 @@ docker compose up
 
 Fetch the images and Python dependencies while online. After they are cached, `docker compose up` starts PostgreSQL 16 and Django 5.2, runs migrations and seeds `fixtures.json` only when there is no event. Open http://localhost:8080/projects. Compose binds the portal to `127.0.0.1:8080`. The dependency-fetch step means a fresh, uncached machine has **not** been shown to satisfy the event's offline one-command requirement. Do not put the fixed demo session cookies or database password on a public server.
 
-The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration only after checking the active-event limitation below. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
+The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
 
 Run the official checker:
 
@@ -35,13 +35,23 @@ The next wave was defect finding and repair, not just added test count. Tinku's 
 
 ## Current routes
 
-- Public gallery: `GET /projects`, with `q` title search and `track` slug filter.
-- Login: `/login/`. Event and team setup: `/events/new`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`.
+- Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects for the active event appear.
+- Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. When none is marked active, public gallery, ballot and moderation routes fail closed until an organizer selects one.
 - Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
-- Judging: `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
-- Organizer data: `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`.
+- Judging: assignment-scoped `/judge/console` (light first, persistent manual dark switch, server-confirmed autosave), `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
+- Organizer data: `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.
+- Community participation: `GET /ballot` renders an authenticated voter's stable randomized eligible-project order while voting is open; `POST /vote` records one vote per account per event and returns a receipt. `GET /projects/<slug>` shows comments; authenticated `POST` accepts them while voting is open. `GET /results` exposes aggregate standings only after voting has closed **and** the organizer has published. `GET /receipt/<secret>` checks a receipt only after that same release gate; keep the secret private.
+- Embeddable public gallery: `GET /embed/<event-slug>/gallery` is a read-only, event-scoped iframe page with its own CSS and CSP. Example on a trusted host page, using the real event slug:
 
-Many routes produce JSON responses, not full screens. The active event is currently the database event with the lowest ID, not a selected event. A newly created event will not become active while the seeded event remains first. Event creation currently accepts a name, slug and UTC close time, but does not configure tracks or prizes. There is no public published-results route, no community voting, and no general API/webhook or bulk import/export. Publication sets a database flag and timestamp; it does not expose results to the public. See ARCHITECTURE.md, DATA-MODEL.md, JUDGING.md and THREAT-MODEL.md for details and known risks.
+```html
+<iframe src="http://localhost:8080/embed/evt_01/gallery" sandbox="allow-same-origin"
+        referrerpolicy="no-referrer" title="Event projects"
+        style="width:100%;min-height:480px;border:0"></iframe>
+```
+
+The iframe content is public and can be embedded by any origin by default (`frame-ancestors *`); set `WIDGET_FRAME_ANCESTORS` in Django settings for a restricted host (there is no environment-variable hookup yet). Do not embed private results, voting sessions or organizer pages. The widget does not set cookies or show individual judge scores.
+
+Most organizer routes and some judge routes still produce JSON rather than full screens. The active event selector is a global setting, not a personal preference; recheck the selected event before a demo. To demonstrate a different event, create it, give it tracks/teams/projects through the current flows, then `POST /events/select` as organizer and verify `/projects` before showing that event. Creation accepts name, slug and UTC close time but does not set up tracks or prizes automatically. Authenticated-account voting works; email-verified and open-link choices currently fail closed without identity verification. There is no complete general API/webhook, bulk importer or certificate flow. Fixed fixture cookies and demo credentials are local-only. See ARCHITECTURE.md, DATA-MODEL.md, JUDGING.md and THREAT-MODEL.md for risk and scoring details.
 
 ## Submission status
 

@@ -1,6 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Projects - RaptorGate{% endblock %}
-{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a><a href="{% url 'login' %}">Sign in</a>{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a><a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a>{% endblock %}
 {% block content %}
 <h1>Projects</h1>
 <p class="lede">{% if event %}{{ event.title }} &middot; {{ projects|length }} projects{% else %}No event yet{% endif %}</p>

@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <script>(function(){try{document.documentElement.dataset.theme=localStorage.getItem('rg-theme')==='dark'?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()</script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Judging | {{ event.title }}</title>
+  <link rel="stylesheet" href="{% static 'judge_console.css' %}">
+</head>
+<body>
+  <div class="rg-shell">
+    <aside class="rg-rail"><a href="{% url 'gallery' %}" aria-label="RaptorGate gallery">RG</a><a class="rg-rail-label" href="{% url 'judge_console' %}" title="Judging" aria-label="Judging console">J</a>
+      <button type="button" class="rg-theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">D</span></button></aside>
+    <nav class="rg-queue" aria-label="Assigned projects">
+      <div class="rg-queue-head"><span class="rg-overline">{{ event.title }}</span><h2>Queue</h2><p>{{ completed }} reviewed · {{ total }} assigned</p></div>
+      {% for assignment, done in queue %}
+      <a class="rg-queue-item{% if current.pk == assignment.project_id %} is-current{% endif %}" href="{% url 'judge_console_project' assignment.project.slug %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>
+        <span class="rg-queue-title">{{ forloop.counter|stringformat:'02d' }} · {{ assignment.project.title }}</span>
+        <small>{{ assignment.project.track.name }} · {% if done %}Saved{% else %}Not scored{% endif %}</small>
+      </a>
+      {% endfor %}
+      {% if not queue %}<p class="rg-empty">No projects assigned yet. Ask the organizer to assign a project in your track.</p>{% endif %}
+    </nav>
+    <main class="rg-main" id="main">
+      <details class="rg-mobile-queue"><summary>Assigned projects · {{ completed }} saved of {{ total }}</summary>{% for assignment, done in queue %}<a href="{% url 'judge_console_project' assignment.project.slug %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>{{ assignment.project.title }} · {% if done %}Saved{% else %}Not scored{% endif %}</a>{% endfor %}</details>
+      <div class="rg-breadcrumb">{{ event.title }} <span aria-hidden="true">/</span> Judging</div>
+      {% if current %}
+      <header class="rg-heading"><div><p class="rg-overline">{{ current.track.name }} · Project {{ position }} of {{ total }}</p><h1>{{ current.title }}</h1><p>{{ current.team.name }}</p></div><span class="rg-state{% if completed == total %} is-complete{% endif %}">{{ completed }} of {{ total }} complete · {{ remaining }} remaining</span></header>
+      <div class="rg-progress" role="progressbar" aria-valuenow="{{ completed }}" aria-valuemin="0" aria-valuemax="{{ total }}" aria-label="{{ completed }} of {{ total }} complete; {{ remaining }} remaining">{% for done in progress_segments %}<span class="rg-progress-segment{% if done %} is-complete{% endif %}"></span>{% endfor %}</div>
+      <div class="rg-workspace">
+        <article class="rg-project" aria-labelledby="project-heading"><h2 class="rg-overline" id="project-heading">Project details</h2><p class="rg-summary">{{ current.summary|default:'No description supplied.' }}</p>{% if current.repo_url %}<a href="{{ current.repo_url }}" rel="noopener noreferrer" target="_blank">Open repository <span aria-hidden="true">↗</span><span class="rg-sr">(new tab)</span></a>{% endif %}<dl><dt>Team</dt><dd>{{ current.team.name }}</dd><dt>Track</dt><dd>{{ current.track.name }}</dd></dl></article>
+        <section class="rg-rubric" aria-labelledby="rubric-heading">
+          <div class="rg-panel-header"><div><p class="rg-overline">Your assessment</p><h2 id="rubric-heading">Score this project</h2></div><span class="rg-save-state{% if score %} is-saved{% endif %}" role="status" aria-live="polite">{% if score %}Saved{% else %}Not saved{% endif %}</span></div>
+          <form id="rg-score-form" {% if score %}data-saved="true"{% endif %} method="post" action="{% url 'score_project' current.slug %}">{% csrf_token %}
+            <p class="rg-help">Select one value per criterion. 1 = Needs work; 5 = Exceptional.</p>
+            {% for criterion in criteria %}
+            <fieldset class="rg-criterion"><legend>{{ criterion.label }} <small>{{ criterion.weight }}% weight</small></legend><div class="rg-options">
+            {% for value in '12345' %}<label><input type="radio" name="{{ criterion.key }}" value="{{ value }}" required {% if criterion.selected|stringformat:'s' == value %}checked{% endif %}><span>{{ value }}</span></label>{% endfor %}
+            </div></fieldset>{% endfor %}
+            <label class="rg-comment" for="rg-comment">Notes for the organizer <small>optional</small></label><textarea id="rg-comment" name="comment" rows="4" maxlength="2000">{{ score.comment|default:'' }}</textarea>
+            <div class="rg-feedback" role="alert" aria-live="assertive"></div><div class="rg-actions"><button type="submit">{% if following %}Save and next{% else %}Save score{% endif %}</button>{% if previous %}<a href="{% url 'judge_console_project' previous.slug %}">Previous</a>{% endif %}{% if following %}<a data-next-project href="{% url 'judge_console_project' following.slug %}">Next</a>{% endif %}</div>
+          </form>
+        </section>
+      </div>
+      {% else %}<h1>Your judging queue is empty</h1><p>No projects are assigned in {{ event.title }}. Ask the organizer for an assignment.</p>{% endif %}
+    </main>
+  </div>
+<script src="{% static 'judge_theme.js' %}" defer></script>
+<script src="{% static 'judge_console.js' %}" defer></script>
+</body></html>
