@@ -1,1 +1,1 @@
-Acceptance pending: no Docker Compose run has yet been performed for this fresh rewrite. Local SQLite checker passed 7/7 on port 18086; this is not Compose proof.
+Acceptance pending: no Docker Compose run has yet been performed for this fresh rewrite. Local SQLite checker passed 7/7 on port 18086 after migrations and recent scoring/invitation edits; this is not Compose proof.

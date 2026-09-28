@@ -21,4 +21,4 @@ python3 run.py .dogfood.toml > acceptance-report.txt
 cat acceptance-report.txt
 ```
 
-Run project tests with `python src/manage.py test eventhub.tests`, or install `requirements-dev.txt` and run `PYTHONPATH=src pytest -q`. The current implementation is T1/T2 acceptance-first. There is not yet a complete event lifecycle, UI for assignment/scoring, normalization, or a demo video. Do not claim more than the fresh report verifies.
+Run project tests with `python src/manage.py test eventhub.tests`, or install `requirements-dev.txt` and run `PYTHONPATH=src pytest -q`. The implementation is T1/T2 acceptance-first. It also has organizer/event and team setup, invite acceptance, judge assignment and scoring endpoints, audited score updates, and a first-pass normalized ranking. It lacks a complete organizer/judge UI and demo video; do not claim more than the fresh report verifies.
