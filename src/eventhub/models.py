@@ -143,3 +143,14 @@ class JudgeParticipationRecord(models.Model):
     signature=models.CharField(max_length=64)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','judge'],name='unique_judge_participation_record')]
+
+class JudgeCertificate(models.Model):
+    """Portable signed participation claim; public payload is a privacy choice."""
+    event=models.ForeignKey(Event,on_delete=models.PROTECT)
+    judge=models.ForeignKey(Judge,on_delete=models.PROTECT)
+    issued_at=models.DateTimeField(auto_now_add=True)
+    payload=models.JSONField()
+    public_key=models.CharField(max_length=64)
+    signature=models.CharField(max_length=128)
+    class Meta:
+        constraints=[models.UniqueConstraint(fields=['event','judge'],name='unique_judge_certificate')]
