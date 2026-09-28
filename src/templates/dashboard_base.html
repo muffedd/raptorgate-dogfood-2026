@@ -1,0 +1,39 @@
+{% comment %}
+=====================================================================
+RaptorGate - dashboard base layout (organizer / judge / public pages)
+Adapted from Jasper's preview for the live public gallery. Other dashboard drafts are not routed.
+=====================================================================
+{% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RaptorGate{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'raptorgate.css' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{% url 'gallery' %}">RaptorGate</a>
+    <span class="event-name">{% block event_name %}{{ event.title|default:'RaptorGate' }}{% endblock %}</span>
+    <nav class="site-nav">
+      {% block nav %}{% endblock %}
+    </nav>
+    <span class="role-badge role-{% block role_slug %}visitor{% endblock %}">{% block role %}visitor{% endblock %}</span>
+  </div>
+</header>
+
+<main class="wrap site-main">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    RaptorGate - Dogfood 2026 &middot; submissions close
+    {% block submissions_close %}{% if event %}{{ event.submissions_close|date:'Y-m-d H:i' }} UTC{% else %}no event selected{% endif %}{% endblock %}
+  </div>
+</footer>
+</body>
+</html>
