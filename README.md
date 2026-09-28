@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 209/209 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 219/219 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -22,6 +22,10 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 - **Responsive and accessible:** the dual-theme sweep checked desktop, tablet and mobile widths, keyboard toggle, persisted choice and mobile overflow.
 
 `.dogfood.toml` claims T1/T2, the scope verified by the official checker. The T3 voting features and T4 widget, JSON API, participation records, portable JSON certificates and one results-published webhook are working slices, not blanket tier claims. See `T3-VOTER-ACCESS.md` for the three access modes and their trust limits. See [Current routes](#current-routes), [Roadmap](#roadmap) and the design documents for details.
+
+## Demo-only secrets and DEBUG - read before deployment
+
+**This repository is a localhost demo, not a production-ready deployment.** The checked-in Compose file has a fixed PostgreSQL password and `DJANGO_SECRET_KEY`; the Django fallback key is also fixed, and `DJANGO_DEBUG` defaults to **on** outside Compose (Compose sets it to `0`). The checker config includes fixed demo session credentials. Do not expose this stack to the internet, reuse the demo credentials, or deploy it as-is. For a non-demo deployment, supply unique secrets outside version control, set `DJANGO_DEBUG=0`, restrict hosts/network access, rotate demo credentials and review the deployment security settings first.
 
 ## Quickstart
 
@@ -59,14 +63,14 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At the current reviewer-fix source, real PostgreSQL pytest and Django runners each passed **209/209**, no skips. SQLite runs can collect fewer tests and skip PostgreSQL-only concurrency cases; do not compare their totals with the PostgreSQL runs. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
+At the current signup/audit-fix source, real PostgreSQL pytest and Django runners each passed **219/219**, no skips. SQLite runs can collect fewer tests and skip PostgreSQL-only concurrency cases; do not compare their totals with the PostgreSQL runs. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
 
 ## Current routes
 
 - Bulk project data: organizer-only `GET /organizer/projects.csv` exports up to 5000 active-event projects; `POST /organizer/projects/import` accepts a UTF-8 CSV body with exact `project_slug,title,summary,repo_url,team_slug,track_slug` columns, 1-500 rows, up to 1 MB. It creates projects only while submissions are open and results unpublished. Team and track slugs must already belong to the active event; duplicate slugs reject the entire batch. This does not migrate judges, scores, votes or users.
 
 - Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects appear. Select an active event before demonstrating multiple events; the gallery currently falls back to the oldest event if none is selected.
-- Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
+- Public participant signup: `GET/POST /signup/` creates a normal user account with no event role; judge roles still require a separate organizer invite, and assignments remain organizer-controlled. Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
 - Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
 - Judging: assignment-scoped `/judge/console` (light first, persistent manual dark switch, server-confirmed autosave), `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
 - Organizer data: `GET /organizer/overview` renders the active event overview; `GET /organizer/results?view=html` renders a private standings table, while `/organizer/results` remains JSON. `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.

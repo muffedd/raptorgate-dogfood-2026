@@ -49,6 +49,25 @@ class JudgingTests(TestCase):
         self.assertEqual(ScoreAudit.objects.count(),2)
         self.assertIsNone(ScoreAudit.objects.order_by('pk').first().previous)
         self.assertEqual(ScoreAudit.objects.order_by('pk').last().previous['quality'],3)
+        self.assertEqual(ScoreAudit.objects.order_by('pk').first().current['comment'],'Clear evidence')
+        self.assertEqual(ScoreAudit.objects.order_by('pk').last().previous['comment'],'Clear evidence')
+        self.assertEqual(ScoreAudit.objects.order_by('pk').last().current['comment'],'Clear evidence')
+    def test_comment_only_edit_preserves_both_audit_snapshots(self):
+        self.assign(); self.client.force_login(self.judge_user)
+        self.client.post('/judge/score/prj', self.payload(comment='First private note'))
+        self.client.post('/judge/score/prj', self.payload(comment='Revised private note'))
+        first, second = ScoreAudit.objects.order_by('pk')
+        self.assertIsNone(first.previous)
+        self.assertEqual(first.current['comment'], 'First private note')
+        self.assertEqual(second.previous['comment'], 'First private note')
+        self.assertEqual(second.current['comment'], 'Revised private note')
+        self.assertEqual(second.previous['quality'], second.current['quality'])
+        self.assertEqual(self.client.get('/organizer/audit').status_code, 403)
+        self.client.force_login(self.organizer)
+        audit = self.client.get('/organizer/audit').json()['entries']
+        self.assertEqual(audit[0]['before']['comment'], 'First private note')
+        self.assertEqual(audit[0]['after']['comment'], 'Revised private note')
+
     def test_score_out_of_range_or_bad_type(self):
         self.assign();self.client.force_login(self.judge_user)
         for bad in ('0','6','NaN','3.5',''):

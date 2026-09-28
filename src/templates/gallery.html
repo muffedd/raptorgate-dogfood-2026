@@ -1,6 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Projects - RaptorGate{% endblock %}
-{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a><a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a>{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a><a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'signup' %}">Sign up</a>{% endblock %}
 {% block content %}
 <header class="rg-result-head"><div><p class="rg-result-overline">{% if event %}{{ event.title }} / discover{% else %}No event selected{% endif %}</p><h1>Projects</h1><p class="rg-result-lede">{{ projects|length }} eligible project{{ projects|length|pluralize }}{% if event %} · Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC{% endif %}</p></div></header>
 <form class="inline-form" method="get" action="{% url 'gallery' %}">

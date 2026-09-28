@@ -1,0 +1,14 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Create an account | RaptorGate{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'login' %}">Sign in</a>{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / join</p><h1>Create a participant account</h1><p class="rg-result-lede">Sign up to join a team, submit a project, or vote.</p></div></header>
+<section class="rg-result-panel rg-signup-panel">
+  <p>Judge access still requires an organizer invitation and an assignment. Signing up never grants judge or organizer rights.</p>
+  <form method="post" class="rg-signup-form">{% csrf_token %}
+  {% for field in form %}<div class="rg-signup-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="rg-signup-error">{{ error }}</p>{% endfor %}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}
+  {% for error in form.non_field_errors %}<p class="rg-signup-error">{{ error }}</p>{% endfor %}
+  <button class="btn" type="submit">Create account</button>
+  </form><p>Already registered? <a href="{% url 'login' %}">Sign in</a>.</p>
+</section>
+{% endblock %}

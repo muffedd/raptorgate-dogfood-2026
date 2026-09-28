@@ -15,6 +15,7 @@ urlpatterns=[
  path('results',public_views.public_results,name='public_results'),
  path('organizer/vote-audit',public_views.vote_audit,name='vote_audit'),
  path('organizer/comments/<int:pk>/hide',public_views.moderate_comment,name='moderate_comment'),
+ path('signup/',views.signup,name='signup'),
  path('login/',auth_views.LoginView.as_view(template_name='login.html'),name='login'),
  path('logout/',auth_views.LogoutView.as_view(),name='logout'),
  path('',views.home,name='home'),

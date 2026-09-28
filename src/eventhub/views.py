@@ -3,9 +3,9 @@ import json
 from io import StringIO
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, IntegrityError
-from .forms import ProjectForm
+from .forms import ProjectForm, ParticipantSignupForm
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from .models import Event, Judge, Project, Score, Team
 
@@ -23,6 +23,24 @@ def select_event(request):
         Event.objects.filter(active=True).update(active=False)
         Event.objects.filter(pk=event.pk).update(active=True)
     return JsonResponse({"active_event":event.slug})
+
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect('gallery')
+    if request.method not in ('GET', 'POST'):
+        return HttpResponseNotAllowed(['GET', 'POST'])
+    form = ParticipantSignupForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            with transaction.atomic():
+                form.save()
+        except IntegrityError:
+            # A simultaneous registration may have claimed this username.
+            form.add_error('username', 'This username is already taken.')
+        else:
+            return redirect('login')
+    return render(request, 'signup.html', {'form': form}, status=400 if request.method == 'POST' else 200)
+
 
 def home(request):
     return gallery(request)
@@ -219,12 +237,12 @@ def score_project(request,project_slug):
         if not Assignment.objects.filter(judge=judge,project=project).exists() or not judge.tracks.filter(pk=project.track_id).exists() or Team.objects.filter(event=event,members__pk=request.user.pk).exists():
             return JsonResponse({'error':'Assignment or track permission changed'},status=403)
         score=Score.objects.select_for_update().filter(judge=judge,project=project).first()
-        previous=dict(score.criteria) if score else None
+        previous={**score.criteria, 'comment': score.comment} if score else None
         if score:
             score.criteria=criteria;score.comment=comment;score.save(update_fields=['criteria','comment','updated_at'])
         else:
             score=Score.objects.create(judge=judge,project=project,criteria=criteria,comment=comment)
-        ScoreAudit.objects.create(score=score,editor=request.user,previous=previous,current=dict(criteria))
+        ScoreAudit.objects.create(score=score,editor=request.user,previous=previous,current={**criteria, 'comment': comment})
     return JsonResponse({'project':project.slug,'criteria':criteria})
 
 
