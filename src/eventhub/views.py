@@ -2,6 +2,8 @@ import csv
 import json
 from io import StringIO
 from django.contrib.auth.decorators import login_required
+from django.db import transaction, IntegrityError
+from .forms import ProjectForm
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -28,14 +30,36 @@ def gallery(request):
 
 @login_required
 def submit(request):
-    if request.method!='POST':
-        return render(request,'submit.html',{'event':active_event()})
     event=active_event()
-    if not event or timezone.now()>=event.submissions_close:
-        return JsonResponse({'error':'Submissions are closed'},status=403)
-    if not request.user.teams.filter(event=event).exists():
-        return JsonResponse({'error':'Join a team before submitting'},status=403)
-    return JsonResponse({'error':'Submission creation requires full project details'},status=400)
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    if request.method!='POST':
+        return render(request,'submit.html',{'event':event,'form':ProjectForm(event=event)})
+    # Lock the team before checking the clock and canonical row. This serializes
+    # concurrent first submissions in PostgreSQL, where no project yet exists to lock.
+    with transaction.atomic():
+        team=Team.objects.select_for_update().filter(event=event,members=request.user).first()
+        if not team:
+            return JsonResponse({'error':'Join a team before submitting'},status=403)
+        event=Event.objects.select_for_update().get(pk=event.pk)
+        if timezone.now()>=event.submissions_close:
+            return JsonResponse({'error':'Submissions are closed'},status=403)
+        form=ProjectForm(request.POST,event=event)
+        if not form.is_valid():
+            return JsonResponse({'error':'Invalid project','fields':form.errors.get_json_data()},status=400)
+        canonical=Project.objects.filter(event=event,team=team,duplicate_of__isnull=True).first()
+        if canonical:
+            project=form.save(commit=False)
+            canonical.title=project.title; canonical.summary=project.summary
+            canonical.repo_url=project.repo_url; canonical.track=project.track
+            canonical.submitted_at=timezone.now()
+            canonical.save(update_fields=['title','summary','repo_url','track','submitted_at'])
+            return JsonResponse({'project':canonical.slug,'updated':True})
+        project=form.save(commit=False)
+        project.event=event; project.team=team
+        project.slug='team-'+str(team.pk)
+        project.submitted_at=timezone.now()
+        project.save()
+        return JsonResponse({'project':project.slug,'updated':False},status=201)
 
 
 def judge_scores(request):

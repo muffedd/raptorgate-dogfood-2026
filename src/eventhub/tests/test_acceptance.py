@@ -44,3 +44,48 @@ class PortalTests(TestCase):
         r=self.client.get('/api/export.csv')
         self.assertEqual(r.status_code,200)
         self.assertTrue(r.content.startswith(b'project_id,project_title'))
+
+class SubmissionTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.event=Event.objects.create(slug='open',title='Open Event',submissions_close=timezone.now()+timedelta(hours=1))
+        cls.track=Track.objects.create(event=cls.event,slug='dev',name='Dev tools')
+        cls.other_track=Track.objects.create(event=Event.objects.create(slug='other',title='Other',submissions_close=timezone.now()+timedelta(hours=1)),slug='other',name='Other')
+        cls.team=Team.objects.create(event=cls.event,slug='one',name='One')
+        User=get_user_model()
+        cls.member=User.objects.create_user(username='member')
+        cls.stranger=User.objects.create_user(username='stranger')
+        cls.team.members.add(cls.member)
+    def payload(self,**overrides):
+        return {'title':'Candidate','summary':'A real project','repo_url':'https://example.org/repo','track':str(self.track.pk),**overrides}
+    def test_member_creates_first_submission(self):
+        self.client.force_login(self.member)
+        r=self.client.post('/projects/new',self.payload())
+        self.assertEqual(r.status_code,201)
+        self.assertEqual(Project.objects.filter(event=self.event,team=self.team).count(),1)
+        self.assertEqual(Project.objects.get(event=self.event,team=self.team).title,'Candidate')
+    def test_member_edits_canonical_in_place(self):
+        self.client.force_login(self.member)
+        self.client.post('/projects/new',self.payload())
+        r=self.client.post('/projects/new',self.payload(title='Updated'))
+        self.assertEqual(r.status_code,200)
+        self.assertTrue(r.json()['updated'])
+        self.assertEqual(Project.objects.filter(event=self.event,team=self.team).count(),1)
+        self.assertEqual(Project.objects.get(event=self.event,team=self.team).title,'Updated')
+    def test_non_member_cannot_submit(self):
+        self.client.force_login(self.stranger)
+        self.assertEqual(self.client.post('/projects/new',self.payload()).status_code,403)
+        self.assertFalse(Project.objects.filter(event=self.event).exists())
+    def test_cross_event_track_rejected(self):
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.post('/projects/new',self.payload(track=str(self.other_track.pk))).status_code,400)
+        self.assertFalse(Project.objects.filter(event=self.event).exists())
+    def test_blank_title_rejected(self):
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.post('/projects/new',self.payload(title='   ')).status_code,400)
+    def test_deadline_blocks_edit_not_just_create(self):
+        self.client.force_login(self.member)
+        self.client.post('/projects/new',self.payload())
+        self.event.submissions_close=timezone.now()-timedelta(seconds=1);self.event.save()
+        self.assertEqual(self.client.post('/projects/new',self.payload(title='Late')).status_code,403)
+        self.assertEqual(Project.objects.get(event=self.event,team=self.team).title,'Candidate')
