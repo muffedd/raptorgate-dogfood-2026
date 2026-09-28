@@ -254,16 +254,23 @@ def invite_judge(request):
     from django.utils.text import slugify
     from datetime import timedelta
     User=get_user_model()
-    with transaction.atomic():
-        # The account is not usable until the invitee chooses their own password.
-        user,created=User.objects.get_or_create(username='invited:'+email,defaults={'email':email})
-        if created: user.set_unusable_password();user.save(update_fields=['password'])
-        if Judge.objects.filter(user=user).exists():
+    try:
+        with transaction.atomic():
+            # The account is not usable until the invitee chooses their own password.
+            user,created=User.objects.get_or_create(username='invited:'+email,defaults={'email':email})
+            if created: user.set_unusable_password();user.save(update_fields=['password'])
+            if Judge.objects.filter(user=user).exists():
+                return JsonResponse({'error':'Judge account already exists; do not reset its password via a new invite'},status=409)
+            slug='judge-'+secrets.token_hex(5)
+            token=secrets.token_urlsafe(24)
+            judge=Judge.objects.create(event=event,slug=slug,user=user,invited_at=timezone.now(),invite_token=token,invite_expires_at=timezone.now()+timedelta(days=7))
+            judge.tracks.set(tracks)
+    except IntegrityError:
+        # A concurrent invite can pass the absent-row check. The database's
+        # unique Judge.user constraint arbitrates it; never return a 500.
+        if User.objects.filter(username='invited:'+email,judge_roles__isnull=False).exists():
             return JsonResponse({'error':'Judge account already exists; do not reset its password via a new invite'},status=409)
-        slug='judge-'+secrets.token_hex(5)
-        token=secrets.token_urlsafe(24)
-        judge=Judge.objects.create(event=event,slug=slug,user=user,invited_at=timezone.now(),invite_token=token,invite_expires_at=timezone.now()+timedelta(days=7))
-        judge.tracks.set(tracks)
+        raise
     return JsonResponse({'accept_path':'/judge/accept/'+token,'judge':judge.slug},status=201)
 
 

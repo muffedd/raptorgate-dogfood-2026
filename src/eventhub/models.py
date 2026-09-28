@@ -49,7 +49,8 @@ class Judge(models.Model):
     invite_token=models.CharField(max_length=64,blank=True,null=True,unique=True)
     invite_expires_at=models.DateTimeField(blank=True,null=True)
     class Meta:
-        constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_judge_in_event')]
+        constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_judge_in_event'),
+                     models.UniqueConstraint(fields=['event','user'],name='unique_judge_event_user')]
 
 class Score(models.Model):
     judge=models.ForeignKey(Judge,on_delete=models.CASCADE,related_name='scores')
