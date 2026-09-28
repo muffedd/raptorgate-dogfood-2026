@@ -62,6 +62,16 @@ class JudgingTests(TestCase):
         Assignment.objects.create(judge=self.judge,project=self.project)
         self.client.force_login(self.judge_user)
         self.assertEqual(self.client.post('/judge/score/prj',self.payload()).status_code,403)
+    def test_judge_on_any_competing_team_cannot_score_rival_project(self):
+        rival=Team.objects.create(event=self.event,slug='rival',name='Rival')
+        rival.members.add(self.judge_user)
+        self.client.force_login(self.organizer)
+        self.assertEqual(self.client.post('/organizer/assign',{'judge':'jdg','project':'prj'}).status_code,400)
+        Assignment.objects.create(judge=self.judge,project=self.project)
+        self.client.force_login(self.judge_user)
+        self.assertEqual(self.client.post('/judge/score/prj',self.payload()).status_code,403)
+        self.assertFalse(Score.objects.exists())
+
     def test_assignment_list_owner_only(self):
         self.assign()
         self.client.force_login(self.judge_user)

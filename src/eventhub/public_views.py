@@ -32,6 +32,8 @@ def voting_open(event):
 def action_allowed(event, key, action, ip, limit=12):
     """Lock the event at the call site before checking a rolling minute."""
     since=timezone.now()-timedelta(minutes=1)
+    # Opportunistic expiry prevents an unbounded attempt log on long-lived events.
+    PublicActionAttempt.objects.filter(event=event,created_at__lt=timezone.now()-timedelta(days=2)).delete()
     if PublicActionAttempt.objects.filter(event=event,actor_key=key,action=action,created_at__gte=since).count() >= limit:
         return False
     PublicActionAttempt.objects.create(event=event,actor_key=key,action=action,observed_ip=ip)
@@ -126,6 +128,17 @@ def public_results(request):
         return JsonResponse({"error":"Results are not public"}, status=404)
     # Only aggregate project rankings, never raw individual judge ballots.
     return render(request,"results_public.html",{"event":event,"standings":standings(event)})
+
+
+def receipt_lookup(request, token):
+    # A secret receipt proves that a ballot was accepted, without exposing voter identity.
+    event=event_for_request(request)
+    if not event:
+        return JsonResponse({"error":"No active event"},status=404)
+    if not (event.published and event.voting_closes and timezone.now() >= event.voting_closes):
+        return JsonResponse({"error":"Not available before results publish"},status=404)
+    row=get_object_or_404(PublicVote,event=event,receipt=token)
+    return JsonResponse({"project":row.project.slug,"event":event.slug})
 
 
 def vote_audit(request):

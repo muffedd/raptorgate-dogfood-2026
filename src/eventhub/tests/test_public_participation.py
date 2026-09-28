@@ -123,3 +123,19 @@ class InactiveEventIsolationTests(TestCase):
         self.assertEqual(self.client.get('/ballot?event=inactive').status_code,404)
         self.assertEqual(self.client.post('/vote',{'event':'inactive','project':'private-project'}).status_code,404)
         self.assertEqual(self.client.get('/projects/private-project?event=inactive').status_code,404)
+
+class ReceiptProofTests(TestCase):
+    def test_receipt_secret_matches_accepted_project_after_publication_only(self):
+        e=Event.objects.create(slug='receipt',title='Receipt',active=True,submissions_close=timezone.now()-timedelta(days=1),voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1))
+        track=Track.objects.create(event=e,slug='t',name='T');team=Team.objects.create(event=e,slug='t',name='T')
+        Project.objects.create(event=e,team=team,track=track,slug='p',title='P')
+        self.client.force_login(get_user_model().objects.create_user(username='receipt-user'))
+        response=self.client.post('/vote',{'event':'receipt','project':'p'})
+        self.assertEqual(response.status_code,201)
+        token=response.json()['receipt']
+        self.assertEqual(self.client.get(f'/receipt/{token}').status_code,404)
+        e.voting_closes=timezone.now()-timedelta(seconds=1);e.published=True;e.save()
+        response=self.client.get(f'/receipt/{token}')
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json(),{'project':'p','event':'receipt'})
+        self.assertEqual(self.client.get('/receipt/not-a-valid-token').status_code,404)

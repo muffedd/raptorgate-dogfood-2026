@@ -181,8 +181,8 @@ def assign_judge(request):
     project=get_object_or_404(Project,event=event,slug=request.POST.get('project',''),duplicate_of__isnull=True,draft=False)
     if not judge.tracks.filter(pk=project.track_id).exists():
         return JsonResponse({'error':'Judge is not assigned to this track'},status=400)
-    if project.team.members.filter(pk=judge.user_id).exists():
-        return JsonResponse({'error':'Judge cannot score own team'},status=400)
+    if Team.objects.filter(event=event,members__pk=judge.user_id).exists():
+        return JsonResponse({'error':'Judge with a competing team in this event cannot be assigned'},status=400)
     from .models import Assignment
     _,created=Assignment.objects.get_or_create(judge=judge,project=project)
     return JsonResponse({'assigned':created,'project':project.slug})
@@ -200,8 +200,8 @@ def score_project(request,project_slug):
         return JsonResponse({'error':'Assignment required'},status=403)
     if not judge.tracks.filter(pk=project.track_id).exists():
         return JsonResponse({'error':'Judge is not assigned to this track'},status=403)
-    if project.team.members.filter(pk=request.user.pk).exists():
-        return JsonResponse({'error':'Cannot score own team'},status=403)
+    if Team.objects.filter(event=event,members__pk=request.user.pk).exists():
+        return JsonResponse({'error':'Judge with a competing team in this event cannot score'},status=403)
     fields=('functionality','quality','innovation')
     try:
         criteria={name:int(request.POST[name]) for name in fields}
@@ -216,7 +216,7 @@ def score_project(request,project_slug):
         project=Project.objects.select_for_update().get(pk=project.pk)
         if project.event_id != event.pk or project.duplicate_of_id or project.draft:
             return JsonResponse({'error':'Project is not eligible'},status=403)
-        if not Assignment.objects.filter(judge=judge,project=project).exists() or not judge.tracks.filter(pk=project.track_id).exists() or project.team.members.filter(pk=request.user.pk).exists():
+        if not Assignment.objects.filter(judge=judge,project=project).exists() or not judge.tracks.filter(pk=project.track_id).exists() or Team.objects.filter(event=event,members__pk=request.user.pk).exists():
             return JsonResponse({'error':'Assignment or track permission changed'},status=403)
         score=Score.objects.select_for_update().filter(judge=judge,project=project).first()
         previous=dict(score.criteria) if score else None

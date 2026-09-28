@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views
+from eventhub import views, public_views, widget
 urlpatterns=[
  path('admin/',admin.site.urls),
+ path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
  path('ballot',public_views.ballot,name='ballot'),
  path('vote',public_views.vote,name='vote'),
+ path('receipt/<str:token>',public_views.receipt_lookup,name='receipt_lookup'),
  path('results',public_views.public_results,name='public_results'),
  path('organizer/vote-audit',public_views.vote_audit,name='vote_audit'),
  path('organizer/comments/<int:pk>/hide',public_views.moderate_comment,name='moderate_comment'),
