@@ -1,6 +1,6 @@
 # Threat model
 
-Reviewed source at the 8792fff source baseline. This document distinguishes implemented checks from remaining risks. Scope is the local fixture-backed portal; it has no community voting yet. Requirement: https://dogfoodhack.com/ (optional Threat Model bonus) and https://dogfoodhack.com/spec/.
+First reviewed at the 8792fff baseline; updated against 0692284 for registered-account community voting and receipt disclosure. This document distinguishes implemented checks from remaining risks. Requirement: https://dogfoodhack.com/ (optional Threat Model bonus) and https://dogfoodhack.com/spec/.
 
 ## Assets and boundaries
 
@@ -17,7 +17,7 @@ Private judge scores/comments, assignments, unpublished standings, team invites,
 | Spreadsheet formula injection | CSV prepends apostrophe to risky string cell prefixes, even after whitespace. | Verify behavior in target spreadsheet clients; New regression tests cover formula prefixes in the exported text and JSON score criteria; spreadsheet-client behavior still needs verification. |
 | Fixture or demo-secret leakage | Compose binds loopback; CSRF and session middleware configured. | Known fixed session cookies, static Django key and DB password in repo are unsafe for public deployment. Never expose this stack directly. |
 | Submission scraping | Gallery is intentionally public. | No observed rate limit or scraping controls. |
-| Ballot stuffing/Sybil voting | No voting implementation. | T3 threat remains out of scope until voting exists. |
+| Ballot stuffing/Sybil voting | Registered-account votes are one per account and event with persisted attempt throttles. | Multiple accounts still allow repeat votes; email/open modes are not verified and fail closed. |
 
 ## Tests and residual risk
 
@@ -29,4 +29,4 @@ The invitation path intentionally rejects an email already tied to a judge in an
 
 ## Community vote identity and audit boundary
 
-Organizer vote audit includes a `user:<id>` voter key, the target project, and time. That maps back to a locally registered account and is restricted to superusers; never publish this raw audit. Public receipt lookups expose only a project/event after voting closes and official results publish, not identity. Open-link and email-gated modes are stored as policy choices but currently fail closed without an identity verification flow; do not advertise them as operational. Registered-user voting is one vote per event, with a database uniqueness constraint and event lock; repeated attempts and comments are throttled by persisted per-actor counters. Old attempt rows expire opportunistically after two days, but there is no distributed rate limiter or Sybil prevention: an actor with many accounts can still vote repeatedly. Event status must be checked at read and write time. A compromised organizer can see voter mappings and publish or hide results; this model does not claim a tamper-proof audit.
+Organizer vote audit includes a `user:<id>` voter key, the target project, and time. That maps back to a locally registered account and is restricted to superusers; never publish this raw audit. Public receipt lookups expose the chosen project and event after voting closes and official results publish, not identity. Anyone who obtains the 32-hex receipt secret can learn that choice; voters must keep receipts private. Open-link and email-gated modes are stored as policy choices but currently fail closed without an identity verification flow; do not advertise them as operational. Registered-user voting is one vote per event, with a database uniqueness constraint and event lock; repeated attempts and comments are throttled by persisted per-actor counters. Old attempt rows expire opportunistically after two days, but there is no distributed rate limiter or Sybil prevention: an actor with many accounts can still vote repeatedly. Event status must be checked at read and write time. A compromised organizer can see voter mappings and publish or hide results; this model does not claim a tamper-proof audit.
