@@ -20,7 +20,7 @@ def home(request):
 
 def gallery(request):
     event=active_event()
-    rows=Project.objects.filter(event=event,duplicate_of__isnull=True).select_related('track','team') if event else []
+    rows=Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).select_related('track','team') if event else []
     query=request.GET.get('q','').strip()
     track=request.GET.get('track','').strip()
     if query: rows=rows.filter(title__icontains=query)
@@ -168,7 +168,7 @@ def assign_judge(request):
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
     event=active_event()
     judge=get_object_or_404(Judge,event=event,slug=request.POST.get('judge',''))
-    project=get_object_or_404(Project,event=event,slug=request.POST.get('project',''),duplicate_of__isnull=True)
+    project=get_object_or_404(Project,event=event,slug=request.POST.get('project',''),duplicate_of__isnull=True,draft=False)
     if not judge.tracks.filter(pk=project.track_id).exists():
         return JsonResponse({'error':'Judge is not assigned to this track'},status=400)
     if project.team.members.filter(pk=judge.user_id).exists():
@@ -184,7 +184,7 @@ def score_project(request,project_slug):
     event=active_event()
     judge=Judge.objects.filter(event=event,user=request.user).first() if event else None
     if not judge: return JsonResponse({'error':'Judge role required'},status=403)
-    project=get_object_or_404(Project,event=event,slug=project_slug,duplicate_of__isnull=True)
+    project=get_object_or_404(Project,event=event,slug=project_slug,duplicate_of__isnull=True,draft=False)
     from .models import Assignment, ScoreAudit
     if not Assignment.objects.filter(judge=judge,project=project).exists():
         return JsonResponse({'error':'Assignment required'},status=403)

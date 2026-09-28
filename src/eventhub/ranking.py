@@ -17,7 +17,7 @@ def standings(event):
     The output keeps raw and adjusted values visible so an organizer can inspect drift.
     """
     weights=event.rubric or CRITERIA
-    scores=list(Score.objects.filter(project__event=event,judge__event=event,project__duplicate_of__isnull=True).select_related('project','judge'))
+    scores=list(Score.objects.filter(project__event=event,judge__event=event,project__duplicate_of__isnull=True,project__draft=False).select_related('project','judge'))
     by_judge=defaultdict(list)
     for score in scores:
         value=weighted_score(score.criteria,weights)
@@ -31,7 +31,7 @@ def standings(event):
         adjusted=3.0 if spread==0 else max(1,min(5,3+(raw-center)/spread))
         by_project[score.project_id].append((raw,adjusted))
     rows=[]
-    for project in Project.objects.filter(event=event,duplicate_of__isnull=True).order_by('slug'):
+    for project in Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).order_by('slug'):
         values=by_project.get(project.pk,[])
         rows.append({'project':project.slug,'title':project.title,'reviews':len(values),'raw':round(mean(x[0] for x in values),3) if values else None,'normalized':round(mean(x[1] for x in values),3) if values else None})
     return sorted(rows,key=lambda r:(r['normalized'] is None,-r['normalized'] if r['normalized'] is not None else 0,r['project']))
