@@ -1,7 +1,7 @@
 """Bounded organizer import/export of public project metadata for the active event."""
 import csv
 from io import StringIO
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.utils import timezone
 from .models import Event, Project, Team, Track
@@ -72,7 +72,8 @@ def import_projects_csv(request):
             return JsonResponse({'error': 'Invalid or duplicate project row'}, status=400)
         seen.add(slug)
         cleaned.append((slug, title, summary, repo, team_slug, track_slug))
-    with transaction.atomic():
+    try:
+        with transaction.atomic():
         event = Event.objects.select_for_update().filter(active=True).first()
         if event is None:
             return JsonResponse({'error': 'No active event'}, status=404)
@@ -84,9 +85,16 @@ def import_projects_csv(request):
             return JsonResponse({'error': 'Team or track outside active event'}, status=400)
         if Project.objects.filter(event=event, slug__in=seen).exists():
             return JsonResponse({'error': 'Project slug already exists'}, status=409)
+        team_slugs = [r[4] for r in cleaned]
+        if len(set(team_slugs)) != len(team_slugs) or Project.objects.filter(
+            event=event, team__slug__in=team_slugs, duplicate_of__isnull=True
+        ).exists():
+            return JsonResponse({'error': 'Each team may have one canonical project'}, status=409)
         Project.objects.bulk_create([
             Project(event=event, slug=slug, title=title, summary=summary, repo_url=repo,
                     team=teams[team], track=tracks[track], submitted_at=timezone.now())
             for slug, title, summary, repo, team, track in cleaned
         ])
+    except IntegrityError:
+        return JsonResponse({'error': 'Project slug or team already exists'}, status=409)
     return JsonResponse({'created': len(cleaned)}, status=201)

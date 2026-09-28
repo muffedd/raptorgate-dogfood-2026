@@ -101,3 +101,12 @@ class BulkProjectTests(TestCase):
         self.client.force_login(self.org)
         self.assertEqual(self.upload(HEADER+'fresh,Fresh,,,red,tools\ntaken,Collision,,,red,tools\n').status_code,409)
         self.assertEqual(list(Project.objects.values_list('slug',flat=True)),['taken'])
+
+    def test_one_canonical_project_per_team(self):
+        self.client.force_login(self.org)
+        two=HEADER+'one,One,,,red,tools\ntwo,Two,,,red,tools\n'
+        self.assertEqual(self.upload(two).status_code,409)
+        self.assertFalse(Project.objects.exists())
+        Project.objects.create(event=self.event,team=self.team,track=self.track,slug='existing',title='Before')
+        self.assertEqual(self.upload(HEADER+'new,New,,,red,tools\n').status_code,409)
+        self.assertEqual(Project.objects.count(),1)
