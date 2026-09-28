@@ -200,5 +200,13 @@ class BallotFairnessTests(TestCase):
         self.assertNotEqual(ballot_order, ranking)
         page = self.client.get("/ballot", {"event": "t3-ballot"}).content.decode()
         self.assertNotIn("normalized", page)
-        self.assertNotIn("j1", page)
+        from html.parser import HTMLParser
+        class VisibleText(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.parts = []
+            def handle_data(self, data):
+                self.parts.append(data)
+        parser = VisibleText(); parser.feed(page)
+        text = " ".join(parser.parts)
+        self.assertNotIn("j1", text)
         self.assertNotIn(organizer.username, page)

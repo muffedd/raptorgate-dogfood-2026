@@ -15,7 +15,7 @@ from .ranking import standings
 def event_for_request(request):
     slug = request.GET.get("event") or request.POST.get("event")
     # Public callers may not switch into a non-active event by guessing its slug.
-    event = Event.objects.filter(active=True).order_by("id").first() or Event.objects.order_by("id").first()
+    event = Event.objects.filter(active=True).order_by("id").first()
     if slug and (not event or slug != event.slug):
         return None
     return event

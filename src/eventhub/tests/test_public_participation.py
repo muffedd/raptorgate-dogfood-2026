@@ -8,7 +8,7 @@ from eventhub.models import Event, Project, ProjectComment, PublicVote, PublicVo
 class PublicParticipationTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.event=Event.objects.create(slug='vote-event',title='Voting event',submissions_close=timezone.now()-timedelta(days=2), voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1))
+        cls.event=Event.objects.create(slug='vote-event',title='Voting event',submissions_close=timezone.now()-timedelta(days=2), voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1),active=True)
         cls.track=Track.objects.create(event=cls.event,slug='tech',name='Tech')
         cls.team=Team.objects.create(event=cls.event,slug='team',name='Team')
         cls.project=Project.objects.create(event=cls.event,team=cls.team,track=cls.track,slug='candidate',title='Candidate')
@@ -86,7 +86,7 @@ class EventSelectionTests(TestCase):
 
 class AntiAbuseTests(TestCase):
     def setUp(self):
-        self.event=Event.objects.create(slug='abuse',title='Abuse',submissions_close=timezone.now()-timedelta(days=1),voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1))
+        self.event=Event.objects.create(slug='abuse',title='Abuse',submissions_close=timezone.now()-timedelta(days=1),voting_opens=timezone.now()-timedelta(hours=1),voting_closes=timezone.now()+timedelta(hours=1),active=True)
         track=Track.objects.create(event=self.event,slug='t',name='T')
         team=Team.objects.create(event=self.event,slug='t',name='T')
         self.project=Project.objects.create(event=self.event,team=team,track=track,slug='p',title='P')
@@ -139,3 +139,23 @@ class ReceiptProofTests(TestCase):
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.json(),{'project':'p','event':'receipt'})
         self.assertEqual(self.client.get('/receipt/not-a-valid-token').status_code,404)
+
+class NoActiveOrganizerActionsTests(TestCase):
+    def test_audit_and_moderation_without_active_event_fail_closed(self):
+        from eventhub.models import ProjectComment, PublicVoteAudit
+        from eventhub.tests.t3_helpers import make_event, make_project, make_organizer, make_user
+        event=make_event(slug='inactive-organizer',active=False)
+        project=make_project(event,slug='inactive-project')
+        user=make_user('inactive-commenter')
+        comment=ProjectComment.objects.create(event=event,project=project,author=user,body='Private comment')
+        PublicVoteAudit.objects.create(event=event,project=project,voter_key='user:123',action='cast')
+        self.client.force_login(make_organizer('inactive-org'))
+        audit=self.client.get('/organizer/vote-audit')
+        self.assertEqual(audit.status_code,404)
+        moderation=self.client.post('/organizer/comments/%s/hide' % comment.pk)
+        self.assertEqual(moderation.status_code,404)
+        comment.refresh_from_db()
+        self.assertFalse(comment.hidden)
+        explicit=self.client.get('/organizer/vote-audit?event=inactive-organizer')
+        self.assertEqual(explicit.status_code,200)
+        self.assertEqual(len(explicit.json()['entries']),1)
