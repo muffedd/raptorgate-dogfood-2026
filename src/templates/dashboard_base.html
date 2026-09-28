@@ -8,10 +8,12 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="{% static 'rg_theme_boot.js' %}"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}RaptorGate{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'raptorgate.css' %}">
+  <link rel="stylesheet" href="{% static 'rg_public_theme.css' %}">
 </head>
 <body class="{% block body_class %}{% endblock %}">
 <header class="site-header">
@@ -22,6 +24,7 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
       {% block nav %}{% endblock %}
     </nav>
     <span class="role-badge role-{% block role_slug %}visitor{% endblock %}">{% block role %}visitor{% endblock %}</span>
+    <button type="button" class="rg-theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">D</span></button>
   </div>
 </header>
 
@@ -35,5 +38,6 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
     {% block submissions_close %}{% if event %}{{ event.submissions_close|date:'Y-m-d H:i' }} UTC{% else %}no event selected{% endif %}{% endblock %}
   </div>
 </footer>
+<script src="{% static 'judge_theme.js' %}" defer></script>
 </body>
 </html>

@@ -34,4 +34,10 @@ def standings(event):
     for project in Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).order_by('slug'):
         values=by_project.get(project.pk,[])
         rows.append({'project':project.slug,'title':project.title,'reviews':len(values),'raw':round(mean(x[0] for x in values),3) if values else None,'normalized':round(mean(x[1] for x in values),3) if values else None})
-    return sorted(rows,key=lambda r:(r['normalized'] is None,-r['normalized'] if r['normalized'] is not None else 0,r['project']))
+    ordered=sorted(rows,key=lambda r:(r['normalized'] is None,-r['normalized'] if r['normalized'] is not None else 0,r['project']))
+    last_value=None
+    for position,row in enumerate(ordered,1):
+        value=row['normalized']
+        row['rank']=None if value is None else (ordered[position-2]['rank'] if position>1 and value==last_value else position)
+        last_value=value
+    return ordered

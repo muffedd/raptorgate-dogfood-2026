@@ -1,0 +1,9 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Overview | {{ event.title }}{% endblock %}
+{% block nav %}<a href="{% url 'organizer_overview' %}" aria-current="page">Overview</a><a href="{% url 'results' %}?view=html">Results</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
+{% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Event overview</h1><p class="rg-result-lede">Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Draft results{% endif %}</span></header>
+<div class="rg-summary-grid"><section class="rg-result-panel"><h2>{{ projects_count }}</h2><p>Eligible projects</p></section><section class="rg-result-panel"><h2>{{ assignments_count }}</h2><p>Live assignments</p></section><section class="rg-result-panel"><h2>{{ scores_count }}</h2><p>Recorded score rows</p></section></div>
+<div class="rg-result-layout"><section class="rg-result-panel"><h2>Review the standings</h2><p>The results view shows the actual raw and normalized scores. Check its coverage and any unscored projects before publishing. Imported fixture score rows may exist without live assignments.</p><a class="btn rg-link-button" href="{% url 'results' %}?view=html">Open organizer results</a></section><aside class="rg-result-panel"><h2>Event state</h2><p>{% if event.published %}Results have been published. The public standings are available only if the voting window has also closed.{% else %}Results are private to organizers until you publish and the voting window has closed.{% endif %}</p><p class="rg-result-note">Selecting a different active event changes the public gallery and judging scope for everyone. Use the event selector deliberately.</p></aside></div>
+{% endblock %}

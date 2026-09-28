@@ -75,10 +75,13 @@ def widget_gallery(request, event_slug):
     except ValidationError:
         raise Http404('Invalid event slug')
     event = get_object_or_404(Event, slug=event_slug)
+    theme = request.GET.get('theme', 'light')
+    if theme not in ('light', 'dark'):
+        theme = 'light'
     response = render(
         request,
         'widget_gallery.html',
-        {'event': event, 'projects': public_projects(event)},
+        {'event': event, 'projects': public_projects(event), 'theme': theme},
     )
     frame_ancestors = getattr(settings, 'WIDGET_FRAME_ANCESTORS', '*')
     response['Content-Security-Policy'] = WIDGET_CSP.format(

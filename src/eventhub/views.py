@@ -229,12 +229,34 @@ def score_project(request,project_slug):
 
 
 @login_required
+def organizer_overview(request):
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    event=active_event(request)
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    from .models import Assignment
+    return render(request,'organizer_overview.html',{
+        'event':event,
+        'projects_count':Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).count(),
+        'assignments_count':Assignment.objects.filter(judge__event=event,project__event=event).count(),
+        'scores_count':Score.objects.filter(judge__event=event,project__event=event).count(),
+    })
+
+@login_required
 def results(request):
     if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
     event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     from .ranking import standings
-    return JsonResponse({'published':event.published,'standings':standings(event)})
+    rows=standings(event)
+    if request.GET.get('view')=='html':
+        from .models import Assignment
+        return render(request,'organizer_results.html',{
+            'event':event,'standings':rows,
+            'project_count':len(rows),
+            'assigned_count':Assignment.objects.filter(judge__event=event,project__event=event).count(),
+            'score_count':Score.objects.filter(judge__event=event,project__event=event).count(),
+        })
+    return JsonResponse({'published':event.published,'standings':rows})
 
 
 @login_required
