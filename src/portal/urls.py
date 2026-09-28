@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, voter_access
+from eventhub import views, public_views, widget, bulk, voter_access, api
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -27,6 +27,11 @@ urlpatterns=[
  path('events/new',views.create_event,name='create_event'),
  path('events/select',views.select_event,name='select_event'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
+ path('api/v1/tokens',api.issue_token,name='api_issue_token'),
+ path('api/v1/tokens/<int:pk>/revoke',api.revoke_token,name='api_revoke_token'),
+ path('api/v1/projects',api.projects,name='api_projects'),
+ path('api/v1/results',api.results,name='api_results'),
+ path('api/v1/judge/assignments',api.assignments,name='api_assignments'),
  path('organizer/projects.csv',bulk.projects_csv,name='bulk_projects_csv'),
  path('organizer/projects/import',bulk.import_projects_csv,name='bulk_import_projects'),
  path('api/export.csv',views.export_csv,name='export_csv'),

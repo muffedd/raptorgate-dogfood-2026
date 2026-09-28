@@ -123,3 +123,12 @@ class VoterAccess(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','kind','identity'],name='unique_voter_access_identity',condition=models.Q(kind='email'))]
+
+class APIToken(models.Model):
+    """Explicit user-issued bearer credential; only its digest is stored."""
+    user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='api_tokens')
+    name=models.CharField(max_length=80)
+    token_hash=models.CharField(max_length=64,unique=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    expires_at=models.DateTimeField()
+    revoked_at=models.DateTimeField(null=True,blank=True)
