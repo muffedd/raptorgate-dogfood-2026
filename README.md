@@ -4,13 +4,13 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 176/176 x2 @ 7e1c52a` · `Official checker: 7/7 PASS` · `License: MIT`
 
-The test status above describes the verified `7e1c52a` build, not automated CI or a Docker cold-boot result.
+See `CREDITS.md` for named contributions. The test status above describes the verified `7e1c52a` build, not automated CI or a Docker cold-boot result.
 
 ## Features
 
 ### Judge workflow
 
-- **Judging:** assignment-scoped console with server-confirmed autosave; backend role, track and team-conflict checks; editable rubric, score audit and CSV export. Organizer results show raw and normalized standings and tied ranks.
+- **Judging:** assignment-scoped console with server-confirmed autosave; backend role, track and team-conflict checks; editable rubric, score audit and CSV export. Organizer results show raw and normalized standings and tied ranks. A reproducible fixture proof in `NORMALIZATION-PROOF.md` and `normalization-proof.csv` shows the rank changes and the limits of the method.
 
 ### Community participation
 
@@ -63,6 +63,8 @@ At commit `7e1c52a`, the real PostgreSQL pytest and Django runners each passed *
 
 ## Current routes
 
+- Bulk project data: organizer-only `GET /organizer/projects.csv` exports up to 5000 active-event projects; `POST /organizer/projects/import` accepts a UTF-8 CSV body with exact `project_slug,title,summary,repo_url,team_slug,track_slug` columns, 1-500 rows, up to 1 MB. It creates projects only while submissions are open and results unpublished. Team and track slugs must already belong to the active event; duplicate slugs reject the entire batch. This does not migrate judges, scores, votes or users.
+
 - Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects appear. Select an active event before demonstrating multiple events; the gallery currently falls back to the oldest event if none is selected.
 - Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
 - Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
@@ -83,6 +85,6 @@ Several organizer controls and judge routes expose JSON alongside the HTML workb
 
 ## Roadmap
 
-Next: verified email-gated/open-link voting; broader REST and webhook coverage; signed judge records, certificates and bulk import/export. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+Next: verified email-gated/open-link voting; broader REST and webhook coverage; signed judge records and certificates. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with full lifecycle migration still on the roadmap. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
 The repository is private during the build. Publication needs a separate owner decision and review of the full history and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.

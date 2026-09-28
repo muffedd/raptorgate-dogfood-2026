@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget
+from eventhub import views, public_views, widget, bulk
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -23,6 +23,8 @@ urlpatterns=[
  path('events/new',views.create_event,name='create_event'),
  path('events/select',views.select_event,name='select_event'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
+ path('organizer/projects.csv',bulk.projects_csv,name='bulk_projects_csv'),
+ path('organizer/projects/import',bulk.import_projects_csv,name='bulk_import_projects'),
  path('api/export.csv',views.export_csv,name='export_csv'),
  path('judge/assignments',views.judge_assignments,name='judge_assignments'),
  path('judge/console',views.judge_console,name='judge_console'),
