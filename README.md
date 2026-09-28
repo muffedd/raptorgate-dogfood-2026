@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 223/223 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 226/226 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -63,7 +63,33 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At the current verification-slice source, real PostgreSQL pytest and Django runners each passed **223/223**, no skips. SQLite runs can collect fewer tests and skip PostgreSQL-only concurrency cases; do not compare their totals with the PostgreSQL runs. An empty PostgreSQL database migrated, seeded the official fixture and passed all seven literal T1/T2 checker probes. The committed acceptance report also shows seven PASS lines. Test coverage includes role and event isolation, fixture integrity, submission and score races, voting, results gating, widget isolation and UI truths. The checked-in report is a prior run, so regenerate it against the final submission commit. Offline Docker cold boot remains a separate proof step.
+At this review-cycle source, both full runners passed on real PostgreSQL: **226/226 Django tests** and **226/226 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is an earlier capture; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
+
+Selected regression cases that can be inspected in `src/eventhub/tests/`:
+
+| Case | Expected result and boundary |
+| --- | --- |
+| Signup with a forged `is_staff` or `is_superuser` POST field | Extra privilege fields are ignored by the user-creation form; signup makes a normal user, not an organizer or judge. `test_signup.py` now directly checks this injected-field case; the reviewer also probed it live. |
+| Duplicate username, short/common/mismatched password, and authenticated signup | Invalid or redundant registration is rejected; successful registration can log in, with no judge role. `test_signup.py`. |
+| Judge comment-only revision | `ScoreAudit.previous` retains the old comment and criteria; `current` holds the new comment and criteria. Non-organizers cannot fetch the audit trail. `test_judging.py`. |
+| Edited certificate JSON | Changing the signed payload makes the Ed25519 check fail (red on `/verify`, nonzero exit offline). `test_verify_public.py`. |
+| Validly self-signed but unissued certificate | Signature alone is not trusted by the site: `/verify` rejects it as not a published issuance. `test_verify_public.py`. |
+| Offline certificate with a different trusted public key | `verify.py` exits nonzero despite the intact signature. Without a supplied trusted key, it reports internal signature validity but explicitly does **not** verify issuer identity. `test_verify_public.py`. |
+| Vote receipt and participation record | Receipt checks are gated until publication and reveal no voter identity; HMAC record checks need the server-held key and cannot be independently verified. `test_verify_public.py`. |
+| Organizer vote signals | The panel is superuser-only, event-scoped and aggregate-only; shared IPs and retry counts are labeled signals, not verdicts. `test_vote_signals.py`. |
+| Results expander | Raw and normalized means, judge count, rank movement and unscored state are aggregate-only. The public page does not expose judge identities, comments or individual ballots; it stays gated before publication. `test_results_explainer.py`. |
+
+Other suites exercise event and track isolation, team and judge permissions, concurrent first submissions/scores, rubric/ranking ties, ballot identity modes and duplicate/rate controls, results release gates, widget isolation, CSV import, certificates, records, the partial API and publication webhook. Test counts describe executed cases, not proof of full T3/T4 tier completion.
+
+### Improvements in this review cycle
+
+- Public participant self-signup at `/signup/`, with normal-account permissions; judge invitations and assignments remain separate.
+- Judge `Score.comment` edits captured in both sides of `ScoreAudit` snapshots.
+- Public `/verify` and standalone `verify.py` with distinct claims for certificates, receipts and HMAC records; the offline command checks Ed25519 and can compare a trusted organizer key.
+- Published standings row expander for aggregate raw-versus-normalized math and rank movement, without individual judge details.
+- Organizer-only vote activity panel at `/organizer/vote-signals` showing signals, not verdicts: retained attempt frequency, shared-IP actor counts, and accepted vote/cast-audit count differences. No IPs, actor keys, voter identities or receipts are shown on that panel.
+
+Offline Docker cold boot remains a separate proof step. Do not treat the independent reviewer’s probes or the official checker as a security audit.
 
 ## Current routes
 
@@ -73,6 +99,7 @@ At the current verification-slice source, real PostgreSQL pytest and Django runn
 - Public participant signup: `GET/POST /signup/` creates a normal user account with no event role; judge roles still require a separate organizer invite, and assignments remain organizer-controlled. Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
 - Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
 - Judging: assignment-scoped `/judge/console` (light first, persistent manual dark switch, server-confirmed autosave), `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
+- Organizer vote activity signals: `GET /organizer/vote-signals` is private, event-scoped and aggregate-only; counts of retained vote attempts, shared-network patterns and audit/accepted-row differences are signals, not fraud verdicts.
 - Organizer data: `GET /organizer/overview` renders the active event overview; `GET /organizer/results?view=html` renders a private standings table, while `/organizer/results` remains JSON. `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.
 - Results explainer: each published `/results` row expands to show aggregate raw and normalized means, judge count, raw and normalized ranks, and rank movement. No individual judge identity, score or comment is exposed.
 - Community participation: `GET /ballot` renders an authenticated voter's stable randomized eligible-project order while voting is open; `POST /vote` records one vote per account per event and returns a receipt. `GET /projects/<slug>` shows comments; authenticated `POST` accepts them while voting is open. `GET /results` exposes aggregate standings only after voting has closed **and** the organizer has published. `GET /receipt/<secret>` checks a receipt only after that same release gate; keep the secret private.
