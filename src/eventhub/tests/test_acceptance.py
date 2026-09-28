@@ -89,3 +89,46 @@ class SubmissionTests(TestCase):
         self.event.submissions_close=timezone.now()-timedelta(seconds=1);self.event.save()
         self.assertEqual(self.client.post('/projects/new',self.payload(title='Late')).status_code,403)
         self.assertEqual(Project.objects.get(event=self.event,team=self.team).title,'Candidate')
+
+class TeamAndEventTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.event=Event.objects.create(slug='fixture',title='Fixture',submissions_close=timezone.now()+timedelta(days=1))
+        User=get_user_model()
+        cls.member=User.objects.create_user(username='member2')
+        cls.guest=User.objects.create_user(username='guest2')
+        cls.organizer=User.objects.create_superuser(username='org2',email='org2@example.org',password='x')
+    def test_team_creation_adds_owner(self):
+        self.client.force_login(self.member)
+        r=self.client.post('/teams/new',{'name':'New Team'})
+        self.assertEqual(r.status_code,201)
+        self.assertTrue(Team.objects.get(slug=r.json()['team']).members.filter(pk=self.member.pk).exists())
+    def test_non_member_cannot_mint_invite(self):
+        team=Team.objects.create(event=self.event,slug='locked',name='Locked')
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.post('/teams/locked/invite').status_code,403)
+    def test_invite_roundtrip_and_expiration(self):
+        team=Team.objects.create(event=self.event,slug='open-team',name='Open')
+        team.members.add(self.member)
+        self.client.force_login(self.member)
+        r=self.client.post('/teams/open-team/invite')
+        self.assertEqual(r.status_code,200)
+        path=r.json()['invite_path']
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.post(path).status_code,200)
+        self.assertTrue(team.members.filter(pk=self.guest.pk).exists())
+        team.refresh_from_db();team.invite_expires_at=timezone.now()-timedelta(seconds=1);team.save()
+        self.assertEqual(self.client.post(path).status_code,404)
+    def test_bad_invite_is_404(self):
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.post('/join/does-not-exist').status_code,404)
+    def test_event_creation_requires_organizer(self):
+        self.client.force_login(self.guest)
+        r=self.client.post('/events/new',{'name':'New','slug':'new','submissions_close':'2027-01-01T00:00:00Z'})
+        self.assertEqual(r.status_code,403)
+    def test_event_creation_validates_deadline_and_slug(self):
+        self.client.force_login(self.organizer)
+        self.assertEqual(self.client.post('/events/new',{'name':'New','slug':'new','submissions_close':'not-a-date'}).status_code,400)
+        self.assertEqual(self.client.post('/events/new',{'name':'New','slug':'Bad Slug','submissions_close':'2027-01-01T00:00:00Z'}).status_code,400)
+        self.assertEqual(self.client.post('/events/new',{'name':'New','slug':'new','submissions_close':'2027-01-01T00:00:00Z'}).status_code,201)
+        self.assertEqual(self.client.post('/events/new',{'name':'New','slug':'new','submissions_close':'2027-01-01T00:00:00Z'}).status_code,409)

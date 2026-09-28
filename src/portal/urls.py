@@ -9,6 +9,10 @@ urlpatterns=[
  path('',views.home,name='home'),
  path('projects',views.gallery,name='gallery'),
  path('projects/new',views.submit,name='submit'),
+ path('teams/new',views.create_team,name='create_team'),
+ path('teams/<slug:slug>/invite',views.team_invite,name='team_invite'),
+ path('join/<str:token>',views.join_team,name='join_team'),
+ path('events/new',views.create_event,name='create_event'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
  path('api/export.csv',views.export_csv,name='export_csv'),
 ]

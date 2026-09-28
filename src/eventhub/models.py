@@ -19,6 +19,8 @@ class Team(models.Model):
     slug=models.SlugField()
     name=models.CharField(max_length=160)
     members=models.ManyToManyField(settings.AUTH_USER_MODEL,related_name='teams')
+    invite_token=models.CharField(max_length=64,blank=True,unique=True,null=True)
+    invite_expires_at=models.DateTimeField(null=True,blank=True)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_team_in_event')]
 
@@ -31,6 +33,7 @@ class Project(models.Model):
     summary=models.TextField(blank=True)
     repo_url=models.URLField(blank=True)
     submitted_at=models.DateTimeField(null=True,blank=True)
+    draft=models.BooleanField(default=False)
     duplicate_of=models.ForeignKey('self',null=True,blank=True,on_delete=models.SET_NULL)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_project_in_event')]
