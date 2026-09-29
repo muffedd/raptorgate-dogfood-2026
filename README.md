@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 287 Django + 290 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 289 Django + 292 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independently reported amd64 cold-boot proof covers commit `4cd5a399`, before this documentation update.
 
@@ -65,7 +65,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this source, both full runners passed on real PostgreSQL: **287/287 Django tests** and **290/290 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are not the independent Docker cold-boot proof, which covers the earlier `4cd5a399` source tree. The separate local event-lifecycle video is not an offline cold-boot proof either.
+At this source, both full runners passed on real PostgreSQL: **289/289 Django tests** and **292/292 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are not the independent Docker cold-boot proof, which covers the earlier `4cd5a399` source tree. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
