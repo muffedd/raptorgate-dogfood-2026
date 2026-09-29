@@ -57,6 +57,22 @@ def gallery(request):
     return render(request,'gallery.html',{'event':event,'projects':rows,'query':query,'track':track})
 
 
+def submission_wants_json(request):
+    # Browsers send text/html; legacy programmatic clients and the official checker
+    # send */* or application/json. The v1 API remains on its own routes.
+    accept=request.headers.get('Accept','*/*').lower()
+    return 'application/json' in accept or 'text/html' not in accept
+
+
+def submission_response(request, project, updated, draft):
+    if submission_wants_json(request):
+        return JsonResponse({'project':project.slug,'updated':updated,'draft':draft},
+                            status=200 if updated else 201)
+    if draft:
+        return redirect('submit')
+    return redirect('project_detail',slug=project.slug)
+
+
 @login_required
 def submit(request):
     event=active_event(request)
@@ -85,7 +101,12 @@ def submit(request):
             return JsonResponse({'error':'Invalid submission action'},status=400)
         form=ProjectForm(request.POST,event=event)
         if not form.is_valid():
-            return JsonResponse({'error':'Invalid project','fields':form.errors.get_json_data()},status=400)
+            if submission_wants_json(request):
+                return JsonResponse({'error':'Invalid project','fields':form.errors.get_json_data()},status=400)
+            canonical=Project.objects.filter(event=event,team=team,duplicate_of__isnull=True).first()
+            return render(request,'submit.html',{
+                'event':event,'form':form,'project':canonical,'can_edit':True,
+            },status=400)
         canonical=Project.objects.filter(event=event,team=team,duplicate_of__isnull=True).first()
         if canonical and not canonical.draft and action=='draft':
             return JsonResponse({'error':'A published project cannot be reverted to draft'},status=409)
@@ -98,14 +119,14 @@ def submit(request):
             canonical.draft=draft
             canonical.submitted_at=None if draft else timezone.now()
             canonical.save(update_fields=fields+['draft','submitted_at'])
-            return JsonResponse({'project':canonical.slug,'updated':True,'draft':draft})
+            return submission_response(request,canonical,updated=True,draft=draft)
         project=form.save(commit=False)
         project.event=event; project.team=team
         project.slug='team-'+str(team.pk)
         project.draft=draft
         project.submitted_at=None if draft else timezone.now()
         project.save()
-        return JsonResponse({'project':project.slug,'updated':False,'draft':draft},status=201)
+        return submission_response(request,project,updated=False,draft=draft)
 
 
 def judge_scores(request):
