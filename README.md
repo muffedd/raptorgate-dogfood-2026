@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 289 Django + 292 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independently reported amd64 cold-boot proof covers commit `4cd5a399`, before this documentation update.
+`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independently reported amd64 cold-boot proof covers commit `4cd5a399`, before these documentation and browser-flow fixes.
 
 ## Features
 
