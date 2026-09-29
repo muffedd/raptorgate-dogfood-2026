@@ -27,10 +27,15 @@ def signals(request):
     # An observed IP is a network address, not an identity. Do not show IPs.
     shared_ips = vote_attempts.exclude(observed_ip__isnull=True).values('observed_ip').annotate(
         actors=Count('actor_key', distinct=True)).filter(actors__gte=3).count()
+    # These are descriptive counters. Shared IPs and retries cannot prove fraud.
+    duplicate_retries = vote_attempts.values('actor_key').annotate(count=Count('pk')).filter(count__gte=2).count()
+    email_challenges = attempts.filter(action='email').count()
+    code_guesses = attempts.filter(action='verify').count()
     cast_count = audit.count()
     vote_count = votes.count()
     context = {'event': event, 'attempt_total': attempt_total,
                'vote_attempts': vote_attempts.count(), 'rapid_actors': rapid_actors,
-               'shared_ips': shared_ips, 'cast_count': cast_count, 'vote_count': vote_count,
+               'shared_ips': shared_ips, 'duplicate_retries': duplicate_retries,
+               'email_challenges': email_challenges, 'code_guesses': code_guesses, 'cast_count': cast_count, 'vote_count': vote_count,
                'audit_gap': abs(cast_count-vote_count), 'since': since}
     return render(request, 'vote_signals.html', context)
