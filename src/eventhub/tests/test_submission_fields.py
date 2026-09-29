@@ -47,6 +47,32 @@ class SubmissionFieldTests(TestCase):
         self.assertEqual(p.tags,['ai','Web'])
         self.assertEqual(p.custom_answers,{'stack':'Django + Postgres'})
 
+    def test_edit_form_reloads_auxiliary_fields_and_keeps_them_on_resubmit(self):
+        self.client.force_login(self.member)
+        self.assertEqual(self.client.post('/projects/new',self.payload()).status_code,201)
+        page=self.client.get('/projects/new')
+        self.assertContains(page,'https://example.org/a.png')
+        self.assertContains(page,'https://example.org/b.png')
+        self.assertContains(page,'ai, Web')
+        self.assertContains(page,'Django + Postgres')
+        # Browser posts the values now present in its rendered edit fields.
+        form=page.context['form']
+        data=self.payload(title='Edited title',
+            gallery_images_text=form['gallery_images_text'].value(),
+            tags_text=form['tags_text'].value(),
+            cq_stack=form['cq_stack'].value())
+        self.assertEqual(self.client.post('/projects/new',data).status_code,200)
+        project=Project.objects.get(event=self.event,team=self.team)
+        self.assertEqual(project.gallery_images,['https://example.org/a.png','https://example.org/b.png'])
+        self.assertEqual(project.tags,['ai','Web'])
+        self.assertEqual(project.custom_answers,{'stack':'Django + Postgres'})
+
+    def test_track_option_uses_name(self):
+        self.client.force_login(self.member)
+        page=self.client.get('/projects/new')
+        self.assertContains(page, '<option value="%s">Dev</option>'%self.track.pk, html=True)
+        self.assertNotContains(page, 'Track object')
+
     def test_required_custom_question_enforced(self):
         self.client.force_login(self.member)
         data=self.payload(); del data['cq_stack']

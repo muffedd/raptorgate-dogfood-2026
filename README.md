@@ -2,9 +2,13 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 289 Django + 292 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`License: MIT`
 
-`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. A separate pre-login signup POST with no CSRF cookie was independently reproduced as HTTP 403; the browser login/signup flow first obtains a CSRF token on GET. This is not a bypass or an application failure. The independent amd64 cold-boot logs in `packaging/evidence/` cover source commit `24d9a638`, including the browser-flow fixes.
+- Local PostgreSQL: 291 Django and 294 pytest tests passed on the integrated UI source; see [Testing and proof](#testing-and-proof).
+- Official checker: 7/7 literal T1/T2 PASS lines on the integrated UI source. The checker exit code alone is not a verdict.
+- Independent cold boot: a hash-verified amd64 image archive booted offline for exact earlier source `24d9a638`; [scope and logs](packaging/evidence/EVIDENCE-README.md). It does not cover later UI commits.
+
+`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. A separate pre-login signup POST without a CSRF cookie returned HTTP 403 as designed; the browser flow obtains the token on GET. See the linked cold-boot scope for its limits.
 
 ## Features
 
@@ -23,6 +27,16 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `.dogfood.toml` claims T1/T2, the scope verified by the official checker. The T3 voting features and T4 widget, JSON API, participation records, portable JSON certificates and one results-published webhook are working slices, not blanket tier claims. See `T3-VOTER-ACCESS.md` for the three access modes and their trust limits. See [Current routes](#current-routes), [Roadmap](#roadmap) and the design documents for details.
 
+### Screenshots (local fixture, integrated UI)
+
+![Public gallery in light mode](images/gallery-light.png)
+![Public gallery in dark mode](images/gallery-dark.png)
+![Judge console with an assignment](images/judge-console.png)
+![Published results and leaderboard](images/published-results.png)
+![Read-only gallery widget](images/widget.png)
+
+The judge screenshot uses an isolated local fixture copy with a single assignment added for rendering. The results screenshot uses another isolated copy with the publication and voting-close gates satisfied. Neither copy changed the published preview or checker database.
+
 ## Demo-only secrets and DEBUG - read before deployment
 
 **This repository is a localhost demo, not a production-ready deployment.** The checked-in Compose file has a fixed PostgreSQL password and `DJANGO_SECRET_KEY`; the Django fallback key is also fixed, and `DJANGO_DEBUG` defaults to **on** outside Compose (Compose sets it to `0`). The checker config includes fixed demo session credentials. Do not expose this stack to the internet, reuse the demo credentials, or deploy it as-is. For a non-demo deployment, supply unique secrets outside version control, set `DJANGO_DEBUG=0`, restrict hosts/network access, rotate demo credentials and review the deployment security settings first.
@@ -39,9 +53,21 @@ docker compose up
 
 This fetches Python/PostgreSQL images and Python packages while online, then starts PostgreSQL 16 and Django 5.2, applies migrations and seeds `fixtures.json` when the database has no event. Open http://localhost:8080/projects. Compose binds to `127.0.0.1:8080`. This is a local demo configuration with fixed credentials; do not publish it directly.
 
-For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. Independent Ubuntu x86_64 cold-boot logs for source commit `24d9a638` in `packaging/evidence/` record a fresh Docker host, an offline DNS failure and an operator-reported network interface down during boot and proof, a checksum-verified image archive, healthy PostgreSQL, a seeded portal, HTTP 200 for gallery and CSS, and seven literal official checker PASS lines. See `packaging/README.md` for scope and limits. This was not a Windows or arm64 run.
+## Judge this in 10 minutes
 
-The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
+1. Run the three Quickstart commands, then open [the local gallery](http://localhost:8080/projects). Search a fixture title and switch light/dark with the header button.
+2. Open [organizer overview](http://localhost:8080/organizer/overview) after signing in as `event-organizer`. Its localhost-only password is set in `src/eventhub/management/commands/seed_event.py`; `.dogfood.toml` lists the demo role sessions for automated probes. Do not use these demo credentials on the public preview.
+3. Follow **Open organizer results** for the private standings and use the overview's export links to inspect the fixture data. Do not publish downloaded CSVs: they include private rows.
+4. Sign out, then sign in as `judge-jdg_01` with the same localhost-only fixture password. Open [the judge console](http://localhost:8080/judge/console). The fresh fixture has scores but no live assignments, so the empty queue is expected; it does not claim a live scoring demo.
+5. Run `python3 run.py .dogfood.toml` from another terminal. Read the seven literal PASS lines for the claimed T1/T2 probes; the process can exit zero despite a FAIL line.
+6. To see published standings with real fixture scores, open [the read-only hosted results preview](https://raptorgate-dogfood-preview.onrender.com/results). It is a separate, sanitized preview database and may take time to wake.
+
+A full live score-to-publish run needs judge assignments plus an event voting window. A separate local event-lifecycle recording was made before this UI handoff; the fresh Compose fixture does not set the full flow up automatically.
+Known limits: published results are recomputed from current scores rather than frozen at publication, so a later authorized score edit can change the public rankings. A newly created event has no tracks and the organizer UI does not create them; tracks need admin or seed setup before submissions can complete.
+
+For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. An operator outside the build team produced the independent Ubuntu x86_64 cold-boot logs for the earlier source linked above. The logs show an offline DNS failure; the operator separately reported the network interface was down. See `packaging/README.md` for exact scope and limits. This was not a Windows or arm64 run, nor a cold boot of the later UI source.
+
+The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows (40 canonical after dedupe); one duplicate remains in storage but is hidden from the public gallery.
 
 Organizer-only lifecycle CSV snapshots for the active event are at `/organizer/export/{teams,submissions,assignments,scores,results}.csv` and linked from the organizer overview. Teams include individual member email addresses; submissions include drafts and duplicates; scores include raw criteria and comments; results include raw and normalized ranks even before publication. Keep downloaded CSVs private. These read-only exports do not import participant, assignment or score state and are limited to 5,000 rows per file. The legacy `/api/export.csv` route remains unchanged for the checker.
 
@@ -65,7 +91,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this source, both full runners passed on real PostgreSQL: **289/289 Django tests** and **292/292 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are separate from the independent Docker cold-boot logs, which cover source commit `24d9a638` and are linked from `packaging/README.md`. The separate local event-lifecycle video is not an offline cold-boot proof either.
+On the integrated UI source, both full runners passed on real PostgreSQL: **291/291 Django tests** and **294/294 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after the full Django and pytest suites with the same seven PASS lines. These local checks are separate from the earlier-source independent Docker cold-boot logs linked above. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -85,11 +111,9 @@ Other suites exercise event and track isolation, team and judge permissions, con
 
 ### UI accessibility sweep (September 29, 2026)
 
-A live Chrome/axe-core 4.13.0 sweep covered the public gallery, signup, verification, published results and project detail, plus organizer overview, private results and vote-signals pages at desktop width. Those eight rendered light-theme pages reported **zero automated WCAG 2 A/AA, WCAG 2.1 A/AA and axe best-practice violations** with 31-38 passing rules each at the first post-fix desktop run. Dark-theme retests on the same routes, plus signup, reported zero violations after color and scroll-focus fixes (31-43 passing rules). A separate mobile-width dark-theme pass found low contrast in selected navigation, track badges and results expander summaries; those dark colors were corrected and retested. It also found a horizontally scrollable organizer standings table lacking keyboard focus; the table wrapper now has a named focusable region. This is an automated snapshot, not a WCAG compliance certificate. Native `<details>/<summary>` expands with keyboard; focused links and controls follow DOM order. Manual desktop/mobile pixel checks inspected the verify, results expander and organizer signals pages. No meaningful images on these pages require alt text; text-only logos are links.
+A prior live Chrome/axe-core 4.13.0 sweep of eight light-theme and matching dark-theme routes found **zero automated WCAG 2 A/AA and WCAG 2.1 A/AA violations** after contrast and focus fixes. This is a snapshot, not a WCAG compliance certificate. `test_accessibility.py` guards landmarks, labels and native expanders; screen-reader and full manual zoom/contrast checks remain open. The integrated UI needs its own accessibility audit.
 
-The sweep prompted fixes that automated checks alone miss: a visible-on-focus “Skip to main content” link and labeled navigation landmark; a stronger shared focus outline (including `<summary>`); project-specific accessible names for repeated “Cast vote” buttons; helper text tied to the verify textarea; and larger mobile text for small metadata and ballot actions. `test_accessibility.py` covers the durable landmark, label and native-expander structure. Some older plain-form pages, the isolated widget and the full judge workbench were outside this eight-page live sweep. A keyboard pass confirmed the /verify Tab order (skip link, brand, navigation, theme, select, textarea, submit) and the results expander opening/closing with Enter. Screen-reader, zoom and contrast behavior across every route still need a full manual audit before claiming conformance.
-
-### Improvements in this review cycle
+### Highlights
 
 - Public participant self-signup at `/signup/`, with normal-account permissions; judge invitations and assignments remain separate.
 - Judge `Score.comment` edits captured in both sides of `ScoreAudit` snapshots.
@@ -103,40 +127,37 @@ An independent amd64 offline Docker cold boot is documented in `packaging/eviden
 
 ## Offline proof
 
-What was proven: the whole app cold-boots with the network off, from the built image archive, on amd64. Exact commit tested: `24d9a638f3f244ab98b7881e47aa8b91886e2ba0`.
+What was proven: the app cold-boots from the built image archive on amd64 after the operator reports disconnecting the VM network. The archived logs show a DNS failure, not NIC state. Exact commit tested: `24d9a638f3f244ab98b7881e47aa8b91886e2ba0`.
 
-How: a fresh Multipass Ubuntu VM. The image was built and checksummed while online (`sha256sum -c` says OK). Then the VM's network card was brought down. A `curl` to example.com fails and DNS is dead. The stack was loaded from the archive and booted with `--no-build --pull never`. No network call was needed at any point.
+How: an operator outside the build team used a fresh disposable Multipass Ubuntu VM. The image was built and checksummed while online (`sha256sum -c` says OK). The operator reports disabling the network interface before boot and proof; the archived logs do not independently show that NIC state. The stack was loaded from the archive and booted with `--no-build --pull never`.
 
-Result: Postgres becomes healthy. Migrations apply. The seed writes 41 rows, which is 40 canonical projects. The portal serves on `127.0.0.1:8080`. The gallery and its theme CSS return HTTP 200. The official checker prints exactly 7 PASS lines, 0 FAIL, and ends with `claimed T1 T2, verified T1 T2`.
+Result: PostgreSQL becomes healthy. Migrations apply. The seed writes 41 project rows (40 canonical after dedupe). The portal serves on `127.0.0.1:8080`. The gallery and its theme CSS return HTTP 200. The official checker prints exactly 7 PASS lines, 0 FAIL, and ends with `claimed T1 T2, verified T1 T2`.
 
-Evidence: raw logs live in `packaging/evidence/`. The sanitized archive `rg-evidence-final.tgz` holds `offline-proof.log`, `done-criteria.log`, `seed-counts.log`, `compose-ps.log`, `network-off.log` and more. The folder also holds `retry-team-form.log` and `EVIDENCE-README.md`. Host paths were sanitized. See `packaging/README.md` for the full scope notes.
+Evidence: sanitized logs live in `packaging/evidence/`. The sanitized archive `rg-evidence-final.tgz` holds `offline-proof.log`, `done-criteria.log`, `seed-counts.log`, `compose-ps.log`, `network-off.log` and more. The folder also holds `retry-team-form.log` and `EVIDENCE-README.md`. Host paths were sanitized. The VM has since been purged; the operator reports retaining a verified host-side `rg-originals-backup.tgz` until results, containing 15 final-tree logs, the v2 and final evidence archives, retry-team-form.log, rg-sweep.py, MANIFEST and MISSING.txt. The v3 logs survive only sanitized (`/home/<user>` to `/home/USER`); proof3.out and temporary HTML/cj.txt artifacts were lost, documented in MISSING.txt. See `packaging/README.md` for the full scope notes.
 
 Limitations:
 
 - The proof covers amd64 only. The arm64 cross-build needs QEMU/binfmt.
 - The UI sweep was HTTP-level, not visual. It did not render pixels.
-- The first team-form attempt returned 403 on a stale pre-login CSRF token in the test harness. A retry with the token taken from the authenticated form returned 302. The saved server lines in `retry-team-form.log` show the HTTP codes and order only, not the cause or the redirect target. This is a harness problem, not a product defect, and it is not one of the seven PASS lines.
+- The first team-form attempt returned 403, and a retry after GET returned 302. The saved server lines in `retry-team-form.log` show only HTTP codes and order, not the CSRF cause or redirect target. The stale-token explanation is the operator’s account, not something the log proves. This diagnostic is outside the seven official PASS lines.
 
 Reproduce: run `packaging/run-offline.sh` against a checksum-verified archive. The Linux steps are in `packaging/README.md`.
 
 ## Current routes
 
-- Bulk project data: organizer-only `GET /organizer/projects.csv` exports up to 5000 active-event projects; `POST /organizer/projects/import` accepts a UTF-8 CSV body with the legacy six-column header `project_slug,title,summary,repo_url,team_slug,track_slug` or the complete enriched export header adding `thumbnail_url,demo_video_url,live_url,gallery_images_json,tags_json,custom_answers_json`, 1-500 rows, up to 1 MB. The JSON columns preserve arrays and answers; imports validate URLs, caps and active-event question keys. It creates projects only while submissions are open and results unpublished. Team and track slugs must already belong to the active event; duplicate slugs reject the entire batch. This does not migrate judges, scores, votes or users.
+| Area | Routes | Access and limits |
+| --- | --- | --- |
+| Public discovery | `GET /projects`, `GET /projects/<slug>`, `GET /embed/<event-slug>/gallery` | Canonical, non-draft projects only; `q` and `track` filter gallery. The widget is read-only with its own CSS/CSP. |
+| Accounts and teams | `GET/POST /signup/`, `/login/`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>` | Signup gives a normal account, not judge/organizer authority. Team membership is event-scoped. |
+| Submissions and event setup | `/projects/new`, `/events/new`, `POST /events/select`, `/organizer/questions` | Team submissions before close; event selection is organizer-only and global. New events have no tracks until provisioned. |
+| Judge and assignment | `/judge/console`, `/judge/assignments`, `/judge/score/<slug>`, `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/organizer/assign/batch`, `/api/judge/scores` | Judge scores are assignment-scoped; organizers manage invites and assignment. |
+| Organizer results and exports | `/organizer/overview`, `/organizer/results?view=html`, `/organizer/rubric`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`, `/organizer/export/{teams,submissions,assignments,scores,results}.csv` | Organizer-only. Lifecycle CSV may include member emails, drafts and raw scores even before publication; keep files private. |
+| Project bulk import/export | `GET /organizer/projects.csv`, `POST /organizer/projects/import` | Organizer-only. Export up to 5,000 projects. Import creates 1-500 projects from a UTF-8 CSV up to 1 MB, when submissions are open and results unpublished; teams/tracks must exist. Legacy six-column or enriched export header accepted; this does not migrate users or scores. |
+| Voting and moderation | `GET /ballot`, `POST /vote`, `POST /projects/<slug>`, `/organizer/vote-audit`, `/organizer/vote-signals`, `POST /organizer/comments/<id>/hide` | Active event and identity gates. Vote signals are private aggregates, not fraud verdicts. |
+| Public results and proof | `GET /results`, `/receipt/<secret>`, `/receipt/<secret>/proof`, `GET/POST /verify`, `/certificates/<id>.json` | Results and receipts release after voting closes **and** organizer publication; receipt is a bearer capability. Verification claims differ by artifact. |
+| Extended interfaces | `/api/v1/*`, `/organizer/records/issue`, `/records/<id>/verify`, `/organizer/certificates/issue`, `/organizer/webhooks/deliveries` | Partial JSON API, HMAC record snapshot, separate signed certificate and one results-published webhook. See `API.md`, `PARTICIPATION-RECORDS.md`, `CERTIFICATES.md`, `WEBHOOKS.md`. |
 
-- Public gallery: `GET /projects`, with `q` title search and `track` slug filter; project detail and moderated comments at `GET /projects/<slug>`. Only nondraft, canonical projects appear. Select an active event before demonstrating multiple events; the gallery currently falls back to the oldest event if none is selected.
-- Public participant signup: `GET/POST /signup/` creates a normal user account with no event role; judge roles still require a separate organizer invite, and assignments remain organizer-controlled. Login: `/login/`. Event and team setup: `/events/new`, organizer-only `POST /events/select` with form field `event=<slug>`, `/teams/new`, `/teams/<slug>/invite`, `/join/<token>`. The selected event is global and determines gallery, submissions, judging and public participation. Ballot, results and moderation require an active event. A few routes fall back to the oldest event when none is selected.
-- Submission: `/projects/new`; a second POST from the team edits its canonical project before the deadline.
-- Judging: assignment-scoped `/judge/console` (light first, persistent manual dark switch, server-confirmed autosave), `/organizer/judges/invite`, `/judge/accept/<token>`, `/organizer/assign`, `/judge/assignments`, `/judge/score/<project_slug>`, `/api/judge/scores`.
-- Organizer vote activity signals: `GET /organizer/vote-signals` is private, event-scoped and aggregate-only; counts of retained vote attempts, shared-network patterns and audit/accepted-row differences are signals, not fraud verdicts.
-- Organizer data: `GET /organizer/overview` renders the active event overview; `GET /organizer/results?view=html` renders a private standings table, while `/organizer/results` remains JSON. `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.
-- Results explainer: each published `/results` row expands to show aggregate raw and normalized means, judge count, raw and normalized ranks, and rank movement. No individual judge identity, score or comment is exposed.
-- Community participation: `GET /ballot` renders an authenticated voter's stable randomized eligible-project order while voting is open; `POST /vote` records one vote per account per event and returns a receipt. `GET /projects/<slug>` shows comments; authenticated `POST` accepts them while voting is open. `GET /results` exposes aggregate standings only after voting has closed **and** the organizer has published. `GET /receipt/<secret>` checks a receipt only after that same release gate; the receipt is a bearer capability, and any holder of it can use `/receipt/<secret>/proof` to learn the selected project after release. Keep the secret private.
-- Partial JSON API: see `API.md`; project and published standings reads are public, judge assignment reads require a bearer token. Issuance/revocation require an authenticated session and CSRF. This is not complete REST.
-- Participation record snapshot: organizer-only issue after published voting close, public verify if `RECORD_SIGNING_KEY` is set; this is not a certificate. See `PARTICIPATION-RECORDS.md`.
-- Results-published webhook: operator-configured HTTPS callback queued on first publication, delivered by a separate management command, with HMAC body signature and organizer-only attempt status. See `WEBHOOKS.md`; this is one event type, not full webhook coverage.
-- Public verification page: `GET/POST /verify` checks a pasted signed certificate JSON against its Ed25519 signature and this site's published issuance, an accepted vote receipt after results release, or a numeric HMAC participation-record ID using the site-held key. These are distinct claims, not proof of overall fairness. `python verify.py certificate.json --trusted-public-key <trusted-base64url-key>` checks the certificate signature offline with only `cryptography`; without a separately trusted key, issuer identity remains unverified.
-- Portable JSON judge certificate: organizer-only `POST /organizer/certificates/issue` after public results, public `GET /certificates/<id>.json`. Private signing key required; embedded public key must be pinned through a trusted event channel. See `CERTIFICATES.md`.
-- Embeddable public gallery: `GET /embed/<event-slug>/gallery` is a read-only, event-scoped iframe page with its own CSS and CSP. Example on a trusted host page, using the real event slug:
+The active event selector changes the gallery and judging scope for everyone. Some routes fall back to the oldest event when none is active; check the selected event before a demo. Open-link voting uses organizer-issued one-use links; email voting uses a one-time SMTP code and fails closed without SMTP. The widget defaults to light, accepts `?theme=dark`, and does not carry the main app's saved theme. For an iframe:
 
 ```html
 <iframe src="http://localhost:8080/embed/evt_01/gallery" sandbox="allow-same-origin"
@@ -144,15 +165,13 @@ Reproduce: run `packaging/run-offline.sh` against a checksum-verified archive. T
         style="width:100%;min-height:480px;border:0"></iframe>
 ```
 
-The iframe content is public and can be embedded by any origin by default (`frame-ancestors *`); set `WIDGET_FRAME_ANCESTORS` in Django settings for a restricted host (there is no environment-variable hookup yet). Do not embed private results, voting sessions or organizer pages. The widget does not set cookies or show individual judge scores.
-
-Open-link voting adds organizer-issued one-use links; email voting adds a one-time SMTP code and fails closed when SMTP is not configured. Both preserve the same ballot and vote gate. Several organizer controls and judge routes expose JSON alongside the HTML workbench and results screens. The judge console, gallery, project detail, open ballot, organizer overview/results and public results honor a per-browser light-first theme switch with a saved dark choice. The widget is isolated from that preference; it accepts `?theme=dark` and otherwise stays light. These surfaces were visually checked at 1440, 768 and 320 pixel widths, with keyboard toggle and mobile overflow checks; this does not replace browser testing of other routes. The active event selector is a global setting, not a personal preference; recheck the selected event before a demo. To demonstrate a different event, create it, give it tracks/teams/projects through the current flows, then `POST /events/select` as organizer and verify `/projects` before showing that event. Creation accepts name, slug and UTC close time but does not set up tracks or prizes automatically. The seeded credentials are for a localhost demo only. See ARCHITECTURE.md, DATA-MODEL.md, JUDGING.md and THREAT-MODEL.md for implementation and security decisions.
+The widget allows embedding by any origin by default (`frame-ancestors *`); `WIDGET_FRAME_ANCESTORS` in settings narrows hosts, but there is no environment-variable hookup yet. Do not embed voting sessions or private results. `python verify.py certificate.json --trusted-public-key <trusted-base64url-key>` checks a certificate signature offline with `cryptography`; without a separately trusted key, issuer identity remains unverified. This is not complete REST or full webhook coverage.
 
 ## Roadmap
 
-Loopback SMTP delivery is covered by `test_smtp_delivery.py` using a local `aiosmtpd` server: code delivery, redemption and ballot casting run against the real Django SMTP backend. This is not proof of an external provider or production mail delivery. Next: external SMTP operations proof; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. The amd64 network-off Docker run and its checker output are recorded in `packaging/evidence/`; arm64 and Windows remain unproved. The local event-lifecycle video still needs its final linked delivery. These are not blanket higher-tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+Loopback SMTP delivery is covered by `test_smtp_delivery.py` using a local `aiosmtpd` server. This is not proof of an external provider or production mail delivery. The partial API and one published-results webhook need wider coverage; see `API.md` and `WEBHOOKS.md`. HMAC records are not certificates; portable Ed25519 JSON certificates have separate key-pinning limits. Arm64 and Windows offline boots remain unproved. Keep `.dogfood.toml` at T1/T2 until later tiers are finished and independently checked.
 
-The repository is private during the build. Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
+Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
 
 ## Optional hosted UI preview
 

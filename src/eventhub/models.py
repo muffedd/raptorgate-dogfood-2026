@@ -57,6 +57,8 @@ class Track(models.Model):
     name=models.CharField(max_length=100)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['event','slug'],name='unique_track_in_event')]
+    def __str__(self):
+        return self.name
 
 class Team(models.Model):
     event=models.ForeignKey(Event,on_delete=models.CASCADE,related_name='teams')

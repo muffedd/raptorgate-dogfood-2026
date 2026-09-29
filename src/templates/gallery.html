@@ -3,6 +3,40 @@
 {% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a>{% if preview_mode %}<a href="{% url 'public_results' %}">Results</a><a href="{% url 'verify_page' %}">Verify</a>{% else %}<a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'signup' %}">Sign up</a>{% endif %}{% endblock %}
 {% block content %}
 <style>
+    /* Centre bloom, then make room for the wordmark. Original local SVG, no borrowed assets. */
+    :root { --spark-ink:#15122a; --spark-violet:#7441f9; --spark-canvas:#fcfbff;
+      --spark-duration:1900ms; --spark-ease:cubic-bezier(.19,.9,.22,1);
+      --spark-seed-duration:370ms; --spark-arm-duration:390ms; --spark-slide-duration:480ms; --spark-word-duration:460ms; }
+    .rg-spark-intro { position:fixed; inset:0; z-index:100; display:grid; place-items:center; pointer-events:none;
+      background:var(--spark-canvas); animation:rg-spark-curtain var(--spark-duration) ease-in-out both; }
+    .rg-spark-stage { position:relative; width:min(calc(100vw - 32px),420px); height:112px; color:var(--spark-ink); }
+    .rg-spark-glyph { position:absolute; left:50%; top:2px; width:68px; height:68px; overflow:visible;
+      animation:rg-spark-slide var(--spark-slide-duration) var(--spark-ease) 500ms both; }
+    .rg-spark-seed { fill:var(--spark-violet); transform-origin:34px 34px; animation:rg-spark-seed var(--spark-seed-duration) var(--spark-ease) both; }
+    .rg-spark-arm { stroke:var(--spark-violet); stroke-width:4; stroke-linecap:round; transform-origin:34px 34px;
+      stroke-dasharray:21; stroke-dashoffset:21; animation:rg-spark-arm var(--spark-arm-duration) var(--spark-ease) 240ms both; }
+    .rg-spark-word { position:absolute; left:calc(50% - 106px); top:9px; width:max-content; max-width:calc(100% - 60px);
+      font:350 clamp(27px,5vw,58px)/1 Inter,system-ui,sans-serif; letter-spacing:-.055em; white-space:nowrap;
+      clip-path:inset(0 100% 0 0); animation:rg-spark-word var(--spark-word-duration) var(--spark-ease) 1020ms both; }
+    .rg-spark-sub { position:absolute; left:calc(50% - 106px); top:82px; width:max-content; max-width:calc(100% - 60px);
+      color:#716b80; font:500 11px Inter,system-ui,sans-serif;
+      letter-spacing:.13em; text-transform:uppercase; opacity:0; animation:rg-spark-sub 280ms ease-out 1350ms both; }
+    @keyframes rg-spark-curtain { 0%,85% { opacity:1; visibility:visible; } 100% { opacity:0; visibility:hidden; } }
+    @keyframes rg-spark-seed { from { opacity:0; transform:scale(.1); } 68% { opacity:1; transform:scale(1.35); } to { opacity:1; transform:scale(1); } }
+    @keyframes rg-spark-arm { from { stroke-dashoffset:21; transform:rotate(-32deg); opacity:0; } to { stroke-dashoffset:0; transform:rotate(0); opacity:1; } }
+    @keyframes rg-spark-slide { from { transform:translateX(-50%); } to { transform:translateX(calc(-50% - min(37vw,176px))); } }
+    @keyframes rg-spark-word { from { clip-path:inset(0 100% 0 0); opacity:.2; } to { clip-path:inset(0 0 0 0); opacity:1; } }
+    @keyframes rg-spark-sub { to { opacity:1; } }
+    @media(max-width:560px) {
+      .rg-spark-stage { width:calc(100vw - 24px); }
+      .rg-spark-glyph { animation-name:rg-spark-slide-small; }
+      .rg-spark-word,.rg-spark-sub { left:calc(50% - 25vw + 42px); }
+      @keyframes rg-spark-slide-small { from { transform:translateX(-50%); } to { transform:translateX(calc(-50% - 25vw)); } }
+    }
+    @media(prefers-reduced-motion:reduce) { .rg-spark-intro { display:none !important; animation:none !important; } }
+
+.rg-spark-intro{display:none}.rg-spark-intro.is-playing{display:grid}
+
 .gl-wrap{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;padding-top:24px}
 .gl-tracks{flex:1 1 180px;max-width:220px;position:sticky;top:96px;max-height:calc(100vh - 112px);overflow:auto;display:grid;gap:4px;align-content:start}
 .gl-tracks span{padding:0 12px 8px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-sub)}
@@ -33,7 +67,7 @@
 .gl-info-top{display:flex;align-items:center;justify-content:space-between}.gl-info-top h2{margin:0;font-size:16px;font-weight:600}
 .gl-info-track{font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;background:var(--ui-soft);color:var(--ui-accent)}
 .gl-info h3{margin:16px 0 0;font-size:24px;line-height:1.15;letter-spacing:-.04em}
-.gl-info .gl-sum{margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ui-sub)}
+.gl-info-thumb{width:100%;max-height:152px;object-fit:cover;border-radius:10px;margin-top:12px}.gl-info .gl-sum{margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ui-sub)}
 .gl-info dl{margin:16px 0 0;padding-top:14px;border-top:1px solid #eef0f3;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:13px}.gl-info dt{color:var(--ui-sub)}.gl-info dd{margin:0;text-align:right;font-weight:600}
 .gl-info ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}.gl-info ul li{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--ui-soft);color:var(--ui-accent)}
 .gl-folder .card-thumb{position:absolute;inset:32px 18px 46px;width:calc(100% - 36px);height:calc(100% - 78px);object-fit:cover;opacity:.32;pointer-events:none;border-radius:8px}.gl-folder .card-tags{position:absolute;left:12px;bottom:9px;display:flex;gap:4px;margin:0;padding:0;list-style:none}.gl-folder .card-tags li{font-size:10px;color:#fff;background:rgba(18,8,55,.55);padding:1px 5px;border-radius:4px}.gl-tags{margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;font-size:13px;font-weight:600}
@@ -45,17 +79,36 @@
 @media(prefers-reduced-motion:reduce){.gl *{transition:none!important}}
 @media(max-width:900px){.gl-tracks{max-width:none;flex-basis:100%;position:static;display:flex;flex-wrap:wrap;gap:6px}.gl-tracks span{display:none}.gl-info{max-width:none;position:static}}
 </style>
+<div class="rg-spark-intro" aria-hidden="true">
+  <div class="rg-spark-stage">
+    <svg class="rg-spark-glyph" viewBox="0 0 68 68" focusable="false" aria-hidden="true">
+      <circle class="rg-spark-seed" cx="34" cy="34" r="5.5"/>
+      <g fill="none"><path class="rg-spark-arm" d="M34 10v15"/><path class="rg-spark-arm" d="M34 43v15"/><path class="rg-spark-arm" d="M10 34h15"/><path class="rg-spark-arm" d="M43 34h15"/></g>
+      <circle cx="34" cy="34" r="2.2" fill="var(--spark-canvas)"/>
+    </svg>
+    <span class="rg-spark-word">RaptorGate</span>
+    <span class="rg-spark-sub">Fair judging, made visible</span>
+  </div>
+</div>
+<script>(function(){
+  var intro=document.querySelector('.rg-spark-intro');
+  if(!intro||matchMedia('(prefers-reduced-motion: reduce)').matches){intro&&intro.remove();return}
+  try {if(sessionStorage.getItem('rg-spark-seen')){intro.remove();return}sessionStorage.setItem('rg-spark-seen','1')}catch(e){}
+  intro.classList.add('is-playing');
+  intro.addEventListener('animationend',function(e){if(e.target===intro)intro.remove()});
+  setTimeout(function(){intro.remove()},2400);
+})();</script>
 <div class="gl gl-wrap">
 <nav class="gl-tracks" id="gl-tracks" aria-label="Filter by track" hidden></nav>
 <section class="gl-main"><div class="gl-head"><div><h1>Projects<span>.</span></h1><p><b>{{ projects|length }} eligible project{{ projects|length|pluralize }}</b>{% if event %} · {{ event.title }}{% endif %}</p></div>
 <form class="gl-search" method="get" action="{% url 'gallery' %}"><input name="q" value="{{ query }}" placeholder="Search projects" aria-label="Search projects"><input name="track" value="{{ track }}" placeholder="Track slug" aria-label="Track code" style="width:130px"><button type="submit">Search</button>{% if query or track %}<a class="gl-clear" href="{% url 'gallery' %}">Clear filters</a>{% endif %}</form></div>
 <div class="gl-grid" id="gl-grid">{% for project in projects %}
-<article class="gl-folder" tabindex="0" data-track="{{ project.track.name }}" data-title="{{ project.title }}" data-team="{{ project.team.name }}" data-summary="{{ project.summary }}" data-tags="{{ project.tags|join:',' }}" data-url="{% url 'project_detail' project.slug %}" data-repo="{{ project.repo_url }}"><svg viewBox="0 0 260 200" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gl-fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a28ee"/><stop offset="1" stop-color="#4a14c4"/></linearGradient></defs><path d="M0 40C0 26 10 16 24 16H84C96 16 104 20 114 27L126 35C133 40 140 42 150 42H236C250 42 260 52 260 66V176C260 190 250 200 236 200H24C10 200 0 190 0 176Z" fill="url(#gl-fb)"/></svg><div class="gl-sheet"><b>{{ project.track.name }}</b><i>{{ project.tags|length }} tag{{ project.tags|length|pluralize }}</i></div>{% if project.thumbnail_url %}<img class="card-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}<div class="gl-front"><h2><a href="{% url 'project_detail' project.slug %}">{{ project.title }}</a></h2><p>{{ project.team.name }}</p><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></div>{% if project.tags %}<ul class="card-tags" aria-label="Project tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}</article>
+<article class="gl-folder" tabindex="0" data-track="{{ project.track.name }}" data-title="{{ project.title }}" data-team="{{ project.team.name }}" data-summary="{{ project.summary }}" data-tags="{{ project.tags|join:',' }}" data-url="{% url 'project_detail' project.slug %}" data-repo="{{ project.repo_url }}" data-thumb="{{ project.thumbnail_url }}"><svg viewBox="0 0 260 200" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gl-fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a28ee"/><stop offset="1" stop-color="#4a14c4"/></linearGradient></defs><path d="M0 40C0 26 10 16 24 16H84C96 16 104 20 114 27L126 35C133 40 140 42 150 42H236C250 42 260 52 260 66V176C260 190 250 200 236 200H24C10 200 0 190 0 176Z" fill="url(#gl-fb)"/></svg><div class="gl-sheet"><b>{{ project.track.name }}</b><i>{{ project.tags|length }} tag{{ project.tags|length|pluralize }}</i></div>{% if project.thumbnail_url %}<img class="card-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}<div class="gl-front"><h2><a href="{% url 'project_detail' project.slug %}">{{ project.title }}</a></h2><p>{{ project.team.name }}</p><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></div>{% if project.tags %}<ul class="card-tags" aria-label="Project tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}</article>
 {% empty %}<p class="rg-empty-state">No projects match this view.{% if query or track %} <a href="{% url 'gallery' %}">Clear filters</a>{% endif %}</p>{% endfor %}</div></section>
-<aside class="gl-info" id="gl-info" aria-live="polite" hidden><div class="gl-info-top"><h2>Info</h2><span class="gl-info-track" data-f="track"></span></div><h3 data-f="title"></h3><p class="gl-sum" data-f="summary"></p><dl><dt>Team</dt><dd data-f="team"></dd><dt>Track</dt><dd data-f="track"></dd></dl><div class="gl-tags">Tags<ul data-f="tags"></ul></div><div class="gl-acts"><a class="gl-primary" data-f="url" href="#">View project</a><a class="gl-secondary" data-f="repo" href="#" rel="noopener noreferrer" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>Repository</a></div></aside>
+<aside class="gl-info" id="gl-info" aria-live="polite" hidden><div class="gl-info-top"><h2>Info</h2><span class="gl-info-track" data-f="track"></span></div><h3 data-f="title"></h3><img class="gl-info-thumb" alt="" hidden><p class="gl-sum" data-f="summary"></p><dl><dt>Team</dt><dd data-f="team"></dd><dt>Track</dt><dd data-f="track"></dd></dl><div class="gl-tags">Tags<ul data-f="tags"></ul></div><div class="gl-acts"><a class="gl-primary" data-f="url" href="#">View project</a><a class="gl-secondary" data-f="repo" href="#" rel="noopener noreferrer" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>Repository</a></div></aside>
 </div>
 <script>(function(){var g=document.getElementById('gl-grid'),cards=[].slice.call(g.querySelectorAll('.gl-folder'));if(!cards.length)return;var info=document.getElementById('gl-info'),tr=document.getElementById('gl-tracks'),cur=null,f=function(n){return info.querySelectorAll('[data-f="'+n+'"]')};
-function pick(c){cards.forEach(function(x){x.classList.toggle('on',x===c)});cur=c;var d=c.dataset;f('track').forEach(function(e){e.textContent=d.track});f('title')[0].textContent=d.title;f('summary')[0].textContent=d.summary||'No description supplied.';f('team')[0].textContent=d.team;var u=f('tags')[0];u.innerHTML='';(d.tags?d.tags.split(','):[]).forEach(function(t){var li=document.createElement('li');li.textContent=t;u.appendChild(li)});f('url')[0].href=d.url;var r=f('repo')[0];if(d.repo){r.href=d.repo;r.style.display=''}else r.style.display='none'}
+function pick(c){cards.forEach(function(x){x.classList.toggle('on',x===c)});cur=c;var d=c.dataset;f('track').forEach(function(e){e.textContent=d.track});f('title')[0].textContent=d.title;f('summary')[0].textContent=d.summary||'No description supplied.';f('team')[0].textContent=d.team;var thumb=info.querySelector('.gl-info-thumb');thumb.hidden=!d.thumb;if(d.thumb){thumb.src=d.thumb;thumb.alt=d.title+' thumbnail'}else{thumb.removeAttribute('src');thumb.alt=''}var u=f('tags')[0];u.innerHTML='';(d.tags?d.tags.split(','):[]).forEach(function(t){var li=document.createElement('li');li.textContent=t;u.appendChild(li)});f('url')[0].href=d.url;var r=f('repo')[0];if(d.repo){r.href=d.repo;r.style.display=''}else r.style.display='none'}
 cards.forEach(function(c){c.addEventListener('click',function(e){if(e.target.closest('a'))return;pick(c)});c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(c)}})});
 var names=[];cards.forEach(function(c){if(names.indexOf(c.dataset.track)<0)names.push(c.dataset.track)});
 if(names.length>1){tr.hidden=false;var h='<span>Tracks</span>',all=['All'].concat(names);tr.innerHTML=h;all.forEach(function(n,i){var b=document.createElement('button');b.type='button';b.className=i?'':'on';var k=i?cards.filter(function(c){return c.dataset.track===n}).length:cards.length;b.textContent=n+' ';var count=document.createElement('small');count.textContent=k;b.appendChild(count);b.addEventListener('click',function(){[].forEach.call(tr.querySelectorAll('button'),function(x){x.classList.toggle('on',x===b)});cards.forEach(function(c){c.style.display=(!i||c.dataset.track===n)?'':'none'});var v=cards.filter(function(c){return c.style.display!=='none'})[0];if(v&&(!cur||cur.style.display==='none'))pick(v)});tr.appendChild(b)})}

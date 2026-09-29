@@ -1,27 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
-{% block title %}Cast your vote - RaptorGate<script>function rgBallotCursor(box){
-  if(!box||box.__hand||!window.matchMedia('(pointer:fine)').matches)return;box.__hand=1;
-  var C=1.3,sp={};function S(a,b,c){for(var r=a;r<=b;r++)sp[r]=c}
-  S(4,8,[[5,6]]);S(9,9,[[5,6],[8,9]]);S(10,11,[[5,6],[8,9],[11,12]]);S(12,12,[[5,6],[8,9],[11,12],[14,15]]);
-  S(13,14,[[1,15]]);S(15,15,[[2,15]]);S(16,17,[[3,15]]);S(18,19,[[4,15]]);S(20,20,[[5,15]]);S(21,21,[[5,14]]);S(22,22,[[6,14]]);S(23,23,[[6,13]]);
-  var m={};for(var r in sp)sp[r].forEach(function(p){for(var c=p[0];c<=p[1];c++)m[r+','+c]=1});
-  var h='',k='';for(var r=0;r<25;r++)for(var c=0;c<17;c++){
-    if(m[r+','+c])h+='<rect x="'+c+'" y="'+r+'" width="1.02" height="1.02" fill="#fff"/>';
-    else if(m[(r-1)+','+c]||m[(r+1)+','+c]||m[r+','+(c-1)]||m[r+','+(c+1)])h+='<rect x="'+c+'" y="'+r+'" width="1.02" height="1.02" fill="#0f172b"/>'}
-  [[0,2],[0,6],[0,9],[1,3],[1,6],[1,8],[3,1],[3,2],[3,9],[3,10]].forEach(function(p){k+='<rect x="'+p[1]+'" y="'+p[0]+'" width="1.02" height="1.02" fill="#000"/>'});
-  if(!document.getElementById('rg-hand-css')){var st=document.createElement('style');st.id='rg-hand-css';
-    st.textContent='.rg-hand{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:0;transition:opacity .12s;will-change:transform}.rg-hand.on{opacity:1}.rg-hand svg{display:block;overflow:visible;filter:drop-shadow(0 2px 2px rgba(15,23,43,.25))}.rg-hand .rays{opacity:0;transform-box:view-box;transform-origin:8px 4px}.rg-hand.click .rays{animation:rgburst .5s ease-out}.rg-hand.click .body{animation:rgpress .3s ease-out}.rg-hand .body{transform-box:view-box;transform-origin:8px 3px}@keyframes rgburst{0%{opacity:1;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.35)}}@keyframes rgpress{0%{transform:translateY(0) scale(1)}35%{transform:translateY(1.5px) scale(.93)}100%{transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){.rg-hand.click .rays,.rg-hand.click .body{animation:none}}.rg-hand-zone,.rg-hand-zone *{cursor:none!important}';
-    document.head.appendChild(st)}
-  var el=document.createElement('div');el.className='rg-hand';el.setAttribute('aria-hidden','true');
-  el.innerHTML='<svg width="'+17*C+'" height="'+25*C+'" viewBox="0 0 17 25" shape-rendering="crispEdges"><g class="body">'+h+'</g><g class="rays">'+k+'</g></svg>';
-  document.body.appendChild(el);var tx=5.5*C,ty=3*C,t;
-  box.addEventListener('mousemove',function(e){el.style.transform='translate('+(e.clientX-tx)+'px,'+(e.clientY-ty)+'px)'});
-  box.addEventListener('mouseenter',function(){box.classList.add('rg-hand-zone');el.classList.add('on')});
-  box.addEventListener('mouseleave',function(){box.classList.remove('rg-hand-zone');el.classList.remove('on','click')});
-  box.addEventListener('mousedown',function(){el.classList.remove('click');void el.offsetWidth;el.classList.add('click');clearTimeout(t);t=setTimeout(function(){el.classList.remove('click')},520)});
-}rgBallotCursor(document.getElementById("ballot-grid"));</script>
-{% endblock %}
+{% block title %}Cast your vote - RaptorGate{% endblock %}
 {% block body_class %}public-ballot{% endblock %}
 {% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'ballot' %}" aria-current="page">Vote</a>{% endblock %}
 {% block content %}
@@ -59,4 +38,25 @@
 <div class="pb-list-head section-heading"><h2>On the <span style="color:var(--ui-accent)">ballot</span></h2><p>{{ projects|length }} project{{ projects|length|pluralize }}</p></div>
 <p class="rg-ballot-notice" role="note">Choose carefully. Voting is one per account, with no remove or change option.</p>
 <div class="ballot-grid" id="ballot-grid">{% for project in projects %}<article class="ballot-card"><div class="ballot-card-top"><span class="ballot-index">{{ forloop.counter|stringformat:'02d' }}</span><span class="track-pill">{{ project.track.name }}</span></div><h3><a href="{% url 'project_detail' project.slug %}?event={{ event.slug }}">{{ project.title }}</a></h3><p class="ballot-description">{{ project.summary }}</p><div class="ballot-card-bottom"><span class="team-label">{{ project.team.name }}</span><form action="{% url 'vote' %}" method="post">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><input type="hidden" name="project" value="{{ project.slug }}"><button class="btn" aria-label="Cast vote for {{ project.title }}">Cast vote <span aria-hidden="true">↗</span></button></form></div></article>{% endfor %}</div>
+<script>function rgBallotCursor(box){
+  if(!box||box.__hand||!window.matchMedia('(pointer:fine)').matches)return;box.__hand=1;
+  var C=1.3,sp={};function S(a,b,c){for(var r=a;r<=b;r++)sp[r]=c}
+  S(4,8,[[5,6]]);S(9,9,[[5,6],[8,9]]);S(10,11,[[5,6],[8,9],[11,12]]);S(12,12,[[5,6],[8,9],[11,12],[14,15]]);
+  S(13,14,[[1,15]]);S(15,15,[[2,15]]);S(16,17,[[3,15]]);S(18,19,[[4,15]]);S(20,20,[[5,15]]);S(21,21,[[5,14]]);S(22,22,[[6,14]]);S(23,23,[[6,13]]);
+  var m={};for(var r in sp)sp[r].forEach(function(p){for(var c=p[0];c<=p[1];c++)m[r+','+c]=1});
+  var h='',k='';for(var r=0;r<25;r++)for(var c=0;c<17;c++){
+    if(m[r+','+c])h+='<rect x="'+c+'" y="'+r+'" width="1.02" height="1.02" fill="#fff"/>';
+    else if(m[(r-1)+','+c]||m[(r+1)+','+c]||m[r+','+(c-1)]||m[r+','+(c+1)])h+='<rect x="'+c+'" y="'+r+'" width="1.02" height="1.02" fill="#0f172b"/>'}
+  [[0,2],[0,6],[0,9],[1,3],[1,6],[1,8],[3,1],[3,2],[3,9],[3,10]].forEach(function(p){k+='<rect x="'+p[1]+'" y="'+p[0]+'" width="1.02" height="1.02" fill="#000"/>'});
+  if(!document.getElementById('rg-hand-css')){var st=document.createElement('style');st.id='rg-hand-css';
+    st.textContent='.rg-hand{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:0;transition:opacity .12s;will-change:transform}.rg-hand.on{opacity:1}.rg-hand svg{display:block;overflow:visible;filter:drop-shadow(0 2px 2px rgba(15,23,43,.25))}.rg-hand .rays{opacity:0;transform-box:view-box;transform-origin:8px 4px}.rg-hand.click .rays{animation:rgburst .5s ease-out}.rg-hand.click .body{animation:rgpress .3s ease-out}.rg-hand .body{transform-box:view-box;transform-origin:8px 3px}@keyframes rgburst{0%{opacity:1;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.35)}}@keyframes rgpress{0%{transform:translateY(0) scale(1)}35%{transform:translateY(1.5px) scale(.93)}100%{transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){.rg-hand.click .rays,.rg-hand.click .body{animation:none}}.rg-hand-zone,.rg-hand-zone *{cursor:none!important}';
+    document.head.appendChild(st)}
+  var el=document.createElement('div');el.className='rg-hand';el.setAttribute('aria-hidden','true');
+  el.innerHTML='<svg width="'+17*C+'" height="'+25*C+'" viewBox="0 0 17 25" shape-rendering="crispEdges"><g class="body">'+h+'</g><g class="rays">'+k+'</g></svg>';
+  document.body.appendChild(el);var tx=5.5*C,ty=3*C,t;
+  box.addEventListener('mousemove',function(e){el.style.transform='translate('+(e.clientX-tx)+'px,'+(e.clientY-ty)+'px)'});
+  box.addEventListener('mouseenter',function(){box.classList.add('rg-hand-zone');el.classList.add('on')});
+  box.addEventListener('mouseleave',function(){box.classList.remove('rg-hand-zone');el.classList.remove('on','click')});
+  box.addEventListener('mousedown',function(){el.classList.remove('click');void el.offsetWidth;el.classList.add('click');clearTimeout(t);t=setTimeout(function(){el.classList.remove('click')},520)});
+}rgBallotCursor(document.getElementById("ballot-grid"));</script>
 {% endblock %}

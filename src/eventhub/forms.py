@@ -26,10 +26,16 @@ class ProjectForm(forms.ModelForm):
         self.question_defs=[q for q in raw
             if isinstance(q,dict) and isinstance(q.get('key'),str) and isinstance(q.get('label'),str)]
         self.fields['track'].queryset=event.tracks.all() if event else self.fields['track'].queryset.none()
+        # Auxiliary fields are not ModelForm fields; hydrate them for edit forms.
+        if self.instance.pk:
+            self.initial.setdefault('gallery_images_text', '\n'.join(self.instance.gallery_images or []))
+            self.initial.setdefault('tags_text', ', '.join(self.instance.tags or []))
         for q in self.question_defs:
             self.fields['cq_'+q['key']]=forms.CharField(label=q['label'],
                 required=bool(q.get('required')),max_length=500,
                 widget=forms.Textarea(attrs={'rows':2}))
+            if self.instance.pk:
+                self.initial.setdefault('cq_'+q['key'], (self.instance.custom_answers or {}).get(q['key'], ''))
         self.order_fields(list(self.Meta.fields)+['gallery_images_text','tags_text']
             +['cq_'+q['key'] for q in self.question_defs])
     def clean_title(self):
