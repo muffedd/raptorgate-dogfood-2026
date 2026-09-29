@@ -2,9 +2,9 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 234/234 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 279/279 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test status above describes the tested source before its final release commit, not automated CI or a Docker cold-boot result.
+`API.md` describes the current partial JSON API. The test status above is a local PostgreSQL run of this source, not automated CI or a Docker cold-boot result.
 
 ## Features
 
@@ -52,7 +52,7 @@ python3 run.py .dogfood.toml > acceptance-report.txt
 cat acceptance-report.txt
 ```
 
-The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`, from the 90960b2 source on a fresh PostgreSQL database with the checker pointed at an isolated localhost port 18881; this is not a Docker or offline cold-boot result. The checked-in `.dogfood.toml` defaults to localhost:8080 for Compose. Rerun the checker on the final submission tree and read each result line; it can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
+The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`, from the integrated source on a fresh migrated and fixture-seeded PostgreSQL database with the checker pointed at an isolated localhost port 18889; this is not a Docker or offline cold-boot result. The checked-in `.dogfood.toml` defaults to localhost:8080 for Compose. Rerun the checker on the final submission tree and read each result line; it can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
 
 Install `requirements-dev.txt` into a Python environment, then run `python src/manage.py test eventhub.tests` and `PYTHONPATH=src pytest -q`. Run both against the final submission tree.
 
@@ -65,7 +65,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this review-cycle source, both full runners passed on real PostgreSQL: **234/234 Django tests** and **234/234 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is a capture at 90960b2 on isolated port 18881; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
+At this source, both full runners passed on real PostgreSQL: **279/279 Django tests** and **279/279 pytest tests**, no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18889; the checker was rerun after these regression tests with the same seven PASS lines. These checks are not a Docker cold-boot proof. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -77,7 +77,7 @@ Selected regression cases that can be inspected in `src/eventhub/tests/`:
 | Edited certificate JSON | Changing the signed payload makes the Ed25519 check fail (red on `/verify`, nonzero exit offline). `test_verify_public.py`. |
 | Validly self-signed but unissued certificate | Signature alone is not trusted by the site: `/verify` rejects it as not a published issuance. `test_verify_public.py`. |
 | Offline certificate with a different trusted public key | `verify.py` exits nonzero despite the intact signature. Without a supplied trusted key, it reports internal signature validity but explicitly does **not** verify issuer identity. `test_verify_public.py`. |
-| Vote receipt and participation record | Receipt checks are gated until publication and reveal no voter identity; HMAC record checks need the server-held key and cannot be independently verified. `test_verify_public.py`. |
+| Vote receipt and participation record | Receipt checks are gated until publication and reveal no voter identity, but the receipt is a bearer capability: any holder can use `/receipt/<secret>/proof` to learn the voted project after release; HMAC record checks need the server-held key and cannot be independently verified. `test_verify_public.py`. |
 | Organizer vote signals | The panel is superuser-only, event-scoped and aggregate-only; shared IPs and retry counts are labeled signals, not verdicts. `test_vote_signals.py`. |
 | Results expander | Raw and normalized means, judge count, rank movement and unscored state are aggregate-only. The public page does not expose judge identities, comments or individual ballots; it stays gated before publication. `test_results_explainer.py`. |
 
@@ -112,7 +112,7 @@ Offline Docker cold boot remains a separate proof step. Do not treat the indepen
 - Organizer vote activity signals: `GET /organizer/vote-signals` is private, event-scoped and aggregate-only; counts of retained vote attempts, shared-network patterns and audit/accepted-row differences are signals, not fraud verdicts.
 - Organizer data: `GET /organizer/overview` renders the active event overview; `GET /organizer/results?view=html` renders a private standings table, while `/organizer/results` remains JSON. `/organizer/rubric`, `/organizer/results`, `/organizer/audit`, `/organizer/publish`, `/api/export.csv`. `GET /organizer/vote-audit` is superuser-only and can select a historical event with `?event=<slug>`; `POST /organizer/comments/<id>/hide` hides a public comment.
 - Results explainer: each published `/results` row expands to show aggregate raw and normalized means, judge count, raw and normalized ranks, and rank movement. No individual judge identity, score or comment is exposed.
-- Community participation: `GET /ballot` renders an authenticated voter's stable randomized eligible-project order while voting is open; `POST /vote` records one vote per account per event and returns a receipt. `GET /projects/<slug>` shows comments; authenticated `POST` accepts them while voting is open. `GET /results` exposes aggregate standings only after voting has closed **and** the organizer has published. `GET /receipt/<secret>` checks a receipt only after that same release gate; keep the secret private.
+- Community participation: `GET /ballot` renders an authenticated voter's stable randomized eligible-project order while voting is open; `POST /vote` records one vote per account per event and returns a receipt. `GET /projects/<slug>` shows comments; authenticated `POST` accepts them while voting is open. `GET /results` exposes aggregate standings only after voting has closed **and** the organizer has published. `GET /receipt/<secret>` checks a receipt only after that same release gate; the receipt is a bearer capability, and any holder of it can use `/receipt/<secret>/proof` to learn the selected project after release. Keep the secret private.
 - Partial JSON API: see `API.md`; project and published standings reads are public, judge assignment reads require a bearer token. Issuance/revocation require an authenticated session and CSRF. This is not complete REST.
 - Participation record snapshot: organizer-only issue after published voting close, public verify if `RECORD_SIGNING_KEY` is set; this is not a certificate. See `PARTICIPATION-RECORDS.md`.
 - Results-published webhook: operator-configured HTTPS callback queued on first publication, delivered by a separate management command, with HMAC body signature and organizer-only attempt status. See `WEBHOOKS.md`; this is one event type, not full webhook coverage.

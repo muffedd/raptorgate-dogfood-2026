@@ -3,8 +3,9 @@ URLs, tags) and organizer-defined custom questions on the submission flow."""
 from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from django.utils import timezone
-from eventhub.models import Event, Project, Team, Track
+from eventhub.models import Event, Project, Team, Track, clean_question_defs
 
 QUESTIONS=[
     {"key":"stack","label":"Tech stack","required":True},
@@ -77,6 +78,22 @@ class SubmissionFieldTests(TestCase):
         self.assertEqual(p.gallery_images,[])
         self.assertEqual(p.tags,['solo'])
         self.assertEqual(p.custom_answers,{'stack':'Flask'})
+
+    def test_all_reference_url_fields_reject_unsafe_schemes(self):
+        self.client.force_login(self.member)
+        for field in ('thumbnail_url','demo_video_url','live_url'):
+            for value in ('javascript:alert(1)','ftp://example.org/file','data:text/html,x'):
+                with self.subTest(field=field,value=value):
+                    self.assertEqual(self.client.post('/projects/new',self.payload(**{field:value})).status_code,400)
+        self.assertFalse(Project.objects.filter(event=self.event).exists())
+
+    def test_gallery_per_image_length_and_tag_casefold_dedupe(self):
+        self.client.force_login(self.member)
+        long_image='https://example.org/'+('x'*181)
+        self.assertEqual(self.client.post('/projects/new',self.payload(gallery_images_text=long_image)).status_code,400)
+        result=self.client.post('/projects/new',self.payload(tags_text='AI, ai, Web, web'))
+        self.assertEqual(result.status_code,201)
+        self.assertEqual(Project.objects.get(event=self.event).tags,['AI','Web'])
 
     def test_non_http_reference_urls_rejected(self):
         self.client.force_login(self.member)
@@ -177,6 +194,11 @@ class EventQuestionDefinitionTests(TestCase):
         self.assertEqual(r.status_code,201)
         self.assertEqual(Event.objects.get(slug='q-plain').custom_questions,[])
 
+    def test_event_create_rejects_non_boolean_required(self):
+        result=self.create(slug='q-required',custom_questions='[{"key":"stack","label":"Stack","required":"yes"}]')
+        self.assertEqual(result.status_code,400)
+        self.assertFalse(Event.objects.filter(slug='q-required').exists())
+
     def test_malformed_questions_rejected(self):
         self.assertEqual(self.create(custom_questions='not json').status_code,400)
         self.assertEqual(self.create(slug='q-bad2',custom_questions='[{"key":"Bad Key","label":"x"}]').status_code,400)
@@ -185,3 +207,25 @@ class EventQuestionDefinitionTests(TestCase):
         too_many='['+','.join('{"key":"q%d","label":"L%d"}'%(i,i) for i in range(11))+']'
         self.assertEqual(self.create(slug='q-bad5',custom_questions=too_many).status_code,400)
         self.assertFalse(Event.objects.filter(slug__startswith='q-bad').exists())
+
+
+class QuestionDefinitionBoundaryTests(TestCase):
+    def test_normalizes_label_and_boolean_default(self):
+        self.assertEqual(clean_question_defs([{'key':'stack','label':'  Tech stack  '}]),
+                         [{'key':'stack','label':'Tech stack','required':False}])
+
+    def test_rejects_malformed_shapes_types_and_lengths(self):
+        invalid=[None,{},[None],[{'key':'Bad Key','label':'A'}],
+                 [{'key':'stack','label':'   '}],
+                 [{'key':'stack','label':'x'*161}],
+                 [{'key':'stack','label':'A','required':'true'}],
+                 [{'key':'stack','label':'A'},{'key':'stack','label':'B'}],
+                 [{'key':'a','label':'A'}]*11]
+        for value in invalid:
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                clean_question_defs(value)
+
+    def test_accepts_ten_unique_definitions(self):
+        definitions=[{'key':f'q{i}','label':f'Question {i}','required':i%2==0}
+                     for i in range(10)]
+        self.assertEqual(clean_question_defs(definitions),definitions)

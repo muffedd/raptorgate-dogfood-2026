@@ -1,6 +1,6 @@
 # Voter access modes
 
-An organizer chooses `Event.voting_access` (`authenticated`, `email`, or `open`) before the vote window. The normal seeded event remains `authenticated`; no new token or email flow is activated unless the organizer selects the mode. All three modes still require an active event and `voting_opens <= now < voting_closes`. A voter gets one saved ballot for the active event, a random-looking stable ballot order and a private receipt. A public receipt can reveal the selected project only after voting closes and the organizer publishes. The organizer-only vote audit includes the voter key, so it is not a public document.
+An organizer chooses `Event.voting_access` (`authenticated`, `email`, or `open`) before the vote window. The normal seeded event remains `authenticated`; no new token or email flow is activated unless the organizer selects the mode. All three modes still require an active event and `voting_opens <= now < voting_closes`. A voter gets one saved ballot for the active event, a random-looking stable ballot order and a private receipt. A receipt is a bearer capability: anyone who holds it can use `/receipt/<secret>/proof` to learn the selected project after voting closes and the organizer publishes. Do not publish or forward the receipt. The organizer-only vote audit includes the voter key, so it is not a public document.
 
 ## Authenticated (default)
 
