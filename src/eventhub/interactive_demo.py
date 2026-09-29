@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model, login
 from django.db import transaction
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
+from django.contrib.auth.forms import AuthenticationForm
 from .models import Assignment, Event, Judge, Project
 from .public_views import action_allowed
 
@@ -11,10 +12,13 @@ from .public_views import action_allowed
 def landing(request):
     if request.method not in ('GET', 'HEAD'):
         return HttpResponseNotAllowed(['GET', 'HEAD'])
+    ready=bool(request.session.get('demo_participant') and request.session.get('demo_judge'))
+    if not ready:
+        return render(request, 'login.html', {'demo_entry':True, 'form':AuthenticationForm(request),
+            'event':Event.objects.filter(active=True).first()})
     return render(request, 'interactive_demo.html', {
         'event': Event.objects.filter(active=True).first(),
-        'demo_ready': bool(request.session.get('demo_participant') and request.session.get('demo_judge')),
-        'demo_role': request.session.get('demo_role'),
+        'demo_ready': ready, 'demo_role': request.session.get('demo_role'),
     })
 
 
@@ -24,7 +28,7 @@ def enter(request):
     participant = request.session.get('demo_participant')
     judge_id = request.session.get('demo_judge')
     User = get_user_model()
-    if participant and judge_id and User.objects.filter(pk=participant, is_superuser=False).exists() and User.objects.filter(pk=judge_id, is_superuser=False).exists():
+    if participant and judge_id and User.objects.filter(pk=participant, is_superuser=False, is_staff=False, username__startswith='demo-participant-').exists() and User.objects.filter(pk=judge_id, is_superuser=False, is_staff=False, username__startswith='demo-judge-').exists():
         login(request, User.objects.get(pk=participant))
         request.session['demo_participant'] = participant
         request.session['demo_judge'] = judge_id

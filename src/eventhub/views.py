@@ -4,6 +4,8 @@ from io import StringIO
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
+from django.conf import settings
+from django.db.models import Q
 from .forms import ProjectForm, ParticipantSignupForm
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -50,6 +52,9 @@ def home(request):
 def gallery(request):
     event=active_event(request)
     rows=Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).select_related('track','team') if event else []
+    if settings.DEMO and event:
+        # Unreviewed visitor text never appears to other visitors. Seed teams have no members.
+        rows=rows.filter(Q(team__members__isnull=True)|Q(team__members=request.user.pk)).distinct()
     query=request.GET.get('q','').strip()
     track=request.GET.get('track','').strip()
     if query: rows=rows.filter(title__icontains=query)
@@ -234,6 +239,10 @@ def create_team(request):
     from django.utils.text import slugify
     slug=(slugify(name) or 'team')[:50]+'-'+secrets.token_hex(3)
     with transaction.atomic():
+        if settings.DEMO:
+            Event.objects.select_for_update().get(pk=event.pk)
+            if Team.objects.filter(event=event,members=request.user).exists():
+                return JsonResponse({'error':'One team per demo visitor'},status=429)
         team=Team.objects.create(event=event,slug=slug,name=name)
         team.members.add(request.user)
     if submission_wants_json(request):

@@ -19,7 +19,8 @@ class InteractiveDemoTests(TestCase):
         Project.objects.create(event=cls.event,slug='sample',team=team,track=cls.track,title='Sample')
 
     def test_role_switch_and_identity_isolation(self):
-        self.assertEqual(self.client.get('/demo').status_code,200)
+        self.assertContains(self.client.get('/demo'),'Sign in to the demo')
+        self.assertContains(self.client.get('/demo'),'li-card')
         self.assertEqual(self.client.get('/demo/enter').status_code,405)
         self.assertEqual(self.client.post('/demo/enter').status_code,302)
         participant_id=self.client.session['demo_participant']
@@ -69,8 +70,15 @@ class InteractiveDemoTests(TestCase):
         self.assertEqual(browser.post('/demo/enter',HTTP_X_CSRFTOKEN=token).status_code,302)
         token=browser.cookies['csrftoken'].value
         self.assertEqual(browser.post('/teams/new', {'name':'Visitor team'},HTTP_X_CSRFTOKEN=token).status_code,201)
+        self.assertEqual(browser.post('/teams/new', {'name':'Another team'},HTTP_X_CSRFTOKEN=token).status_code,429)
         track=self.track
-        self.assertEqual(browser.post('/projects/new',{'title':'Visitor project','track':track.pk,'action':'publish'},HTTP_X_CSRFTOKEN=token).status_code,201)
+        created=browser.post('/projects/new',{'title':'Visitor project','track':track.pk,'action':'publish'},HTTP_X_CSRFTOKEN=token)
+        self.assertEqual(created.status_code,201)
+        slug=created.json()['project']
+        self.assertContains(browser.get('/projects'),'Visitor project')
+        outsider=Client()
+        self.assertNotContains(outsider.get('/projects'),'Visitor project')
+        self.assertEqual(outsider.get('/projects/'+slug).status_code,404)
         self.assertEqual(browser.post('/demo/switch',{'role':'judge'},HTTP_X_CSRFTOKEN=token).status_code,302)
         token=browser.cookies['csrftoken'].value
         self.assertEqual(browser.post('/judge/score/sample',{'functionality':5,'quality':4,'innovation':3},HTTP_X_CSRFTOKEN=token).status_code,200)

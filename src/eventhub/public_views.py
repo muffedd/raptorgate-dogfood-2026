@@ -5,6 +5,7 @@ import secrets
 from datetime import timedelta
 from django.conf import settings
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -21,7 +22,9 @@ def event_for_request(request):
     return event
 
 def eligible(event):
-    return Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False)
+    projects=Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False)
+    # No public display or voting for unmoderated visitor submissions.
+    return projects.filter(team__members__isnull=True) if settings.DEMO else projects
 
 
 def voting_open(event):
@@ -100,7 +103,10 @@ def project_detail(request, slug):
     event = event_for_request(request)
     if not event:
         return JsonResponse({"error":"No event"}, status=404)
-    project=get_object_or_404(eligible(event),slug=slug)
+    visible=Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False)
+    if settings.DEMO:
+        visible=visible.filter(Q(team__members__isnull=True)|Q(team__members=request.user.pk)).distinct()
+    project=get_object_or_404(visible,slug=slug)
     if request.method == "POST":
         if not request.user.is_authenticated:
             return JsonResponse({"error":"Sign in required"}, status=401)
