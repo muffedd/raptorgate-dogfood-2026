@@ -1,0 +1,10 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Submission questions | {{ event.title }}{% endblock %}
+{% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
+{% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Submission questions</h1><p class="rg-result-lede">Up to ten questions. Each needs a lowercase key, a label and an optional required flag.</p></div></header>
+<section class="rg-result-panel"><p>After a submission exists, question keys and required flags cannot change. Labels may be corrected, but changing their meaning would mislabel earlier answers.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<p><label for="questions-json">Questions (JSON array)</label></p><textarea id="questions-json" name="custom_questions" rows="12" spellcheck="false" required>{{ questions_json }}</textarea><p>Example: [{"key":"stack","label":"Tech stack","required":true}]</p><button class="btn" type="submit">Save questions</button></form></section>
+{% endblock %}

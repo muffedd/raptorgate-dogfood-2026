@@ -30,6 +30,7 @@ urlpatterns=[
  path('join/<str:token>',views.join_team,name='join_team'),
  path('events/new',views.create_event,name='create_event'),
  path('events/select',views.select_event,name='select_event'),
+ path('organizer/questions',views.edit_event_questions,name='edit_event_questions'),
  path('api/judge/scores',views.judge_scores,name='judge_scores'),
  path('api/v1/tokens',api.issue_token,name='api_issue_token'),
  path('api/v1/tokens/<int:pk>/revoke',api.revoke_token,name='api_revoke_token'),

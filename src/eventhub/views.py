@@ -185,6 +185,42 @@ def create_event(request):
 
 
 @login_required
+def edit_event_questions(request):
+    if not request.user.is_superuser:
+        return JsonResponse({'error':'Organizer role required'},status=403)
+    if request.method not in ('GET','POST'):
+        return HttpResponseNotAllowed(['GET','POST'])
+    event=active_event(request)
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    if request.method=='GET':
+        return render(request,'event_questions.html',{'event':event,
+            'questions_json':json.dumps(event.custom_questions,indent=2)})
+    raw=request.POST.get('custom_questions','')
+    try:
+        questions=clean_question_defs(json.loads(raw))
+    except (ValueError,ValidationError) as exc:
+        detail=getattr(exc,'messages',None) or [str(exc)]
+        if submission_wants_json(request):
+            return JsonResponse({'error':'Invalid custom questions','detail':detail},status=400)
+        return render(request,'event_questions.html',{'event':event,
+            'questions_json':raw,'error':'; '.join(detail)},status=400)
+    # Keep canonical answers meaningful: once submissions exist, changing keys or
+    # required flags would silently change the questions participants answered.
+    with transaction.atomic():
+        event=Event.objects.select_for_update().get(pk=event.pk)
+        if Project.objects.filter(event=event).exists():
+            old=[(q['key'],q['required']) for q in event.custom_questions]
+            new=[(q['key'],q['required']) for q in questions]
+            if old!=new:
+                return JsonResponse({'error':'Question keys and required flags cannot change after submissions exist'},status=409)
+        event.custom_questions=questions
+        event.save(update_fields=['custom_questions'])
+    if submission_wants_json(request):
+        return JsonResponse({'custom_questions':questions})
+    return redirect('organizer_overview')
+
+
+@login_required
 def create_team(request):
     if request.method!='POST': return render(request,'team_form.html')
     event=active_event(request)
