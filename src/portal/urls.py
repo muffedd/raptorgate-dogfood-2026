@@ -1,8 +1,12 @@
 from django.contrib import admin
+from eventhub import interactive_demo
 from django.contrib.auth import views as auth_views
 from django.urls import path
 from eventhub import views, public_views, widget, bulk, lifecycle_export, voter_access, api, records, certificates, webhooks, verify_public, vote_signals, public_proofs, preview_tour
 urlpatterns=[
+ path('demo',interactive_demo.landing,name='interactive_demo'),
+ path('demo/enter',interactive_demo.enter,name='interactive_demo_enter'),
+ path('demo/switch',interactive_demo.switch,name='interactive_demo_switch'),
  path('tour/<slug:page>', preview_tour.page, name='preview_tour'),
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
