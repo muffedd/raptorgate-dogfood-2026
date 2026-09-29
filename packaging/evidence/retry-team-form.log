@@ -1,0 +1,10 @@
+# Provenance: verbatim server access-log lines from the VM capture file /tmp/proof3.out,
+# retry window 2026-09-29T14:20:39Z (the compose access-log stream).
+# tested_commit=24d9a638f3f244ab98b7881e47aa8b91886e2ba0
+# Caveat: the CLIENT-side curl transcript for this retry was never written to any file.
+# These are the only persisted lines; nothing here was reconstructed.
+portal-1  | [29/Sep/2026 14:20:39] "GET /login/ HTTP/1.1" 200 2151
+portal-1  | [29/Sep/2026 14:20:39] "POST /login/ HTTP/1.1" 302 0
+portal-1  | [29/Sep/2026 14:20:39] "POST /teams/new HTTP/1.1" 403 1004
+portal-1  | [29/Sep/2026 14:20:39] "GET /teams/new HTTP/1.1" 200 1933
+portal-1  | [29/Sep/2026 14:20:39] "POST /teams/new HTTP/1.1" 302 0
