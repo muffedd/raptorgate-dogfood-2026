@@ -11,3 +11,4 @@ dist
 # Collected static assets
 src/staticfiles/
 .dogfood.toml
+fixtures.json

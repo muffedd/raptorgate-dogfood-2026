@@ -7,8 +7,10 @@ command -v docker >/dev/null
 mkdir -p dist
 command -v sha256sum >/dev/null || { echo "sha256sum required to build manifest" >&2; exit 1; }
 for arch in amd64 arm64; do
-  docker pull --platform "linux/$arch" postgres:16-alpine
-  docker tag postgres:16-alpine "raptorgate-postgres:$arch"
+  # Load a platform-selected image straight into an architecture-specific tag.
+  # Pulling postgres:16-alpine and retagging it can reuse the prior architecture
+  # on Docker's classic single-platform image store.
+  printf 'FROM postgres:16-alpine\n' | docker buildx build --platform "linux/$arch" --load -t "raptorgate-postgres:$arch" -
   docker image inspect "raptorgate-postgres:$arch" --format '{{.Architecture}}' | grep -qx "$arch" || { echo "PostgreSQL image architecture mismatch: $arch" >&2; exit 1; }
   docker buildx build --platform "linux/$arch" --load -f packaging/Dockerfile.offline -t "raptorgate-portal:$arch" .
   docker image inspect "raptorgate-portal:$arch" --format '{{.Architecture}}' | grep -qx "$arch" || { echo "Portal image architecture mismatch: $arch" >&2; exit 1; }
