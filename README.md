@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 234/234 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
+`API.md` describes the current partial JSON API. The test status above describes the tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
 ## Features
 
@@ -132,7 +132,7 @@ Open-link voting adds organizer-issued one-use links; email voting adds a one-ti
 
 Next: live SMTP delivery proof for email-gated voting; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with full lifecycle migration still on the roadmap. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
-The repository is private during the build. Publication needs a separate owner decision and review of the full history and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
+The repository is private during the build. Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
 
 ## Optional hosted UI preview
 
