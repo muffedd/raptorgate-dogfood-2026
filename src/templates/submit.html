@@ -1,1 +1,14 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Submit | RaptorGate</title></head><body><h1>Submit project</h1><p>Deadline: {{ event.submissions_close }}.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button>Save project</button></form></body></html>
+{% extends "dashboard_base.html" %}
+{% block title %}Submission - RaptorGate{% endblock %}
+{% block content %}
+<h1>{% if project.draft %}Your draft{% elif project %}Edit your submission{% else %}Submit project{% endif %}</h1>
+<p>Deadline: {{ event.submissions_close }}.</p>
+{% if project.draft %}<p>This draft is private and has not been submitted. Publish it before the deadline to enter the event.</p>{% elif project %}<p>Your project is published. You can edit it until the deadline.</p>{% endif %}
+{% if can_edit %}
+<form method="post">{% csrf_token %}{{ form.as_p }}
+{% if not project or project.draft %}<button type="submit" name="action" value="draft">Save draft</button>{% endif %}
+<button type="submit" name="action" value="publish">{% if project.draft %}Publish draft{% elif project %}Save published project{% else %}Publish project{% endif %}</button>
+</form>
+{% else %}<p>Submissions are closed. You can view your saved details, but cannot publish or edit them.</p>
+{{ form.as_p }}{% endif %}
+{% endblock %}
