@@ -58,7 +58,7 @@ body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub
   </style>
 </head>
 <body>
-  {% if tour_page %}<div class="rg-preview-notice" role="note" style="margin:0;border-radius:0">Read-only UI tour · Sample project queue, not actual assignments. Scoring and sign-in are disabled. <a href="{% url 'preview_tour' 'ballot' %}">Next: ballot</a> · <a href="{% url 'gallery' %}">Gallery</a></div>{% endif %}
+  {% if tour_page %}<div class="rg-preview-notice" role="note" style="margin:0;border-radius:0">Read-only UI tour · Sample judging queue from the demo event. Start at <a href="{% url 'preview_tour' 'login' %}">sign-in</a> and follow the journey. <a href="{% url 'preview_tour' 'ballot' %}">Next: ballot</a> · <a href="{% url 'gallery' %}">Gallery</a></div>{% endif %}
   <div class="rg-shell">
     <aside class="rg-rail"><a href="{% url 'gallery' %}" aria-label="RaptorGate gallery">RG</a><a class="rg-rail-label" href="{% if tour_page %}{% url 'preview_tour' 'judge' %}{% else %}{% url 'judge_console' %}{% endif %}" title="Judging" aria-label="Judging console">J</a>
       <button type="button" class="rg-theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">D</span></button></aside>

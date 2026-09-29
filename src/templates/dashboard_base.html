@@ -46,7 +46,7 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
 </header>
 
 <main class="wrap site-main" id="main-content" tabindex="-1">
-  {% if preview_mode %}<aside class="rg-preview-notice" role="note"><strong>Public preview</strong> · Sample event with published fixture results. Explore projects and rankings, or <a href="{% url 'preview_tour' 'judge' %}">take the UI tour</a>. Tour screens are read-only; voting, sign-in, edits and exports are disabled.</aside>{% endif %}
+  {% if preview_mode %}<aside class="rg-preview-notice" role="note"><strong>Public preview</strong> · Sample event with published fixture results. Explore projects and rankings, or <a href="{% url 'preview_tour' 'judge' %}">take the UI tour</a>. The tour is read-only; start at <a href="{% url 'preview_tour' 'login' %}">sign-in</a>, then follow the signup, submission, judge, ballot and results screens.</aside>{% endif %}
   {% if tour_page %}<nav class="rg-tour-nav" aria-label="Read-only UI tour">UI tour: {% for item in tour_pages %}<a href="{% url 'preview_tour' item %}"{% if item == tour_page %} aria-current="page"{% endif %}>{{ item|capfirst }}</a>{% endfor %}</nav>{% endif %}
   {% block content %}{% endblock %}
 </main>
