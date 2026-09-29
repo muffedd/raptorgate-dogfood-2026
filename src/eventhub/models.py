@@ -1,5 +1,42 @@
+import re
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+
+GALLERY_IMAGE_LIMIT = 6
+TAG_LIMIT = 8
+TAG_MAX_LEN = 30
+QUESTION_LIMIT = 10
+QUESTION_KEY_RE = re.compile(r'^[a-z0-9][a-z0-9-]{0,39}$')
+
+
+def clean_question_defs(value):
+    """Validate organizer-defined submission questions.
+
+    Returns a normalized list of {"key", "label", "required"} dicts.
+    Raises ValidationError on any malformed entry.
+    """
+    if not isinstance(value, list) or len(value) > QUESTION_LIMIT:
+        raise ValidationError(f'Custom questions must be a list of at most {QUESTION_LIMIT} entries')
+    defs = []
+    seen = set()
+    for entry in value:
+        if not isinstance(entry, dict):
+            raise ValidationError('Each custom question must be an object')
+        key = entry.get('key')
+        label = entry.get('label')
+        required = entry.get('required', False)
+        if not isinstance(key, str) or not QUESTION_KEY_RE.fullmatch(key):
+            raise ValidationError('Question keys must be 2-40 chars of lowercase letters, digits and dashes')
+        if key in seen:
+            raise ValidationError(f'Duplicate question key: {key}')
+        if not isinstance(label, str) or not 1 <= len(label.strip()) <= 160:
+            raise ValidationError('Question labels must be 1-160 characters')
+        if not isinstance(required, bool):
+            raise ValidationError('Question required flag must be true or false')
+        seen.add(key)
+        defs.append({'key': key, 'label': label.strip(), 'required': required})
+    return defs
 
 class Event(models.Model):
     slug=models.SlugField(unique=True)
@@ -12,6 +49,7 @@ class Event(models.Model):
     voting_opens=models.DateTimeField(null=True,blank=True)
     voting_closes=models.DateTimeField(null=True,blank=True)
     voting_access=models.CharField(max_length=20,default="authenticated",choices=[("authenticated","Authenticated"),("email","Email verified"),("open","Open link")])
+    custom_questions=models.JSONField(default=list,blank=True)
 
 class Track(models.Model):
     event=models.ForeignKey(Event,on_delete=models.CASCADE,related_name='tracks')
@@ -38,6 +76,12 @@ class Project(models.Model):
     title=models.CharField(max_length=180)
     summary=models.TextField(blank=True)
     repo_url=models.URLField(blank=True)
+    thumbnail_url=models.URLField(blank=True)
+    demo_video_url=models.URLField(blank=True)
+    live_url=models.URLField(blank=True)
+    gallery_images=models.JSONField(default=list,blank=True)
+    tags=models.JSONField(default=list,blank=True)
+    custom_answers=models.JSONField(default=dict,blank=True)
     submitted_at=models.DateTimeField(null=True,blank=True)
     draft=models.BooleanField(default=False)
     duplicate_of=models.ForeignKey('self',null=True,blank=True,on_delete=models.SET_NULL)
