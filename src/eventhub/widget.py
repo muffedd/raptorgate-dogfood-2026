@@ -61,11 +61,10 @@ WIDGET_CSP = (
 
 def public_projects(event):
     """Canonical public projects for an event: nondraft, non-duplicate."""
-    return (
-        Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False, team__members__isnull=True) if settings.DEMO else Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False)
-        .select_related('track', 'team')
-        .order_by('title')
-    )
+    rows = Project.objects.filter(event=event, duplicate_of__isnull=True, draft=False)
+    if settings.DEMO:
+        rows = rows.filter(team__members__isnull=True)
+    return rows.select_related('track', 'team').order_by('title')
 
 
 @xframe_options_exempt
