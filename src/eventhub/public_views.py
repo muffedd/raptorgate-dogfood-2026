@@ -120,7 +120,11 @@ def project_detail(request, slug):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET","POST"])
     comments=ProjectComment.objects.filter(event=event,project=project,hidden=False).select_related("author").order_by("created_at","pk")
-    return render(request,"project_detail.html",{"event":event,"project":project,"comments":comments})
+    answers=project.custom_answers or {}
+    custom_qa=[{"label":q["label"],"answer":answers[q["key"]]}
+               for q in (event.custom_questions or [])
+               if isinstance(q,dict) and q.get("label") and q.get("key") in answers]
+    return render(request,"project_detail.html",{"event":event,"project":project,"comments":comments,"custom_qa":custom_qa})
 
 
 def public_results(request):

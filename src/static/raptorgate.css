@@ -340,3 +340,18 @@ textarea {
 .ballot-card .btn span { padding-left:7px; }
 @media(max-width:700px){ .public-hero { padding:54px 0 35px; }.ballot-grid { grid-template-columns:1fr; }.section-heading { display:block; }.section-heading p { margin-top:5px; }.ballot-card { min-height:235px; }.public-hero h1 { font-size:42px; } }
 @media(prefers-reduced-motion:reduce){ .ballot-card { transition:none; }.ballot-card:hover { transform:none; } }
+
+/* ---- project reference media ---------------------------------------- */
+.card-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: calc(var(--radius) - 4px); border: 1px solid var(--line); }
+.card-tags { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; }
+.card-tags li { font-size: 12px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+.rg-project-thumb { max-width: 100%; border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 14px; }
+.rg-project-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.rg-project-tags { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; }
+.rg-project-tags li { font-size: 12px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+.rg-project-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 14px; }
+.rg-project-gallery img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: calc(var(--radius) - 4px); border: 1px solid var(--line); }
+.rg-project-qa { margin-top: 16px; }
+.rg-project-qa h3 { margin: 0 0 6px; font-size: 14px; }
+.rg-project-qa dt { font-weight: 600; margin-top: 10px; }
+.rg-project-qa dd { margin: 2px 0 0; color: var(--muted); }

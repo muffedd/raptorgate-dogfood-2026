@@ -10,8 +10,10 @@
 </form>
 <div class="card-grid">{% for project in projects %}
   <article class="card">
+    {% if project.thumbnail_url %}<img class="card-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}
     <header class="card-header"><h2 class="card-title"><a href="{% url 'project_detail' project.slug %}">{{ project.title }}</a></h2><span class="badge badge-track">{{ project.track.name }}</span></header>
     <p class="card-summary">{{ project.summary }}</p>
+    {% if project.tags %}<ul class="card-tags" aria-label="Project tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}
     <footer class="card-meta"><span>{{ project.team.name }}</span><a href="{% url 'project_detail' project.slug %}">View project</a></footer>
   </article>
 {% empty %}<p class="rg-empty-state">No projects match this view.{% if query or track %} <a href="{% url 'gallery' %}">Clear filters</a>{% endif %}</p>{% endfor %}</div>

@@ -2,12 +2,13 @@ import csv
 import json
 from io import StringIO
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
 from .forms import ProjectForm, ParticipantSignupForm
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
-from .models import Event, Judge, Project, Score, Team
+from .models import Event, Judge, Project, Score, Team, clean_question_defs
 
 
 def active_event(request=None):
@@ -91,11 +92,12 @@ def submit(request):
         draft=action=='draft'
         if canonical:
             project=form.save(commit=False)
-            canonical.title=project.title; canonical.summary=project.summary
-            canonical.repo_url=project.repo_url; canonical.track=project.track
+            fields=['title','summary','repo_url','track','thumbnail_url','demo_video_url','live_url','gallery_images','tags','custom_answers']
+            for field in fields:
+                setattr(canonical,field,getattr(project,field))
             canonical.draft=draft
             canonical.submitted_at=None if draft else timezone.now()
-            canonical.save(update_fields=['title','summary','repo_url','track','draft','submitted_at'])
+            canonical.save(update_fields=fields+['draft','submitted_at'])
             return JsonResponse({'project':canonical.slug,'updated':True,'draft':draft})
         project=form.save(commit=False)
         project.event=event; project.team=team
@@ -148,7 +150,15 @@ def create_event(request):
     slug=request.POST.get('slug','').strip()
     if not re.fullmatch(r'[a-z0-9-]{3,50}',slug):
         return JsonResponse({'error':'Invalid event slug'},status=400)
-    event,created=Event.objects.get_or_create(slug=slug,defaults={'title':name,'submissions_close':close})
+    questions_raw=request.POST.get('custom_questions','').strip()
+    questions=[]
+    if questions_raw:
+        try:
+            questions=clean_question_defs(json.loads(questions_raw))
+        except (ValueError,ValidationError) as exc:
+            detail=getattr(exc,'messages',None) or [str(exc)]
+            return JsonResponse({'error':'Invalid custom questions','detail':detail},status=400)
+    event,created=Event.objects.get_or_create(slug=slug,defaults={'title':name,'submissions_close':close,'custom_questions':questions})
     if not created: return JsonResponse({'error':'Event slug exists'},status=409)
     return JsonResponse({'event':event.slug},status=201)
 

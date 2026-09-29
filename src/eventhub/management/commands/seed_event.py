@@ -57,7 +57,7 @@ class Command(BaseCommand):
             judges[row['id']]=judge
         projects={}
         for row in data['projects']:
-            project,_=Project.objects.update_or_create(event=event,slug=row['id'],defaults={'title':row['title'],'summary':row['summary'],'repo_url':row.get('repo_url',''),'team':teams[row['team']],'track':tracks[row['track']],'submitted_at':datetime.fromisoformat(row['submitted_at'].replace('Z','+00:00'))})
+            project,_=Project.objects.update_or_create(event=event,slug=row['id'],defaults={'title':row['title'],'summary':row['summary'],'repo_url':row.get('repo_url',''),'thumbnail_url':row.get('thumbnail_url',''),'demo_video_url':row.get('demo_video_url',''),'live_url':row.get('live_url',''),'gallery_images':row.get('gallery_images',[]),'tags':row.get('tags',[]),'custom_answers':row.get('custom_answers',{}),'team':teams[row['team']],'track':tracks[row['track']],'submitted_at':datetime.fromisoformat(row['submitted_at'].replace('Z','+00:00'))})
             projects[row['id']]=project
         # The fixture plants one duplicate project on the same team. Keep it for audit,
         # hide the later row from the canonical public gallery.

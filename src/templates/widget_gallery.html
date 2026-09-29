@@ -14,11 +14,13 @@
   <ul class="widget-list">
     {% for project in projects %}
     <li class="widget-card">
+      {% if project.thumbnail_url %}<img class="widget-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}
       <div class="widget-card-head">
         <h2 class="widget-card-title">{{ project.title }}</h2>
         <span class="widget-track">{{ project.track.name }}</span>
       </div>
       {% if project.summary %}<p class="widget-summary">{{ project.summary }}</p>{% endif %}
+      {% if project.tags %}<ul class="widget-tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}
       <p class="widget-meta">
         <span class="widget-team">{{ project.team.name }}</span>
         {% if project.repo_url %}<a class="widget-repo" href="{{ project.repo_url }}" rel="noopener noreferrer">Repository</a>{% endif %}
