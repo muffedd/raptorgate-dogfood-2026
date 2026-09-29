@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 279/279 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 287/287 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above is a local PostgreSQL run of this source, not automated CI or a Docker cold-boot result.
 
@@ -65,7 +65,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this source, both full runners passed on real PostgreSQL: **279/279 Django tests** and **279/279 pytest tests**, no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18889; the checker was rerun after these regression tests with the same seven PASS lines. These checks are not a Docker cold-boot proof. The separate local event-lifecycle video is not an offline cold-boot proof either.
+At this source, both full runners passed on real PostgreSQL: **287/287 Django tests** and **287/287 pytest tests**, no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18889; the checker was rerun after these regression tests with the same seven PASS lines. These checks are not a Docker cold-boot proof. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -132,7 +132,7 @@ Open-link voting adds organizer-issued one-use links; email voting adds a one-ti
 
 ## Roadmap
 
-Next: live SMTP delivery proof for email-gated voting; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+Loopback SMTP delivery is covered by `test_smtp_delivery.py` using a local `aiosmtpd` server: code delivery, redemption and ballot casting run against the real Django SMTP backend. This is not proof of an external provider or production mail delivery. Next: external SMTP operations proof; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
 The repository is private during the build. Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
 
