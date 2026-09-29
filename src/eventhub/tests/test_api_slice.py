@@ -76,3 +76,18 @@ class APISliceTests(TestCase):
         Event.objects.all().delete()
         self.assertEqual(self.client.get('/api/v1/projects').status_code,404)
         self.assertEqual(self.client.get('/api/v1/judge/assignments',HTTP_AUTHORIZATION='Bearer '+token['token']).status_code,404)
+
+    def test_detail_and_own_score_read_are_scoped(self):
+        self.assertEqual(self.client.get('/api/v1/projects/p').json()['project']['title'],'Visible')
+        self.assertEqual(self.client.get('/api/v1/projects/secret').status_code,404)
+        self.assertEqual(self.client.get('/api/v1/projects/p?event=wrong').status_code,404)
+        self.assertEqual(self.client.get('/api/v1/judge/scores').status_code,401)
+        token=self.token(self.judge_user)
+        header={'HTTP_AUTHORIZATION':'Bearer '+token['token']}
+        response=self.client.get('/api/v1/judge/scores',**header)
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response['Cache-Control'],'no-store')
+        self.assertEqual(response.json()['scores'][0]['project'],'p')
+        self.assertEqual(self.client.get('/api/v1/judge/scores?judge=other',**header).status_code,403)
+        self.assertEqual(self.client.get('/api/v1/judge/scores?event=wrong',**header).status_code,404)
+        self.assertEqual(self.client.get('/api/v1/judge/scores',HTTP_AUTHORIZATION='Bearer '+self.token(self.other_user)['token']).status_code,403)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks, verify_public, vote_signals
+from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks, verify_public, vote_signals, public_proofs
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -12,6 +12,7 @@ urlpatterns=[
  path('vote/email/request',voter_access.request_email_code,name='request_email_code'),
  path('vote/email/redeem',voter_access.redeem_email_code,name='redeem_email_code'),
  path('receipt/<str:token>',public_views.receipt_lookup,name='receipt_lookup'),
+ path('receipt/<str:token>/proof',public_proofs.vote_proof,name='vote_proof'),
  path('results',public_views.public_results,name='public_results'),
  path('verify',verify_public.verify_page,name='verify_page'),
  path('organizer/vote-audit',public_views.vote_audit,name='vote_audit'),
@@ -33,6 +34,8 @@ urlpatterns=[
  path('api/v1/tokens',api.issue_token,name='api_issue_token'),
  path('api/v1/tokens/<int:pk>/revoke',api.revoke_token,name='api_revoke_token'),
  path('api/v1/projects',api.projects,name='api_projects'),
+ path('api/v1/projects/<slug:slug>',api.project_detail,name='api_project_detail'),
+ path('api/v1/judge/scores',api.judge_scores,name='api_v1_judge_scores'),
  path('api/v1/results',api.results,name='api_results'),
  path('api/v1/judge/assignments',api.assignments,name='api_assignments'),
  path('organizer/webhooks/deliveries',webhooks.deliveries,name='webhook_deliveries'),

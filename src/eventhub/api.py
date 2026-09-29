@@ -4,7 +4,7 @@ import secrets
 from datetime import timedelta
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.utils import timezone
-from .models import APIToken, Assignment, Event, Judge, Project
+from .models import APIToken, Assignment, Event, Judge, Project, Score
 from .ranking import standings
 
 
@@ -72,3 +72,31 @@ def assignments(request):
     if not judge:return JsonResponse({'error':'Judge role required'},status=403)
     rows=Assignment.objects.filter(judge=judge,project__event=event,project__draft=False,project__duplicate_of__isnull=True).select_related('project').order_by('project__slug')
     return JsonResponse({'judge':judge.slug,'assignments':[{'project':a.project.slug,'title':a.project.title} for a in rows]})
+
+
+def project_detail(request, slug):
+    """Public gallery detail without draft or duplicate leakage."""
+    if request.method!='GET':return HttpResponseNotAllowed(['GET'])
+    event=active_event(request)
+    if not event:return JsonResponse({'error':'No active event'},status=404)
+    project=Project.objects.filter(event=event,slug=slug,draft=False,duplicate_of__isnull=True).select_related('team','track').first()
+    if not project:return JsonResponse({'error':'Project not found'},status=404)
+    return JsonResponse({'event':event.slug,'project':{'slug':project.slug,'title':project.title,
+        'summary':project.summary,'repo_url':project.repo_url,'team':project.team.name,'track':project.track.name}})
+
+
+def judge_scores(request):
+    """Bearer-protected parity with the cookie-based own-scores read."""
+    if request.method!='GET':return HttpResponseNotAllowed(['GET'])
+    user=_authorized(request)
+    if not user:return _no_store(JsonResponse({'error':'Bearer token required'},status=401))
+    event=active_event(request)
+    if not event:return JsonResponse({'error':'No active event'},status=404)
+    judge=Judge.objects.filter(event=event,user=user).first()
+    if not judge:return JsonResponse({'error':'Judge role required'},status=403)
+    if request.GET.get('judge',judge.slug)!=judge.slug:
+        return JsonResponse({'error':'Cannot read another judge'},status=403)
+    rows=Score.objects.filter(judge=judge,project__event=event,project__draft=False,
+        project__duplicate_of__isnull=True).select_related('project').order_by('project__slug')
+    return _no_store(JsonResponse({'judge':judge.slug,'scores':[{'project':s.project.slug,
+        'criteria':s.criteria,'comment':s.comment} for s in rows]}))
