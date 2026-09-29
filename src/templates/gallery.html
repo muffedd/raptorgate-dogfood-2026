@@ -1,6 +1,6 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Projects - RaptorGate{% endblock %}
-{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a>{% if preview_mode %}<a href="{% url 'public_results' %}">Results</a><a href="{% url 'verify_page' %}">Verify</a>{% else %}<a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'signup' %}">Sign up</a>{% endif %}{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a>{% if preview_mode %}<a href="{% url 'public_results' %}">Results</a><a href="{% url 'verify_page' %}">Verify</a>{% elif interactive_demo %}<a href="{% url 'interactive_demo' %}">Start here</a>{% if request.user.is_authenticated %}<a href="{% url 'ballot' %}">Vote</a>{% endif %}{% else %}<a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'signup' %}">Sign up</a>{% endif %}{% endblock %}
 {% block content %}
 <style>
     /* Centre bloom, then make room for the wordmark. Original local SVG, no borrowed assets. */
