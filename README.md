@@ -101,6 +101,24 @@ The sweep prompted fixes that automated checks alone miss: a visible-on-focus â€
 
 An independent amd64 offline Docker cold boot is documented in `packaging/evidence/`. Do not treat the reviewerâ€™s probes or the official checker as a security audit.
 
+## Offline proof
+
+What was proven: the whole app cold-boots with the network off, from the built image archive, on amd64. Exact commit tested: `24d9a638f3f244ab98b7881e47aa8b91886e2ba0`.
+
+How: a fresh Multipass Ubuntu VM. The image was built and checksummed while online (`sha256sum -c` says OK). Then the VM's network card was brought down. A `curl` to example.com fails and DNS is dead. The stack was loaded from the archive and booted with `--no-build --pull never`. No network call was needed at any point.
+
+Result: Postgres becomes healthy. Migrations apply. The seed writes 41 rows, which is 40 canonical projects. The portal serves on `127.0.0.1:8080`. The gallery and its theme CSS return HTTP 200. The official checker prints exactly 7 PASS lines, 0 FAIL, and ends with `claimed T1 T2, verified T1 T2`.
+
+Evidence: raw logs live in `packaging/evidence/`. The sanitized archive `rg-evidence-final.tgz` holds `offline-proof.log`, `done-criteria.log`, `seed-counts.log`, `compose-ps.log`, `network-off.log` and more. The folder also holds `retry-team-form.log` and `EVIDENCE-README.md`. Host paths were sanitized. See `packaging/README.md` for the full scope notes.
+
+Limitations:
+
+- The proof covers amd64 only. The arm64 cross-build needs QEMU/binfmt.
+- The UI sweep was HTTP-level, not visual. It did not render pixels.
+- The first team-form attempt returned 403 on a stale pre-login CSRF token in the test harness. A retry with the token taken from the authenticated form returned 302. The saved server lines in `retry-team-form.log` show the HTTP codes and order only, not the cause or the redirect target. This is a harness problem, not a product defect, and it is not one of the seven PASS lines.
+
+Reproduce: run `packaging/run-offline.sh` against a checksum-verified archive. The Linux steps are in `packaging/README.md`.
+
 ## Current routes
 
 - Bulk project data: organizer-only `GET /organizer/projects.csv` exports up to 5000 active-event projects; `POST /organizer/projects/import` accepts a UTF-8 CSV body with the legacy six-column header `project_slug,title,summary,repo_url,team_slug,track_slug` or the complete enriched export header adding `thumbnail_url,demo_video_url,live_url,gallery_images_json,tags_json,custom_answers_json`, 1-500 rows, up to 1 MB. The JSON columns preserve arrays and answers; imports validate URLs, caps and active-event question keys. It creates projects only while submissions are open and results unpublished. Team and track slugs must already belong to the active event; duplicate slugs reject the entire batch. This does not migrate judges, scores, votes or users.
