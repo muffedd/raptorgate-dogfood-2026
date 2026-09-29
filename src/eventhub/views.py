@@ -254,6 +254,7 @@ def organizer_overview(request):
     from .models import Assignment
     return render(request,'organizer_overview.html',{
         'event':event,
+        'export_datasets': ('teams', 'submissions', 'assignments', 'scores', 'results'),
         'projects_count':Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).count(),
         'assignments_count':Assignment.objects.filter(judge__event=event,project__event=event).count(),
         'scores_count':Score.objects.filter(judge__event=event,project__event=event).count(),
