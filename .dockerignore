@@ -7,3 +7,6 @@ __pycache__
 .env*
 
 dist
+
+# Collected static assets
+src/staticfiles/

@@ -13,3 +13,6 @@ snapshot.json
 .idea/
 .vscode/
 acceptance-local*.txt
+
+# Collected static assets
+src/staticfiles/

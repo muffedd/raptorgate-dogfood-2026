@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 232/232 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 234/234 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -63,7 +63,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this review-cycle source, both full runners passed on real PostgreSQL: **232/232 Django tests** and **232/232 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is a capture at 90960b2 on isolated port 18881; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
+At this review-cycle source, both full runners passed on real PostgreSQL: **234/234 Django tests** and **234/234 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is a capture at 90960b2 on isolated port 18881; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -133,3 +133,7 @@ Open-link voting adds organizer-issued one-use links; email voting adds a one-ti
 Next: live SMTP delivery proof for email-gated voting; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with full lifecycle migration still on the roadmap. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
 The repository is private during the build. Publication needs a separate owner decision and review of the full history and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
+
+## Optional hosted UI preview
+
+`preview.Dockerfile` and `preview-start.sh` provide an optional public preview alongside the unchanged local `docker compose up` path. It requires unique runtime `DJANGO_SECRET_KEY`, `RAPTORGATE_PUBLIC_PREVIEW=1`, `DJANGO_DEBUG=0`, `RAPTORGATE_PREVIEW_HOST=<exact service>.onrender.com`, and `DATABASE_URL` for a separate PostgreSQL database. The preview starts with only a fictional sample project, no users or fixture session tokens. It publishes an unscored results page for UI review, not a live event and not a working judge/vote demonstration. Do not run the fixture `seed_event` command or use `.dogfood.toml` demo cookies against the public preview. Free Render sleeps when idle and its free PostgreSQL expires in 30 days, without backups. The hosted preview does not replace the offline, seeded, one-command submission requirement.
