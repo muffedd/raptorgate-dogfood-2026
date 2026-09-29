@@ -130,7 +130,12 @@ def public_results(request):
     if not (event.published and event.voting_closes and timezone.now() >= event.voting_closes):
         return JsonResponse({"error":"Results are not public"}, status=404)
     # Only aggregate project rankings, never raw individual judge ballots.
-    return render(request,"results_public.html",{"event":event,"standings":standings(event)})
+    rows = standings(event)
+    eligible_count = len(rows)
+    scored_count = sum(row['rank'] is not None for row in rows)
+    return render(request,"results_public.html",{"event":event,"standings":rows,
+        "eligible_count":eligible_count,"scored_count":scored_count,
+        "unscored_count":eligible_count-scored_count})
 
 
 def receipt_lookup(request, token):
