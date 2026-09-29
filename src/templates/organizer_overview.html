@@ -5,5 +5,20 @@
 {% block content %}
 <header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Event overview</h1><p class="rg-result-lede">Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Draft results{% endif %}</span></header>
 <div class="rg-summary-grid"><section class="rg-result-panel"><h2>{{ projects_count }}</h2><p>Eligible projects</p></section><section class="rg-result-panel"><h2>{{ assignments_count }}</h2><p>Live assignments</p></section><section class="rg-result-panel"><h2>{{ scores_count }}</h2><p>Recorded score rows</p></section></div>
+<section class="rg-result-panel rg-judge-progress" aria-labelledby="judge-progress-title">
+  <h2 id="judge-progress-title">Judge assignments and progress</h2>
+  <p class="rg-result-muted">Live assignments in this event only. Started means a saved score row; completed means all rubric scores are valid. An unassigned judge has no queue yet.</p>
+  <form method="post" action="{% url 'assign_batch' %}" class="rg-assignment-form">
+    {% csrf_token %}
+    <label>Reviews per project <input name="reviews_per_project" type="number" min="1" max="10" value="2" required></label>
+    <label>Maximum per judge <input name="max_per_judge" type="number" min="1" max="100" value="100" required></label>
+    <button class="btn" type="submit">Fill assignment gaps</button>
+  </form>
+  <p class="rg-result-muted">Keeps existing assignments; spreads eligible projects across the least-loaded judges in each track. Judges on a competing team are excluded. The response lists any projects short of your target. Use Back to return to this view.</p>
+  <div class="rg-result-table-wrap" role="region" aria-label="Per-judge progress" tabindex="0"><table class="rg-result-table">
+    <thead><tr><th scope="col">Judge</th><th scope="col" class="number">Assigned</th><th scope="col" class="number">Started</th><th scope="col" class="number">Completed</th><th scope="col">Status</th></tr></thead>
+    <tbody>{% for row in judge_progress %}<tr><td><strong>{{ row.name }}</strong><small>{{ row.slug }}</small></td><td class="number">{{ row.assigned }}</td><td class="number">{{ row.started }}</td><td class="number">{{ row.completed }}</td><td>{% if row.not_started %}Not started{% elif row.assigned == 0 %}Unassigned{% elif row.completed == row.assigned %}Complete{% else %}In progress{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No judges invited for this event.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
 <div class="rg-result-layout"><section class="rg-result-panel"><h2>Review the standings</h2><p>The results view shows the actual raw and normalized scores. Check its coverage and any unscored projects before publishing. Imported fixture score rows may exist without live assignments.</p><a class="btn rg-link-button" href="{% url 'results' %}?view=html">Open organizer results</a></section><aside class="rg-result-panel"><h2>Event state</h2><p>{% if event.published %}Results have been published. The public standings are available only if the voting window has also closed.{% else %}Results are private to organizers until you publish and the voting window has closed.{% endif %}</p><p class="rg-result-note">Selecting a different active event changes the public gallery and judging scope for everyone. Use the event selector deliberately.</p></aside></div>
 {% endblock %}
