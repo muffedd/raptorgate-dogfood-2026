@@ -110,3 +110,48 @@ class BulkProjectTests(TestCase):
         Project.objects.create(event=self.event,team=self.team,track=self.track,slug='existing',title='Before')
         self.assertEqual(self.upload(HEADER+'new,New,,,red,tools\n').status_code,409)
         self.assertEqual(Project.objects.count(),1)
+
+    def test_enriched_export_import_roundtrip(self):
+        self.event.custom_questions=[{'key':'stack','label':'Stack','required':True}]
+        self.event.save(update_fields=['custom_questions'])
+        self.client.force_login(self.org)
+        original=Project.objects.create(event=self.event,team=self.team,track=self.track,
+            slug='rich',title='Rich',summary='Details',repo_url='https://example.org/repo',
+            thumbnail_url='https://example.org/t.png',demo_video_url='https://example.org/video',
+            live_url='https://example.org/live',gallery_images=['https://example.org/a.png'],
+            tags=['AI','Web'],custom_answers={'stack':'Django, PostgreSQL'})
+        exported=self.client.get('/organizer/projects.csv')
+        self.assertEqual(exported.status_code,200)
+        row=list(csv.DictReader(StringIO(exported.content.decode())))[0]
+        self.assertEqual(row['gallery_images_json'],'["https://example.org/a.png"]')
+        original.delete()
+        self.assertEqual(self.upload(exported.content).status_code,201)
+        copy=Project.objects.get(event=self.event,slug='rich')
+        for field in ('thumbnail_url','demo_video_url','live_url','gallery_images','tags','custom_answers'):
+            self.assertEqual(getattr(copy,field),getattr(original,field),field)
+
+    def test_enriched_import_rejects_unsafe_and_invalid_without_partial_rows(self):
+        import json
+        self.client.force_login(self.org)
+        header=','.join(__import__('eventhub.bulk',fromlist=['EXPORT_FIELDS']).EXPORT_FIELDS)+'\n'
+        def body(**changes):
+            base={'project_slug':'p','title':'Rich','summary':'S','repo_url':'',
+                  'team_slug':'red','track_slug':'tools','thumbnail_url':'',
+                  'demo_video_url':'','live_url':'',
+                  'gallery_images_json':'[]','tags_json':'[]','custom_answers_json':'{}'}
+            base.update(changes)
+            out=StringIO();writer=csv.DictWriter(out,fieldnames=base);writer.writeheader();writer.writerow(base)
+            return out.getvalue()
+        for value in (body(live_url='javascript:alert(1)'),
+                      body(gallery_images_json=json.dumps(['https://example.org/'+('x'*181)])),
+                      body(gallery_images_json=json.dumps(['javascript:alert(1)'])),
+                      body(tags_json=json.dumps(['AI','ai'])),
+                      body(tags_json=json.dumps(['x']*9)),
+                      body(custom_answers_json=json.dumps({'unknown':'value'}))):
+            with self.subTest(value=value[:120]):
+                self.assertEqual(self.upload(value).status_code,400)
+                self.assertFalse(Project.objects.exists())
+        self.event.custom_questions=[{'key':'stack','label':'Stack','required':True}]
+        self.event.save(update_fields=['custom_questions'])
+        self.assertEqual(self.upload(body()).status_code,400)
+        self.assertFalse(Project.objects.exists())
