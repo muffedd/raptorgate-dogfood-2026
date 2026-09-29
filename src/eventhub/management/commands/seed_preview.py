@@ -35,6 +35,7 @@ class Command(BaseCommand):
             raise CommandError('Unexpected preview snapshot counts')
         close=datetime.fromisoformat(data['event']['submissions_close'].replace('Z','+00:00'))
         event=Event.objects.create(slug='evt_01', title=data['event']['name'],
+            prize=str(data['event'].get('prize') or '')[:240],
             submissions_close=close, voting_opens=close, voting_closes=close,
             results_publish_at=timezone.now(), published=True, active=True)
         tracks={r['slug']:Track.objects.create(event=event,**r) for r in data['tracks']}

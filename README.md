@@ -4,13 +4,17 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `License: MIT`
 
-- Local PostgreSQL: 294 Django and 297 pytest tests passed on the integrated UI source; see [Testing and proof](#testing-and-proof).
+- Local PostgreSQL: 296 Django and 299 pytest tests passed on the integrated UI source; see [Testing and proof](#testing-and-proof).
 - Official checker: 7/7 literal T1/T2 PASS lines on the integrated UI source. The checker exit code alone is not a verdict.
 - Independent cold boot: a hash-verified amd64 image archive booted offline for exact earlier source `24d9a638`; [scope and logs](packaging/evidence/EVIDENCE-README.md). It does not cover later UI commits.
 
 `API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. A separate pre-login signup POST without a CSRF cookie returned HTTP 403 as designed; the browser flow obtains the token on GET. See the linked cold-boot scope for its limits.
 
 ## Features
+
+### Event and submission workflow
+
+- **Event setup and drafts:** organizers set an event name, deadline, optional public prize and submission questions. Team members can save a private project draft, edit it before the deadline, and publish; submitted projects cannot revert to drafts. `test_draft_flow.py`, `test_draft_visibility.py` and `test_event_prize.py` cover these paths.
 
 ### Judge workflow
 
@@ -24,6 +28,8 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 - **Local-first design:** light-first UI with a saved dark choice across judge, gallery, ballot, organizer and results screens. A separately styled, read-only gallery widget can be embedded on other sites.
 - **Responsive and accessible:** the dual-theme sweep checked desktop, tablet and mobile widths, keyboard toggle, persisted choice and mobile overflow.
+
+Bonus work: `NORMALIZATION-PROOF.md` and `normalization-proof.csv` document and reproduce rank movement; `THREAT-MODEL.md` maps attack surfaces and mitigations. These are bonus attempts, not additional acceptance-checker PASS lines.
 
 `.dogfood.toml` claims T1/T2, the scope verified by the official checker. The T3 voting features and T4 widget, JSON API, participation records, portable JSON certificates and one results-published webhook are working slices, not blanket tier claims. See `T3-VOTER-ACCESS.md` for the three access modes and their trust limits. See [Current routes](#current-routes), [Roadmap](#roadmap) and the design documents for details.
 
@@ -91,7 +97,7 @@ Install `requirements-dev.txt` into a Python environment, then run `PYTHONPATH=s
 
 ## Testing and proof
 
-On the integrated UI source, both full runners passed on real PostgreSQL: **294/294 Django tests** and **297/297 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after the full Django and pytest suites with the same seven PASS lines. These local checks are separate from the earlier-source independent Docker cold-boot logs linked above. The separate local event-lifecycle video is not an offline cold-boot proof either.
+On the integrated UI source, both full runners passed on real PostgreSQL: **296/296 Django tests** and **299/299 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after the full Django and pytest suites with the same seven PASS lines. These local checks are separate from the earlier-source independent Docker cold-boot logs linked above. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 

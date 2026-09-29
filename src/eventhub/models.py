@@ -41,6 +41,7 @@ def clean_question_defs(value):
 class Event(models.Model):
     slug=models.SlugField(unique=True)
     title=models.CharField(max_length=160)
+    prize=models.CharField(max_length=240,blank=True)
     submissions_close=models.DateTimeField()
     results_publish_at=models.DateTimeField(null=True,blank=True)
     published=models.BooleanField(default=False)

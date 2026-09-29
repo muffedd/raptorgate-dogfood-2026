@@ -168,6 +168,9 @@ def create_event(request):
     close=parse_datetime(request.POST.get('submissions_close',''))
     if not name or not close or timezone.is_naive(close):
         return JsonResponse({'error':'Name and UTC deadline required'},status=400)
+    prize=request.POST.get('prize','').strip()
+    if len(prize)>240:
+        return JsonResponse({'error':'Prize must be 240 characters or fewer'},status=400)
     slug=request.POST.get('slug','').strip()
     if not re.fullmatch(r'[a-z0-9-]{3,50}',slug):
         return JsonResponse({'error':'Invalid event slug'},status=400)
@@ -179,7 +182,7 @@ def create_event(request):
         except (ValueError,ValidationError) as exc:
             detail=getattr(exc,'messages',None) or [str(exc)]
             return JsonResponse({'error':'Invalid custom questions','detail':detail},status=400)
-    event,created=Event.objects.get_or_create(slug=slug,defaults={'title':name,'submissions_close':close,'custom_questions':questions})
+    event,created=Event.objects.get_or_create(slug=slug,defaults={'title':name,'prize':prize,'submissions_close':close,'custom_questions':questions})
     if not created: return JsonResponse({'error':'Event slug exists'},status=409)
     return JsonResponse({'event':event.slug},status=201)
 

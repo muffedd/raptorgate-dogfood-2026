@@ -35,7 +35,7 @@ class Command(BaseCommand):
         required={'functionality','quality','innovation'}
         if any(set(row['criteria']) != required or any(type(v) is not int or not 1 <= v <= 5 for v in row['criteria'].values()) for row in data['scores']):
             raise CommandError('Fixture scores must contain integer criteria from 1 to 5')
-        event,_=Event.objects.update_or_create(slug=e['id'],defaults={'title':e['name'],'submissions_close':close})
+        event,_=Event.objects.update_or_create(slug=e['id'],defaults={'title':e['name'],'submissions_close':close,'prize':str(e.get('prize') or '')[:240]})
         tracks={}
         for row in data['tracks']:
             tracks[row['id']],_=Track.objects.update_or_create(event=event,slug=row['id'],defaults={'name':row['name']})
