@@ -19,3 +19,23 @@ For each judge, calculate mean `mu_j` and population standard deviation `sigma_j
 ## Publication, export and limits
 
 The superuser can fetch standings at `/organizer/results`, and `/organizer/publish` sets an event flag and publication time only after submission close. There is no public results endpoint in the URL map; publication does not yet deliver a participant-facing result. Organizer CSV contains raw criterion rows, not normalized standings. The rubric is fixed to three criterion names, and the current system has no pairwise mode or full judge UI. The official contest weights submissions by Tier Completion & Correctness 40%, Judging Integrity 25%, Adoptability & Operability 20%, and Code Quality & Innovation 15%; optional bonuses break ties, not the main weighted score.
+
+## Batch assignment and live progress
+
+On the organizer overview, set reviews per eligible project (1-10, default 2) and
+maximum assignments per judge (1-100, default 100), then select "Fill assignment
+gaps." `POST /organizer/assign/batch` returns newly created judge/project pairs and
+`under_target_projects`. It is organizer-only and additive: existing assignments
+are kept, and repeated requests do not duplicate rows. Eligible submitted,
+canonical projects are assigned to the least-loaded judge in their own track;
+judges on any team in the event are excluded. A track without enough available
+judges or spare capacity remains under target. The algorithm is a deterministic
+load balancer, not a guarantee of equal expertise, statistical fairness, or
+conflict-of-interest clearance beyond team membership. It does not send invites.
+
+The organizer overview reports, per active-event judge, eligible assignments,
+started work (a saved score on an assigned project), valid completed rubric scores,
+and "Not started" for assigned judges with no saved scores. Imported scores with
+no live assignment do not inflate progress. The page is a fresh read, not a
+push-updating dashboard; reload to see changes. Assignment POST returns JSON,
+including the shortage count; use Back to return to the overview.

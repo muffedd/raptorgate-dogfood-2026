@@ -223,6 +223,65 @@ def assign_judge(request):
 
 
 @login_required
+def assign_batch(request):
+    """Balance eligible projects across their track's least-loaded judges.
+
+    Existing assignments are kept; rerunning adds only missing coverage. Locking
+    the event serializes concurrent batch requests and event selection changes.
+    """
+    if not request.user.is_superuser: return JsonResponse({'error':'Organizer role required'},status=403)
+    if request.method!='POST': return HttpResponseNotAllowed(['POST'])
+    event=active_event(request)
+    if not event: return JsonResponse({'error':'No event'},status=404)
+    try:
+        target=int(request.POST.get('reviews_per_project', '2'))
+        cap=int(request.POST.get('max_per_judge', '100'))
+    except (ValueError, TypeError):
+        return JsonResponse({'error':'Use whole-number limits'},status=400)
+    if not 1<=target<=10 or not 1<=cap<=100:
+        return JsonResponse({'error':'Reviews must be 1-10 and judge cap 1-100'},status=400)
+    from .models import Assignment
+    with transaction.atomic():
+        Event.objects.select_for_update().get(pk=event.pk)
+        projects=list(Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False)
+                      .order_by('slug','pk').values('pk','slug','track_id'))
+        judges=list(Judge.objects.filter(event=event).exclude(user__teams__event=event)
+                    .distinct().order_by('slug','pk').prefetch_related('tracks'))
+        allowed={j.pk:{t.pk for t in j.tracks.all() if t.event_id==event.pk} for j in judges}
+        valid_project_ids={p['pk'] for p in projects}
+        existing=list(Assignment.objects.filter(judge__event=event,project__event=event,
+                                                 project_id__in=valid_project_ids)
+                      .values_list('judge_id','project_id'))
+        assigned={p['pk']:set() for p in projects}
+        loads={j.pk:0 for j in judges}
+        project_tracks={p['pk']:p['track_id'] for p in projects}
+        for judge_id, project_id in existing:
+            if judge_id in loads:
+                loads[judge_id]+=1
+                # A stale off-track assignment cannot count as valid coverage.
+                if project_tracks[project_id] in allowed[judge_id]:
+                    assigned[project_id].add(judge_id)
+        created=[]
+        # Project-level coverage first; then least-loaded judge. No cross-track
+        # assignment, duplicate row, competing-team judge, or draft project.
+        while True:
+            candidates=[p for p in projects if len(assigned[p['pk']])<target and
+                        any(p['track_id'] in allowed[j.pk] and j.pk not in assigned[p['pk']]
+                            and loads[j.pk]<cap for j in judges)]
+            if not candidates: break
+            project=min(candidates,key=lambda p:(len(assigned[p['pk']]),p['slug'],p['pk']))
+            judge=min((j for j in judges if project['track_id'] in allowed[j.pk]
+                       and j.pk not in assigned[project['pk']] and loads[j.pk]<cap),
+                      key=lambda j:(loads[j.pk],j.slug,j.pk))
+            Assignment.objects.create(judge=judge,project_id=project['pk'])
+            assigned[project['pk']].add(judge.pk);loads[judge.pk]+=1
+            created.append({'judge':judge.slug,'project':project['slug']})
+    return JsonResponse({'created':len(created),'assignments':created,
+                         'under_target_projects':sum(len(assigned[p['pk']])<target for p in projects),
+                         'reviews_per_project':target,'max_per_judge':cap})
+
+
+@login_required
 def score_project(request,project_slug):
     if request.method!='POST': return HttpResponseNotAllowed(['POST'])
     event=active_event(request)
@@ -268,8 +327,26 @@ def organizer_overview(request):
     event=active_event(request)
     if not event: return JsonResponse({'error':'No event'},status=404)
     from .models import Assignment
+    from .ranking import weighted_score
+    judges=list(Judge.objects.filter(event=event).select_related('user').order_by('slug','pk'))
+    assignments=list(Assignment.objects.filter(judge__event=event,project__event=event,
+        project__duplicate_of__isnull=True,project__draft=False)
+        .values_list('judge_id','project_id'))
+    assigned={j.pk:set() for j in judges}
+    for judge_id, project_id in assignments:
+        assigned[judge_id].add(project_id)
+    scored={j.pk:set() for j in judges}; complete={j.pk:set() for j in judges}
+    for judge_id, project_id, criteria in Score.objects.filter(judge__event=event,project__event=event,
+        project__duplicate_of__isnull=True,project__draft=False).values_list('judge_id','project_id','criteria'):
+        if project_id in assigned[judge_id]:
+            scored[judge_id].add(project_id)
+            if weighted_score(criteria) is not None: complete[judge_id].add(project_id)
+    progress=[{'slug':j.slug,'name':j.user.get_full_name() or j.user.username,
+               'assigned':len(assigned[j.pk]),'started':len(scored[j.pk]),
+               'completed':len(complete[j.pk]),
+               'not_started':bool(assigned[j.pk] and not scored[j.pk])} for j in judges]
     return render(request,'organizer_overview.html',{
-        'event':event,
+        'event':event,'judge_progress':progress,
         'projects_count':Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).count(),
         'assignments_count':Assignment.objects.filter(judge__event=event,project__event=event).count(),
         'scores_count':Score.objects.filter(judge__event=event,project__event=event).count(),
