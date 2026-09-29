@@ -167,4 +167,3 @@ class AccessIsolatedByEventTests(TestCase):
         self.assertEqual(self.client.get('/ballot').status_code,403)
         self.assertEqual(self.client.post('/vote',{'project':'second-project','event':second.slug}).status_code,403)
         self.assertFalse(PublicVote.objects.exists())
-

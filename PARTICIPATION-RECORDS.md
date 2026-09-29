@@ -15,5 +15,7 @@ obtained through a trusted organizer channel, not merely copied from the
 proof. Possession of the secret receipt permits anyone to reveal that ballot's
 choice after publication; keep it private unless sharing is intentional.
 There is no proof of voter identity or unique humanity. The proof is signed
-on demand, so key rotation changes the signature; preserve the old key for
-long-lived proofs. Pre-publication requests return 404.
+on demand, so key rotation changes the signature. This is not a frozen
+append-only record: an operator changing the stored vote and signing key can
+produce a new valid proof. Preserve the old key and exported proofs for
+long-lived checks. Pre-publication requests return 404.
