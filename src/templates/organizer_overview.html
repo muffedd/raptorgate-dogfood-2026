@@ -3,8 +3,57 @@
 {% block nav %}<a href="{% url 'organizer_overview' %}" aria-current="page">Overview</a><a href="{% url 'results' %}?view=html">Results</a><a href="{% url 'vote_signals' %}">Vote signals</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Event overview</h1><p class="rg-result-lede">Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Draft results{% endif %}</span></header>
-<div class="rg-summary-grid"><section class="rg-result-panel"><h2>{{ projects_count }}</h2><p>Eligible projects</p></section><section class="rg-result-panel"><h2>{{ assignments_count }}</h2><p>Live assignments</p></section><section class="rg-result-panel"><h2>{{ scores_count }}</h2><p>Recorded score rows</p></section></div>
+<style>
+.ov-hero{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 32px;padding:48px 0 28px;border:0}
+.ov-hero h1{font-size:clamp(40px,5.6vw,68px);line-height:.92;letter-spacing:-.06em;margin:0}
+.ov-hero h1 span{color:var(--ui-accent)}
+.ov-hero .rg-result-lede{margin:4px 0 0;font-size:16px;color:var(--ui-sub)}
+.ov .rg-result-state{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--ui-ink);margin:0}.ov-orb{display:flex;align-items:center;gap:14px}.ov-orb canvas{display:block;width:56px;height:56px}
+.ov .rg-result-state::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--ui-accent)}
+.ov .rg-result-panel{padding:24px;border:0;border-radius:18px;background:var(--ui-panel);box-shadow:0 2px 5px 1px rgba(18,23,35,.10);margin:0}
+.ov .rg-result-panel h2{font-size:20px;line-height:1.25;letter-spacing:-.02em;margin:0 0 8px}
+.ov .rg-result-panel p{margin:0;font-size:15px;line-height:1.55;color:var(--ui-sub);max-width:64ch}
+.ov .rg-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:24px 0;border-radius:18px;background:var(--ui-panel);box-shadow:0 2px 5px 1px rgba(18,23,35,.10)}
+.ov .rg-summary-grid .rg-result-panel{display:flex;flex-direction:column;gap:20px;padding:4px 28px;box-shadow:none;border-radius:0;background:transparent}
+.ov .rg-summary-grid .rg-result-panel+.rg-result-panel{border-left:1px solid var(--ui-rule)}
+.ov .ov-stat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ov .ov-stat h3{margin:0;font-size:16px;line-height:1.3;font-weight:500;color:var(--ui-ink);white-space:nowrap}
+.ov .ov-stat small{display:block;margin-top:4px;line-height:1.3;font-size:12px;color:#8a94a6}
+.ov .ov-stat-ic{color:var(--ui-ink);opacity:.75;flex-shrink:0}
+.ov .rg-summary-grid .rg-result-panel h2{font-size:clamp(40px,5vw,56px);line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums;margin:0}
+.ov-stack{display:grid;gap:16px}
+.ov .rg-judge-progress .rg-result-muted{margin-bottom:0}
+.ov .rg-assignment-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;margin:20px 0 12px;padding:16px;background:#f4f4f5;border-radius:14px}
+.ov .rg-assignment-form label{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--ui-ink)}
+.ov .rg-assignment-form input{width:140px;height:44px;padding:0 14px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--ui-panel);color:var(--ui-ink)}
+.ov .rg-assignment-form input:focus{outline:0;border-color:var(--ui-accent);box-shadow:0 0 0 4px var(--ui-soft)}
+.ov .rg-assignment-form .btn{margin-left:auto}
+.ov .btn,.ov .rg-link-button{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;margin:0;border:0;border-radius:999px;font:600 14px Inter,system-ui,sans-serif;color:#fff;background:var(--ui-accent);box-shadow:none;text-decoration:none;cursor:pointer;white-space:nowrap}
+.ov .btn:hover,.ov .rg-link-button:hover{filter:brightness(1.07)}
+.ov .rg-link-button.ov-ghost{background:transparent;color:var(--ui-ink);box-shadow:inset 0 0 0 1px #d1d1d6}
+.ov .rg-link-button.ov-ghost:hover{background:var(--ui-bg);filter:none}
+.ov .rg-result-table-wrap{margin-top:16px;overflow-x:auto}
+.ov .rg-result-table{width:100%;border-collapse:collapse;font-size:14px}
+.ov .rg-result-table th{padding:10px 12px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-sub);border-bottom:1px solid var(--ui-rule)}
+.ov .rg-result-table td{padding:14px 12px;border-bottom:1px solid var(--ui-rule);vertical-align:middle}
+.ov .rg-result-table tr:last-child td{border-bottom:0}
+.ov .rg-result-table .number{text-align:right;font-variant-numeric:tabular-nums}
+.ov .rg-result-table small{display:block;margin-top:2px;font-size:12px;color:var(--ui-sub)}
+.ov-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--ui-bg);color:var(--ui-sub)}
+.ov-pill.is-progress{background:var(--ui-soft);color:var(--ui-accent)}
+.ov-pill.is-done{background:var(--ui-accent);color:#fff}
+.ov .rg-result-layout{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.ov .rg-result-panel .btn,.ov .rg-result-panel .rg-link-button{margin-top:20px}
+.ov .rg-result-note{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);font-size:14px}
+.ov .rg-export-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.ov .rg-export-links .rg-link-button{margin-top:0;gap:8px;padding:0 20px 0 16px}.ov .rg-export-links svg{flex-shrink:0}
+.ov-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:1000px){.ov .rg-summary-grid{grid-template-columns:1fr;gap:20px}.ov .rg-summary-grid .rg-result-panel+.rg-result-panel{border-left:0;border-top:1px solid var(--ui-rule);padding-top:20px}}@media(max-width:760px){.ov .rg-summary-grid .rg-result-panel+.rg-result-panel{border-left:0;border-top:1px solid var(--ui-rule);padding-top:20px}.ov-hero{padding-top:32px}.ov .rg-summary-grid,.ov .rg-result-layout,.ov-pair{grid-template-columns:1fr}.ov .rg-assignment-form .btn{margin-left:0;width:100%}.ov .rg-result-table{min-width:520px}}
+</style>
+<div class="ov">
+<header class="rg-result-head ov-hero"><div><h1>Event overview<span>.</span></h1><p class="rg-result-lede">{{ event.title }} · Submissions closed <span style="white-space:nowrap">{{ event.submissions_close|date:'M j, Y H:i' }} UTC</span></p></div><div class="ov-orb"><canvas class="rg-orb" aria-hidden="true"></canvas><span class="rg-result-state">{% if event.published %}Published{% else %}Draft results{% endif %}</span></div></header>
+<div class="ov-stack">
+<div class="rg-summary-grid"><section class="rg-result-panel ov-stat"><div class="ov-stat-top"><div><h3>Eligible projects</h3><small>In this event</small></div><span class="ov-stat-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span></div><h2>{{ projects_count }}</h2></section><section class="rg-result-panel ov-stat"><div class="ov-stat-top"><div><h3>Live assignments</h3><small>Across all judges</small></div><span class="ov-stat-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><path d="M16 5.5a3 3 0 0 1 0 5M18 14c2 .6 3 2.2 3 5"/></svg></span></div><h2>{{ assignments_count }}</h2></section><section class="rg-result-panel ov-stat"><div class="ov-stat-top"><div><h3>Recorded score rows</h3><small>Saved so far</small></div><span class="ov-stat-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 14l2 2 4-4"/></svg></span></div><h2>{{ scores_count }}</h2></section></div>
 <section class="rg-result-panel rg-judge-progress" aria-labelledby="judge-progress-title">
   <h2 id="judge-progress-title">Judge assignments and progress</h2>
   <p class="rg-result-muted">Live assignments in this event only. Started means a saved score row; completed means all rubric scores are valid. An unassigned judge has no queue yet.</p>
@@ -17,10 +66,35 @@
   <p class="rg-result-muted">Keeps existing assignments; spreads eligible projects across the least-loaded judges in each track. Judges on a competing team are excluded. The response lists any projects short of your target. Use Back to return to this view.</p>
   <div class="rg-result-table-wrap" role="region" aria-label="Per-judge progress" tabindex="0"><table class="rg-result-table">
     <thead><tr><th scope="col">Judge</th><th scope="col" class="number">Assigned</th><th scope="col" class="number">Started</th><th scope="col" class="number">Completed</th><th scope="col">Status</th></tr></thead>
-    <tbody>{% for row in judge_progress %}<tr><td><strong>{{ row.name }}</strong><small>{{ row.slug }}</small></td><td class="number">{{ row.assigned }}</td><td class="number">{{ row.started }}</td><td class="number">{{ row.completed }}</td><td>{% if row.not_started %}Not started{% elif row.assigned == 0 %}Unassigned{% elif row.completed == row.assigned %}Complete{% else %}In progress{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No judges invited for this event.</td></tr>{% endfor %}</tbody>
+    <tbody>{% for row in judge_progress %}<tr><td><strong>{{ row.name }}</strong><small>{{ row.slug }}</small></td><td class="number">{{ row.assigned }}</td><td class="number">{{ row.started }}</td><td class="number">{{ row.completed }}</td><td>{% if row.not_started %}<span class="ov-pill">Not started</span>{% elif row.assigned == 0 %}<span class="ov-pill">Unassigned</span>{% elif row.completed == row.assigned %}<span class="ov-pill is-done">Complete</span>{% else %}<span class="ov-pill is-progress">In progress</span>{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No judges invited for this event.</td></tr>{% endfor %}</tbody>
   </table></div>
 </section>
 <div class="rg-result-layout"><section class="rg-result-panel"><h2>Review the standings</h2><p>The results view shows the actual raw and normalized scores. Check its coverage and any unscored projects before publishing. Imported fixture score rows may exist without live assignments.</p><a class="btn rg-link-button" href="{% url 'results' %}?view=html">Open organizer results</a></section><aside class="rg-result-panel"><h2>Event state</h2><p>{% if event.published %}Results have been published. The public standings are available only if the voting window has also closed.{% else %}Results are private to organizers until you publish and the voting window has closed.{% endif %}</p><p class="rg-result-note">Selecting a different active event changes the public gallery and judging scope for everyone. Use the event selector deliberately.</p></aside></div>
+<div class="ov-pair">
 <section class="rg-result-panel"><h2>Submission questions</h2><p>Edit labels and add questions before teams submit. Once a submission exists, keys and required flags stay fixed so old answers keep their meaning.</p><a class="btn rg-link-button" href="{% url 'edit_event_questions' %}">Edit questions</a></section>
-<section class="rg-result-panel"><h2>Export event data</h2><p>Organizer-only CSV snapshots of the active event, including draft and unpublished records. Keep these files private.</p><div class="rg-export-links">{% for dataset in export_datasets %}<a class="btn rg-link-button" href="{% url 'lifecycle_export' dataset %}">{{ dataset|capfirst }} CSV</a>{% endfor %}</div></section>
+<section class="rg-result-panel"><h2>Export event data</h2><p>Organizer-only CSV snapshots of the active event, including draft and unpublished records. Keep these files private.</p><div class="rg-export-links">{% for dataset in export_datasets %}<a class="btn rg-link-button ov-ghost" href="{% url 'lifecycle_export' dataset %}">{% if dataset == 'projects' %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>{% elif dataset == 'scores' %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>{% elif dataset == 'votes' %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M8 9V5h8v4M9 14l2 2 4-4"/></svg>{% else %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>{% endif %}{{ dataset|capfirst }} CSV</a>{% endfor %}</div></section>
+</div>
+</div>
+</div>
+<script>function rgOrb(root){
+  (root||document).querySelectorAll('canvas.rg-orb').forEach(function(cv){
+    if(cv.__o)return;cv.__o=1;
+    var S=cv.clientWidth||56,dpr=Math.min(window.devicePixelRatio||1,2);cv.width=S*dpr;cv.height=S*dpr;
+    var ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+    var C=S/2,K=5,step=S/12,N=16,pts=[],T=3200,PI2=Math.PI*2;
+    for(var k=1;k<=K;k++){var r=k*step,n=Math.max(6,Math.round(PI2*r/step));for(var j=0;j<n;j++)pts.push({r:r,a:j/n*PI2+(k%2)*.2,k:k})}
+    var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches,t0=performance.now()-T*.5;
+    function cl(x){return x<0?0:x>1?1:x}
+    function eob(x){var c=1.70158;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)}
+    function eio(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2}
+    function draw(now){
+      var u=reduce?.6:(((now-t0)%T)/T);ctx.clearRect(0,0,S,S);ctx.fillStyle='#0f172b';
+      for(var i=0;i<pts.length;i++){var p=pts[i],s=eob(cl((u-p.k*.045)/.28))*(1-eio(cl((u-.8-(K-p.k)*.025)/.16)));
+        if(s<=0)continue;ctx.beginPath();ctx.arc(C+Math.cos(p.a)*p.r,C+Math.sin(p.a)*p.r,Math.max(0,.85*s*S/56),0,PI2);ctx.fill()}
+      ctx.fillStyle='#7f22fe';var R=step*3.5,rot=eio(u)*Math.PI/2;
+      for(var m=0;m<N;m++){var l=cl((u-.12-m/N*.16)/.26),co=1-eio(cl((u-.82-m/N*.06)/.14)),s2=eob(l)*co;if(s2<=0)continue;
+        var a=m/N*PI2+rot,rr=R*Math.max(0,eob(l));ctx.beginPath();ctx.arc(C+Math.cos(a)*rr,C+Math.sin(a)*rr,Math.max(0,S*.034*s2),0,PI2);ctx.fill()}
+      if(!reduce)requestAnimationFrame(draw)}
+    requestAnimationFrame(draw)})
+}rgOrb(document);</script>
 {% endblock %}

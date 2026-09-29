@@ -2,13 +2,34 @@
 {% block title %}Create an account | RaptorGate{% endblock %}
 {% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'login' %}">Sign in</a>{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / join</p><h1>Create a participant account</h1><p class="rg-result-lede">Sign up to join a team, submit a project, or vote.</p></div></header>
+<style>
+.su{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 56px;align-items:start;padding-top:56px}
+.su-intro{display:flex;flex-direction:column;gap:20px}
+.su-intro h1{font-size:clamp(44px,5.6vw,72px);line-height:.95;letter-spacing:-.06em;margin:0}.su-intro h1 span{color:var(--ui-accent)}
+.su-intro .rg-result-lede{margin:0;font-size:16px;line-height:1.5;color:var(--ui-sub);max-width:36ch}
+.su-note{display:grid;grid-template-columns:24px 1fr;gap:12px;padding:16px;border-radius:14px;background:var(--ui-soft);color:var(--ui-ink);font-size:14px;line-height:1.55;max-width:44ch;margin:0}
+.su-note svg{color:var(--ui-accent)}
+.su .rg-signup-panel{padding:24px;margin:0;border:0;border-radius:18px;background:var(--ui-panel);box-shadow:0 0 0 1px #eef0f3,0 2px 5px 1px rgba(18,23,35,.08)}
+.su .rg-signup-form{display:grid;gap:16px}
+.su .rg-signup-field{display:grid;gap:6px}
+.su .rg-signup-field label{font-size:13px;font-weight:600}
+.su .rg-signup-field input{width:100%;box-sizing:border-box;height:44px;padding:0 14px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--ui-panel);color:var(--ui-ink)}
+.su .rg-signup-field input:focus{outline:0;border-color:var(--ui-accent);box-shadow:0 0 0 4px var(--ui-soft)}
+.su .rg-signup-field small{font-size:12px;line-height:1.4;color:var(--ui-sub)}
+.su .rg-signup-error{margin:0;font-size:12px;color:#b42318}
+.su .rg-signup-form .btn{height:48px;border:0;border-radius:999px;font-weight:600;font-size:15px;color:#fff;background:var(--ui-accent);box-shadow:none;cursor:pointer}
+.su .rg-signup-form .btn:hover{filter:brightness(1.07)}
+.su .rg-signup-alt{margin:16px 0 0;text-align:center;font-size:14px;color:var(--ui-sub)}.su .rg-signup-alt a{font-weight:600}
+@media(max-width:860px){.su{grid-template-columns:1fr;padding-top:32px}}
+</style>
+<div class="su">
+<div class="su-intro"><h1>Create an account<span>.</span></h1><p class="rg-result-lede">Sign up to join a team, submit a project, or vote.</p><p class="su-note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg><span>Judge access still requires an organizer invitation and an assignment. Signing up never grants judge or organizer rights.</span></p></div>
 <section class="rg-result-panel rg-signup-panel">
-  <p>Judge access still requires an organizer invitation and an assignment. Signing up never grants judge or organizer rights.</p>
   <form method="post" class="rg-signup-form">{% csrf_token %}
   {% for field in form %}<div class="rg-signup-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="rg-signup-error">{{ error }}</p>{% endfor %}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}
   {% for error in form.non_field_errors %}<p class="rg-signup-error">{{ error }}</p>{% endfor %}
   <button class="btn" type="submit">Create account</button>
-  </form><p>Already registered? <a href="{% url 'login' %}">Sign in</a>.</p>
+  </form><p class="rg-signup-alt">Already registered? <a href="{% url 'login' %}">Sign in</a>.</p>
 </section>
+</div>
 {% endblock %}

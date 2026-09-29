@@ -1,10 +1,39 @@
 {% extends "dashboard_base.html" %}
+{% load static %}
 {% block title %}Submission questions | {{ event.title }}{% endblock %}
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Submission questions</h1><p class="rg-result-lede">Up to ten questions. Each needs a lowercase key, a label and an optional required flag.</p></div></header>
-<section class="rg-result-panel"><p>After a submission exists, question keys and required flags cannot change. Labels may be corrected, but changing their meaning would mislabel earlier answers.</p>
-{% if error %}<p role="alert">{{ error }}</p>{% endif %}
-<form method="post">{% csrf_token %}<p><label for="questions-json">Questions (JSON array)</label></p><textarea id="questions-json" name="custom_questions" rows="12" spellcheck="false" required>{{ questions_json }}</textarea><p>Example: [{"key":"stack","label":"Tech stack","required":true}]</p><button class="btn" type="submit">Save questions</button></form></section>
+<style>
+.eq{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:40px;padding:48px 0 32px;align-items:start}
+.eq-intro{position:sticky;top:96px}
+.eq-intro h1{font-size:clamp(40px,5.2vw,64px);line-height:.92;letter-spacing:-.05em;margin:0 0 14px;text-wrap:balance}
+.eq-intro .rg-result-lede{margin:0 0 28px;font-size:16px;line-height:1.5;color:var(--ui-sub);max-width:42ch;text-wrap:pretty}
+.eq-steps{list-style:none;margin:0;padding:0;max-width:38ch;display:grid;gap:16px;counter-reset:s}
+.eq-steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:14px;line-height:1.5;color:var(--ui-sub)}
+.eq-steps li::before{content:counter(s);width:28px;height:28px;border-radius:8px;background:var(--ui-soft);color:var(--ui-accent);font-weight:600;font-size:13px;display:grid;place-items:center}
+.eq-steps strong{display:block;font-size:15px;color:var(--ui-ink);font-weight:600}
+.eq-steps code{font:500 14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ui-accent)}
+.eq .rg-result-panel{padding:32px;border:0;border-radius:18px;background:var(--ui-panel);box-shadow:0 4px 6px 1px rgba(18,23,35,.12)}
+.eq-lock{margin:0 0 28px;padding:14px 16px;border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);font-size:14px;line-height:1.55}
+.eq-alert{margin:0 0 20px;padding:12px 16px;border-radius:12px;background:#fdecec;color:#9b1c1c;font-size:14px}
+.eq form{display:grid;gap:8px}
+.eq label{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ui-ink)}
+.eq textarea{width:100%;box-sizing:border-box;min-height:280px;resize:vertical;padding:16px;border:1px solid var(--ui-rule);border-radius:12px;background:var(--ui-bg);color:#1e3a8a;font:400 13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;tab-size:2;transition:border-color .15s,box-shadow .15s}
+.eq textarea:focus{outline:0;background:var(--ui-panel);border-color:var(--ui-accent);box-shadow:0 0 0 4px var(--ui-soft)}
+.eq-hint{margin:0;font-size:12px;color:var(--ui-sub)}
+.eq-hint code{font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ui-ink)}
+.eq-art{display:block;width:100%;max-width:280px;height:auto;margin:32px 0 0 -40px;position:relative;pointer-events:none}[data-theme=dark] .eq-art{filter:invert(1) hue-rotate(180deg)}.eq .btn svg{display:block}
+.eq-actions{display:flex;justify-content:flex-end;margin-top:20px;padding-top:24px;border-top:1px solid var(--ui-rule)}
+.eq .btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 28px;border:0;border-radius:999px;font-weight:600;color:#fff;background:#7f22fe;box-shadow:none;cursor:pointer}
+.eq .btn:hover{filter:brightness(1.07)}
+@media(max-width:860px){.eq{grid-template-columns:1fr;gap:28px;padding-top:32px}.eq-intro{position:static}}
+</style>
+<div class="eq">
+<header class="rg-result-head eq-intro"><div><h1>Submission questions</h1><p class="rg-result-lede">Up to ten questions. Each needs a lowercase key, a label and an optional required flag.</p>
+<ol class="eq-steps"><li><span><strong>Key</strong>Lowercase, unique, e.g. <code>stack</code>. Locked after the first submission.</span></li><li><span><strong>Label</strong>The question teams see. Fix wording, not meaning.</span></li><li><span><strong>Required</strong>Optional flag. Locked after the first submission.</span></li></ol><img class="eq-art" src="{% static 'img/questions-illustration.png' %}" alt=""></div></header>
+<section class="rg-result-panel"><p class="eq-lock">After a submission exists, question keys and required flags cannot change. Labels may be corrected, but changing their meaning would mislabel earlier answers.</p>
+{% if error %}<p class="eq-alert" role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<label for="questions-json">Questions (JSON array)</label><textarea id="questions-json" name="custom_questions" rows="12" spellcheck="false" required>{{ questions_json }}</textarea><p class="eq-hint">Example: <code>[{"key":"stack","label":"Tech stack","required":true}]</code></p><div class="eq-actions"><button class="btn" type="submit">Save questions <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="miter" stroke-linecap="butt" aria-hidden="true"><path d="M6 3h12v18l-6-5-6 5z"/></svg></button></div></form></section>
+</div>
 {% endblock %}

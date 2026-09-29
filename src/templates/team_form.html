@@ -1,11 +1,20 @@
 {% extends "dashboard_base.html" %}
-{% block title %}Create team | RaptorGate{% endblock %}
-{% block role_slug %}participant{% endblock %}{% block role %}participant{% endblock %}
-{% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'submit' %}">Submission</a>{% endblock %}
+{% block title %}New team | RaptorGate{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a>{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / participant</p><h1>Create a team</h1><p class="rg-result-lede">Start a team, then add your project.</p></div></header>
-<section class="rg-result-panel rg-form-panel"><form method="post" class="rg-lifecycle-form">{% csrf_token %}
-<div class="rg-form-field"><label for="team-name">Team name</label><input id="team-name" name="name" maxlength="160" required></div>
-<div class="rg-form-actions"><button class="btn" type="submit">Create team</button></div>
-</form></section>
+<style>
+.su{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 56px;align-items:start;padding-top:56px}
+.su-intro{display:flex;flex-direction:column;gap:20px}
+.su-intro h1{font-size:clamp(44px,5.6vw,72px);line-height:.95;letter-spacing:-.06em;margin:0}.su-intro h1 span{color:var(--ui-accent)}
+.su-intro .lede{margin:0;font-size:16px;line-height:1.5;color:var(--ui-sub);max-width:36ch}
+.su-note{display:grid;grid-template-columns:24px 1fr;gap:12px;padding:16px;border-radius:14px;background:var(--ui-soft);color:var(--ui-ink);font-size:14px;line-height:1.55;max-width:44ch;margin:0}.su-note svg{color:var(--ui-accent)}
+.su-card{padding:24px;border-radius:18px;background:var(--ui-panel);box-shadow:0 0 0 1px #eef0f3,0 2px 5px 1px rgba(18,23,35,.08)}
+.su-card form{display:grid;gap:16px}.su-card label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.su-card input{width:100%;box-sizing:border-box;height:44px;padding:0 14px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--ui-panel);color:var(--ui-ink)}
+.su-card input:focus{outline:0;border-color:var(--ui-accent);box-shadow:0 0 0 4px var(--ui-soft)}
+.su-card button{height:48px;border:0;border-radius:999px;font:600 15px Inter,system-ui,sans-serif;color:#fff;background:var(--ui-accent);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .15s}.su-card button:hover{filter:brightness(1.07)}.su-card button:active{transform:scale(.97)}
+@media(max-width:860px){.su{grid-template-columns:1fr;padding-top:32px}}
+</style>
+<div class="su"><div class="su-intro"><h1>Create team<span>.</span></h1><p class="lede">Name your team, then invite people or submit a project.</p></div>
+<section class="su-card"><form method="post">{% csrf_token %}<label>Team name<input name="name" required></label><button>Create</button></form></section></div>
 {% endblock %}

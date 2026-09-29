@@ -2,19 +2,62 @@
 {% block title %}Projects - RaptorGate{% endblock %}
 {% block nav %}<a href="{% url 'gallery' %}" aria-current="page">Projects</a>{% if preview_mode %}<a href="{% url 'public_results' %}">Results</a><a href="{% url 'verify_page' %}">Verify</a>{% else %}<a href="{% url 'ballot' %}">Vote</a><a href="{% url 'login' %}">Sign in</a><a href="{% url 'signup' %}">Sign up</a>{% endif %}{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">{% if event %}{{ event.title }} / discover{% else %}No event selected{% endif %}</p><h1>Projects</h1><p class="rg-result-lede">{{ projects|length }} eligible project{{ projects|length|pluralize }}{% if event %} · Submissions closed {{ event.submissions_close|date:'M j, Y H:i' }} UTC{% endif %}</p></div></header>
-<form class="inline-form" method="get" action="{% url 'gallery' %}">
-  <label>Search projects <input name="q" value="{{ query }}" placeholder="Project title"></label>
-  <label>Track code <input name="track" value="{{ track }}" placeholder="Track slug"></label>{% if query or track %}<a class="rg-clear" href="{% url 'gallery' %}">Clear filters</a>{% endif %}
-  <button class="btn" type="submit">Search</button>
-</form>
-<div class="card-grid">{% for project in projects %}
-  <article class="card">
-    {% if project.thumbnail_url %}<img class="card-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}
-    <header class="card-header"><h2 class="card-title"><a href="{% url 'project_detail' project.slug %}">{{ project.title }}</a></h2><span class="badge badge-track">{{ project.track.name }}</span></header>
-    <p class="card-summary">{{ project.summary }}</p>
-    {% if project.tags %}<ul class="card-tags" aria-label="Project tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}
-    <footer class="card-meta"><span>{{ project.team.name }}</span><a href="{% url 'project_detail' project.slug %}">View project</a></footer>
-  </article>
-{% empty %}<p class="rg-empty-state">No projects match this view.{% if query or track %} <a href="{% url 'gallery' %}">Clear filters</a>{% endif %}</p>{% endfor %}</div>
+<style>
+.gl-wrap{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;padding-top:24px}
+.gl-tracks{flex:1 1 180px;max-width:220px;position:sticky;top:96px;max-height:calc(100vh - 112px);overflow:auto;display:grid;gap:4px;align-content:start}
+.gl-tracks span{padding:0 12px 8px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-sub)}
+.gl-tracks button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:0;border-radius:10px;background:transparent;font:500 14px Inter,system-ui,sans-serif;color:var(--ui-ink);cursor:pointer;text-align:left}
+.gl-tracks button small{font-size:12px;color:var(--ui-sub)}.gl-tracks button.on{background:var(--ui-soft);color:var(--ui-accent);font-weight:600}
+.gl-main{flex:3 1 420px;min-width:0}
+.gl-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:16px}
+.gl-head h1{font-size:clamp(36px,4.4vw,56px);line-height:.95;letter-spacing:-.06em;margin:0}.gl-head h1 span{color:var(--ui-accent)}
+.gl-head p{margin:8px 0 0;font-size:14px;color:var(--ui-sub);white-space:nowrap}.gl-head p b{color:var(--ui-ink);font-weight:600}
+.gl-search{display:flex;flex-wrap:wrap;gap:8px}
+.gl-search input{height:44px;box-sizing:border-box;padding:0 16px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:999px;background:var(--ui-panel);color:var(--ui-ink);width:200px;max-width:100%}
+.gl-search input:focus{outline:0;border-color:var(--ui-accent);box-shadow:0 0 0 4px var(--ui-soft)}
+.gl-search button{height:44px;padding:0 20px;border:0;border-radius:999px;font:600 14px Inter,system-ui,sans-serif;color:#fff;background:var(--ui-accent);cursor:pointer}.gl-search button:hover{filter:brightness(1.07)}
+.gl-clear{align-self:center;font-size:13px;color:var(--ui-accent)}
+.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:24px 20px}
+.gl-folder{position:relative;cursor:pointer;aspect-ratio:13/10;min-height:170px;filter:drop-shadow(0 12px 14px rgba(74,20,196,.22));transition:transform .4s cubic-bezier(.34,1.56,.64,1);outline:0}
+.gl-folder>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gl-sheet{position:absolute;left:6%;right:6%;top:20%;height:52px;box-sizing:border-box;padding:10px 14px 0;border-radius:12px;background:#fff;display:flex;align-items:flex-start;justify-content:space-between;transition:top .45s cubic-bezier(.34,1.56,.64,1)}
+.gl-sheet b{font-size:12px;font-weight:600;color:#0f172b;white-space:nowrap}.gl-sheet i{font-style:normal;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--ui-soft);color:var(--ui-accent);white-space:nowrap}
+.gl-front{position:absolute;left:0;right:0;top:24%;bottom:0;box-sizing:border-box;padding:16px 18px;border-radius:22px;color:#fff;background:linear-gradient(180deg,#a98bff 0%,#7f4dff 38%,#5a1ce6 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),inset 0 1px 0 rgba(255,255,255,.5);transform-origin:50% 100%;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.gl-front h2{margin:0;font-size:17px;line-height:1.25;letter-spacing:-.02em;font-weight:600}.gl-front h2 a{color:#fff;text-decoration:none}.gl-front h2 a::after{content:"";position:absolute;inset:0;z-index:1}
+.gl-front p{margin:4px 0 0;font-size:13px;color:rgba(255,255,255,.85)}
+.gl-front svg{position:absolute;top:16px;right:18px;opacity:.9}
+.gl-folder:hover .gl-sheet{top:15%}
+.gl-folder.on{transform:translateY(-4px)}.gl-folder.on .gl-sheet{top:4%}.gl-folder.on .gl-front{transform:perspective(520px) rotateX(-9deg) translateY(4px)}
+.gl-folder:focus-visible{filter:drop-shadow(0 0 0 var(--ui-accent)) drop-shadow(0 12px 14px rgba(74,20,196,.22))}
+.gl-info{flex:1 1 280px;max-width:320px;box-sizing:border-box;padding:20px;border-radius:18px;background:var(--ui-panel);box-shadow:0 0 0 1px #eef0f3,0 2px 5px 1px rgba(18,23,35,.08);position:sticky;top:96px;max-height:calc(100vh - 112px);overflow:auto}
+.gl-info-top{display:flex;align-items:center;justify-content:space-between}.gl-info-top h2{margin:0;font-size:16px;font-weight:600}
+.gl-info-track{font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;background:var(--ui-soft);color:var(--ui-accent)}
+.gl-info h3{margin:16px 0 0;font-size:24px;line-height:1.15;letter-spacing:-.04em}
+.gl-info .gl-sum{margin:8px 0 0;font-size:14px;line-height:1.55;color:var(--ui-sub)}
+.gl-info dl{margin:16px 0 0;padding-top:14px;border-top:1px solid #eef0f3;display:grid;grid-template-columns:auto 1fr;gap:10px 16px;font-size:13px}.gl-info dt{color:var(--ui-sub)}.gl-info dd{margin:0;text-align:right;font-weight:600}
+.gl-info ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}.gl-info ul li{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--ui-soft);color:var(--ui-accent)}
+.gl-folder .card-thumb{position:absolute;inset:32px 18px 46px;width:calc(100% - 36px);height:calc(100% - 78px);object-fit:cover;opacity:.32;pointer-events:none;border-radius:8px}.gl-folder .card-tags{position:absolute;left:12px;bottom:9px;display:flex;gap:4px;margin:0;padding:0;list-style:none}.gl-folder .card-tags li{font-size:10px;color:#fff;background:rgba(18,8,55,.55);padding:1px 5px;border-radius:4px}.gl-tags{margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;font-size:13px;font-weight:600}
+.gl-acts{display:grid;gap:10px;margin-top:20px}
+.gl-acts a{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:600;border-radius:999px}
+.gl-primary{height:48px;font-size:15px;color:#fff;background:var(--ui-accent)}.gl-primary:hover{filter:brightness(1.07);color:#fff}
+.gl-secondary{height:44px;font-size:14px;color:var(--ui-ink);box-shadow:inset 0 0 0 1px #d1d1d6}.gl-secondary:hover{background:var(--ui-bg);color:var(--ui-ink)}
+.gl .rg-empty-state{grid-column:1/-1;padding:48px 24px;text-align:center;background:var(--ui-panel);border:1px dashed var(--ui-rule);border-radius:14px;color:var(--ui-sub)}
+@media(prefers-reduced-motion:reduce){.gl *{transition:none!important}}
+@media(max-width:900px){.gl-tracks{max-width:none;flex-basis:100%;position:static;display:flex;flex-wrap:wrap;gap:6px}.gl-tracks span{display:none}.gl-info{max-width:none;position:static}}
+</style>
+<div class="gl gl-wrap">
+<nav class="gl-tracks" id="gl-tracks" aria-label="Filter by track" hidden></nav>
+<section class="gl-main"><div class="gl-head"><div><h1>Projects<span>.</span></h1><p><b>{{ projects|length }} eligible project{{ projects|length|pluralize }}</b>{% if event %} · {{ event.title }}{% endif %}</p></div>
+<form class="gl-search" method="get" action="{% url 'gallery' %}"><input name="q" value="{{ query }}" placeholder="Search projects" aria-label="Search projects"><input name="track" value="{{ track }}" placeholder="Track slug" aria-label="Track code" style="width:130px"><button type="submit">Search</button>{% if query or track %}<a class="gl-clear" href="{% url 'gallery' %}">Clear filters</a>{% endif %}</form></div>
+<div class="gl-grid" id="gl-grid">{% for project in projects %}
+<article class="gl-folder" tabindex="0" data-track="{{ project.track.name }}" data-title="{{ project.title }}" data-team="{{ project.team.name }}" data-summary="{{ project.summary }}" data-tags="{{ project.tags|join:',' }}" data-url="{% url 'project_detail' project.slug %}" data-repo="{{ project.repo_url }}"><svg viewBox="0 0 260 200" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gl-fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a28ee"/><stop offset="1" stop-color="#4a14c4"/></linearGradient></defs><path d="M0 40C0 26 10 16 24 16H84C96 16 104 20 114 27L126 35C133 40 140 42 150 42H236C250 42 260 52 260 66V176C260 190 250 200 236 200H24C10 200 0 190 0 176Z" fill="url(#gl-fb)"/></svg><div class="gl-sheet"><b>{{ project.track.name }}</b><i>{{ project.tags|length }} tag{{ project.tags|length|pluralize }}</i></div>{% if project.thumbnail_url %}<img class="card-thumb" src="{{ project.thumbnail_url }}" alt="{{ project.title }} thumbnail" loading="lazy">{% endif %}<div class="gl-front"><h2><a href="{% url 'project_detail' project.slug %}">{{ project.title }}</a></h2><p>{{ project.team.name }}</p><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></div>{% if project.tags %}<ul class="card-tags" aria-label="Project tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}</article>
+{% empty %}<p class="rg-empty-state">No projects match this view.{% if query or track %} <a href="{% url 'gallery' %}">Clear filters</a>{% endif %}</p>{% endfor %}</div></section>
+<aside class="gl-info" id="gl-info" aria-live="polite" hidden><div class="gl-info-top"><h2>Info</h2><span class="gl-info-track" data-f="track"></span></div><h3 data-f="title"></h3><p class="gl-sum" data-f="summary"></p><dl><dt>Team</dt><dd data-f="team"></dd><dt>Track</dt><dd data-f="track"></dd></dl><div class="gl-tags">Tags<ul data-f="tags"></ul></div><div class="gl-acts"><a class="gl-primary" data-f="url" href="#">View project</a><a class="gl-secondary" data-f="repo" href="#" rel="noopener noreferrer" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>Repository</a></div></aside>
+</div>
+<script>(function(){var g=document.getElementById('gl-grid'),cards=[].slice.call(g.querySelectorAll('.gl-folder'));if(!cards.length)return;var info=document.getElementById('gl-info'),tr=document.getElementById('gl-tracks'),cur=null,f=function(n){return info.querySelectorAll('[data-f="'+n+'"]')};
+function pick(c){cards.forEach(function(x){x.classList.toggle('on',x===c)});cur=c;var d=c.dataset;f('track').forEach(function(e){e.textContent=d.track});f('title')[0].textContent=d.title;f('summary')[0].textContent=d.summary||'No description supplied.';f('team')[0].textContent=d.team;var u=f('tags')[0];u.innerHTML='';(d.tags?d.tags.split(','):[]).forEach(function(t){var li=document.createElement('li');li.textContent=t;u.appendChild(li)});f('url')[0].href=d.url;var r=f('repo')[0];if(d.repo){r.href=d.repo;r.style.display=''}else r.style.display='none'}
+cards.forEach(function(c){c.addEventListener('click',function(e){if(e.target.closest('a'))return;pick(c)});c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(c)}})});
+var names=[];cards.forEach(function(c){if(names.indexOf(c.dataset.track)<0)names.push(c.dataset.track)});
+if(names.length>1){tr.hidden=false;var h='<span>Tracks</span>',all=['All'].concat(names);tr.innerHTML=h;all.forEach(function(n,i){var b=document.createElement('button');b.type='button';b.className=i?'':'on';var k=i?cards.filter(function(c){return c.dataset.track===n}).length:cards.length;b.textContent=n+' ';var count=document.createElement('small');count.textContent=k;b.appendChild(count);b.addEventListener('click',function(){[].forEach.call(tr.querySelectorAll('button'),function(x){x.classList.toggle('on',x===b)});cards.forEach(function(c){c.style.display=(!i||c.dataset.track===n)?'':'none'});var v=cards.filter(function(c){return c.style.display!=='none'})[0];if(v&&(!cur||cur.style.display==='none'))pick(v)});tr.appendChild(b)})}
+info.hidden=false;pick(cards[0])})();</script>
 {% endblock %}

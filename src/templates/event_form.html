@@ -3,11 +3,43 @@
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / organizer</p><h1>Create event</h1><p class="rg-result-lede">Set the submission deadline and optional questions before teams begin.</p></div></header>
+<style>
+.ef{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:40px;padding:48px 0 16px;align-items:start}
+.ef-intro{position:sticky;top:96px}
+.ef-intro .rg-result-overline{margin:0;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ui-accent)}
+.ef-intro h1{font-size:clamp(40px,5.6vw,68px);line-height:1;letter-spacing:-.05em;margin:0 0 12px;text-wrap:balance}
+.ef-intro .rg-result-lede{margin:0 0 24px;font-size:18px;line-height:1.6;color:var(--ui-sub);max-width:42ch;text-wrap:pretty}
+.ef-steps{list-style:none;margin:0;padding:0;display:grid;gap:24px;counter-reset:s}
+.ef-steps li{counter-increment:s;display:grid;grid-template-columns:36px 1fr;gap:16px;font-size:16px;line-height:1.5;color:var(--ui-sub)}
+.ef-steps li::before{content:counter(s);width:36px;height:36px;border-radius:10px;background:var(--ui-soft);color:var(--ui-accent);font-weight:600;font-size:15px;display:grid;place-items:center}
+.ef-steps strong{display:block;font-size:18px;letter-spacing:-.01em;color:var(--ui-ink);font-weight:600}
+.ef .rg-form-panel{max-width:none;margin:0;padding:32px;border:0;border-radius:18px;background:var(--ui-panel);box-shadow:0 0 0 1px rgba(15,23,43,.04),0 1px 2px rgba(15,23,43,.06),0 12px 32px -12px rgba(15,23,43,.14)}
+.ef .rg-lifecycle-form{gap:28px}
+.ef .rg-form-field{gap:4px}
+.ef .rg-form-field label{font-size:15px;font-weight:600;color:var(--ui-ink)}
+.ef .rg-form-field input,.ef .rg-form-field textarea{width:100%;font:inherit;font-size:14px;padding:10px 0;border:0;border-bottom:1px solid var(--ui-rule);border-radius:0;background:transparent;color:var(--ui-ink);transition:border-color .15s}
+.ef .rg-form-field textarea{resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.6}
+.ef .rg-form-field input::placeholder,.ef .rg-form-field textarea::placeholder{color:var(--ui-sub);opacity:.7}
+.ef .rg-form-field input:focus,.ef .rg-form-field textarea:focus{outline:0;border-bottom-color:var(--ui-accent)}
+.ef .rg-form-field small{font-size:12px;color:var(--ui-sub)}
+.ef-opt-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.ef-opt-head label{margin:0}.ef-opt-head label span{font-weight:400;color:var(--ui-sub)}.ef-switch{position:relative;flex-shrink:0;width:44px;height:26px;padding:0;border:0;border-radius:999px;background:var(--ui-rule);cursor:pointer;transition:background .2s}.ef-switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(15,23,43,.3);transition:left .2s}.ef-switch[aria-checked=true]{background:var(--ui-accent)}.ef-switch[aria-checked=true]::after{left:21px}.ef-opt[hidden]{display:none}
+.ef-actions{display:flex;justify-content:flex-end;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--ui-rule)}
+.ef .btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 28px;border:0;border-radius:999px;font-weight:600;color:#fff;background:#7f22fe;box-shadow:none;cursor:pointer}
+.ef .btn:hover{filter:brightness(1.06)}
+@media(max-width:860px){.ef{grid-template-columns:1fr;gap:28px;padding-top:32px}.ef-intro{position:static}}
+.ef-shader{position:relative;width:100vw;margin:-16px 0 -64px calc(50% - 50vw);height:250px;overflow:hidden;pointer-events:none}.ef-shader div{position:absolute;left:-40px;right:-40px;bottom:-40px;height:280px;display:flex;align-items:flex-end;filter:blur(18px)}.ef-shader i{flex:1;display:block;background-image:linear-gradient(180deg,#f1f5f9 0%,#e2caff 14%,#b57bff 30%,#7f22fe 50%,#5b13c0 70%,#2a1263 88%,#0f172b 100%)}
+</style>
+<div class="ef">
+<header class="rg-result-head ef-intro"><div><h1>Create event</h1><p class="rg-result-lede">Set the submission deadline and optional questions before teams begin.</p>
+<ol class="ef-steps"><li><span><strong>Name and link</strong>Pick a title and the slug used in public URLs.</span></li><li><span><strong>Deadline</strong>Submissions lock at this moment, in UTC.</span></li><li><span><strong>Questions</strong>Optional. Editable until the first submission arrives.</span></li></ol></div></header>
 <section class="rg-result-panel rg-form-panel"><form method="post" class="rg-lifecycle-form">{% csrf_token %}
-<div class="rg-form-field"><label for="event-name">Name</label><input id="event-name" name="name" maxlength="160" autocomplete="off" required></div>
-<div class="rg-form-field"><label for="event-slug">Slug</label><input id="event-slug" name="slug" pattern="[a-z0-9-]{3,50}" maxlength="50" autocomplete="off" required><small>3-50 lowercase letters, digits or dashes. Used in links.</small></div>
-<div class="rg-form-field"><label for="event-close">Submission close (ISO 8601 with timezone)</label><input id="event-close" name="submissions_close" placeholder="2026-10-01T18:00:00Z" required><small>Use UTC (Z) or an explicit offset.</small></div>
-<div class="rg-form-field"><label for="event-questions">Custom submission questions (JSON array, optional)</label><textarea id="event-questions" name="custom_questions" rows="5" placeholder='[{"key":"stack","label":"Tech stack","required":true}]'></textarea><small>Up to ten questions. You can edit them before submissions arrive.</small></div>
-<button class="btn" type="submit">Create event</button></form></section>
+<div class="rg-form-field"><label for="event-name">Name*</label><input id="event-name" name="name" maxlength="160" autocomplete="off" required></div>
+<div class="rg-form-field"><label for="event-slug">Slug*</label><input id="event-slug" name="slug" pattern="[a-z0-9-]{3,50}" maxlength="50" autocomplete="off" required><small>3-50 lowercase letters, digits or dashes. Used in links.</small></div>
+<div class="rg-form-field"><label for="event-close">Submission close* (ISO 8601 with timezone)</label><input id="event-close" name="submissions_close" placeholder="2026-10-01T18:00:00Z" required><small>Use UTC (Z) or an explicit offset.</small></div>
+<div class="rg-form-field"><div class="ef-opt-head"><label for="event-questions">Custom submission questions <span>(optional)</span></label><button type="button" class="ef-switch" role="switch" aria-checked="false" aria-controls="event-questions-box" aria-label="Add custom questions"></button></div>
+<div class="ef-opt" id="event-questions-box" hidden><textarea id="event-questions" name="custom_questions" rows="4" placeholder='[{"key":"stack","label":"Tech stack","required":true}]'></textarea><small>Up to ten questions. You can edit them before submissions arrive.</small></div></div>
+<div class="ef-actions"><button class="btn" type="submit">Create event <span aria-hidden="true">→</span></button></div></form></section>
+</div>
+<div class="ef-shader" aria-hidden="true"><div><i style="height:100px;background-size:100% 100px"></i><i style="height:145px;background-size:100% 145px"></i><i style="height:185px;background-size:100% 185px"></i><i style="height:225px;background-size:100% 225px"></i><i style="height:270px;background-size:100% 270px"></i><i style="height:225px;background-size:100% 225px"></i><i style="height:185px;background-size:100% 185px"></i><i style="height:145px;background-size:100% 145px"></i><i style="height:100px;background-size:100% 100px"></i></div></div>
+<script>(function(){var b=document.querySelector(".ef-switch"),p=document.getElementById("event-questions-box"),t=document.getElementById("event-questions");b.addEventListener("click",function(){var on=b.getAttribute("aria-checked")!=="true";b.setAttribute("aria-checked",on);p.hidden=!on;if(on)t.focus();else t.value=""})})();</script>
 {% endblock %}

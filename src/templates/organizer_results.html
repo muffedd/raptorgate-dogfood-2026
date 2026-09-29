@@ -3,6 +3,56 @@
 {% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'results' %}?view=html" aria-current="page">Results</a><a href="{% url 'vote_signals' %}">Vote signals</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
 {% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
 {% block content %}
-<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / organizer</p><h1>Judging results</h1><p class="rg-result-lede">{{ project_count }} eligible projects · {{ score_count }} recorded score rows · {{ assigned_count }} live assignments</p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Private preview{% endif %}</span></header>
-<div class="rg-result-layout"><section class="rg-result-panel"><h2>Standings</h2><div class="rg-result-table-wrap" role="region" aria-label="Organizer standings table" tabindex="0"><table class="rg-result-table"><thead><tr><th scope="col">Rank</th><th scope="col">Project</th><th scope="col" class="number">Raw / 5</th><th scope="col" class="number">Adjusted / 5</th><th scope="col" class="number">Reviews</th></tr></thead><tbody>{% for row in standings %}<tr><td>{% if row.normalized is not None %}<strong>#{{ row.rank }}</strong>{% else %}-{% endif %}</td><td><strong>{{ row.title }}</strong><small>{{ row.project }}</small></td><td class="number">{% if row.raw is not None %}{{ row.raw|floatformat:2 }}{% else %}-{% endif %}</td><td class="number">{% if row.normalized is not None %}{{ row.normalized|floatformat:2 }}{% else %}Unscored{% endif %}</td><td class="number">{{ row.reviews }}</td></tr>{% empty %}<tr><td colspan="5">No eligible projects yet.</td></tr>{% endfor %}</tbody></table></div></section><aside class="rg-result-panel"><h2>{% if event.published %}Published state{% else %}Before you publish{% endif %}</h2>{% if not event.published %}<ol class="rg-result-list"><li>Check unscored rows and review coverage. The imported fixture may include score rows without live assignments.</li><li>Compare raw and adjusted values before committing. Tied adjusted scores share a rank.</li><li>Confirm that the voting window and intended audience match your plan.</li></ol>{% endif %}<p class="rg-result-note">This organizer view is private. {% if event.published %}The public page is available only after the voting window closes.{% else %}Publication is a separate organizer POST and is not triggered here. The public page stays gated until publication and voting close.{% endif %}</p><a href="{% url 'export_csv' %}">Download CSV</a></aside></div>
+<style>
+.or-hero{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 32px;padding:48px 0 28px;border:0}
+.or-hero h1{font-size:clamp(40px,5.6vw,68px);line-height:.92;letter-spacing:-.06em;margin:0}
+.or-hero h1 span{color:var(--ui-accent)}
+.or-hero .rg-result-lede{margin:4px 0 0;font-size:16px;color:var(--ui-sub)}
+.or-hero .rg-result-lede b{color:var(--ui-ink);font-weight:600}
+.or .rg-result-state{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:15px;font-weight:600;color:var(--ui-ink);margin:0}
+@keyframes rgBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.7)}}@media(prefers-reduced-motion:no-preference){.or .rg-result-state::before{animation:rgBlink 1.4s ease-in-out infinite}}.or .rg-result-state::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--ui-accent)}
+.or .rg-result-layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;align-items:start}
+.or .rg-result-panel{padding:24px;border:0;border-radius:18px;background:var(--ui-panel);box-shadow:0 2px 5px 1px rgba(18,23,35,.10);margin:0}
+.or .rg-result-panel h2{font-size:20px;line-height:1.25;letter-spacing:-.02em;margin:0 0 8px}
+.or .rg-result-panel p{margin:0;font-size:15px;line-height:1.55;color:var(--ui-sub)}
+.or .rg-result-table-wrap{margin-top:12px;overflow-x:auto}
+.or .rg-result-table{width:100%;border-collapse:collapse;font-size:14px}
+.or .rg-result-table th{padding:10px 12px;text-align:left;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ui-sub);border-bottom:1px solid var(--ui-rule)}
+.or .rg-result-table td{padding:14px 12px;border-bottom:1px solid var(--ui-rule);vertical-align:middle}
+.or .rg-result-table tr:last-child td{border-bottom:0}
+.or .rg-result-table .number{text-align:right;font-variant-numeric:tabular-nums}
+.or .rg-result-table small{display:block;margin-top:2px;font-size:12px;color:var(--ui-sub)}
+.or-rank{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:28px;padding:0 8px;border-radius:8px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--ui-soft);color:var(--ui-accent)}
+.or-rank.is-top{background:var(--ui-accent);color:#fff}
+.or-score{display:grid;gap:6px;justify-items:end}
+.or-bar{display:block;width:96px;height:4px;border-radius:2px;background:var(--ui-soft);overflow:hidden}
+.or-bar i{display:block;height:100%;border-radius:2px;background:var(--ui-accent)}
+.or-none{color:var(--ui-sub)}
+.or .rg-result-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:16px;counter-reset:s}
+.or .rg-result-list li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:12px;font-size:14px;line-height:1.5;color:var(--ui-sub)}
+.or .rg-result-list li::before{content:counter(s);width:28px;height:28px;border-radius:8px;background:var(--ui-soft);color:var(--ui-accent);font-weight:600;font-size:13px;display:grid;place-items:center}
+.or .rg-result-note{margin-top:20px;padding:12px 14px;border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);font-size:14px}
+.or .or-dl{display:inline-flex;align-items:center;gap:8px;height:44px;margin-top:20px;padding:0 20px 0 16px;border-radius:999px;font:600 14px Inter,system-ui,sans-serif;color:var(--ui-ink);text-decoration:none;box-shadow:inset 0 0 0 1px #d1d1d6}
+.or .or-dl:hover{background:var(--ui-bg)}
+.or .or-card{padding:0;overflow:hidden}
+.or-card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px}
+.or-card-head h2{display:inline;margin:0}.or-count{white-space:nowrap;margin-left:12px;font-size:14px;color:#8a94a6}
+.or .or-card .or-dl{margin:0;white-space:nowrap;flex-shrink:0;height:40px;padding:0 16px;border-radius:10px}
+.or .or-card .rg-result-table-wrap{margin:0}
+.or .or-card .rg-result-table th{background:var(--ui-bg);border-top:1px solid var(--ui-rule);padding:12px;text-transform:none;letter-spacing:0;font-size:12px}
+.or .or-card .rg-result-table td{padding:16px 12px}
+.or .or-card .rg-result-table th:first-child,.or .or-card .rg-result-table td:first-child{padding-left:24px}
+.or .or-card .rg-result-table th:last-child,.or .or-card .rg-result-table td:last-child{padding-right:24px}
+.or .or-card .rg-result-table tbody tr:hover{background:var(--ui-bg)}
+.or-proj{display:flex;align-items:center;gap:12px}.or-ini{flex-shrink:0;width:36px;height:36px;border-radius:10px;background:var(--ui-soft);color:var(--ui-accent);font-weight:700;display:grid;place-items:center;text-transform:uppercase}
+.or-foot{padding:24px;background:var(--ui-bg);border-top:1px solid var(--ui-rule)}
+.or-foot h3{font-size:15px;font-weight:600;margin:0 0 16px}
+.or-foot .rg-result-list{margin:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:20px}
+.or-foot .rg-result-note{margin:20px 0 0;padding:0;background:none;font-size:13px;color:#8a94a6}
+@media(max-width:1100px){.or .rg-result-layout{grid-template-columns:1fr}}@media(max-width:860px){.or-hero{padding-top:32px}.or .rg-result-table{min-width:520px}}
+</style>
+<div class="or">
+<header class="rg-result-head or-hero"><div><h1>Judging results<span>.</span></h1><p class="rg-result-lede"><b>{{ project_count }} eligible projects</b> · <span style="white-space:nowrap">{{ score_count }} recorded score rows</span> · <span style="white-space:nowrap">{{ assigned_count }} live assignments</span></p></div><span class="rg-result-state">{% if event.published %}Published{% else %}Private preview{% endif %}</span></header>
+<section class="rg-result-panel or-card"><div class="or-card-head"><div><h2>Standings</h2><span class="or-count">{{ project_count }} projects</span></div><a class="or-dl" href="{% url 'export_csv' %}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Download CSV</a></div><div class="rg-result-table-wrap" role="region" aria-label="Organizer standings table" tabindex="0"><table class="rg-result-table"><thead><tr><th scope="col">Rank</th><th scope="col">Project</th><th scope="col" class="number">Raw / 5</th><th scope="col" class="number">Adjusted / 5</th><th scope="col" class="number">Reviews</th></tr></thead><tbody>{% for row in standings %}<tr><td>{% if row.normalized is not None %}<span class="or-rank{% if row.rank == 1 %} is-top{% endif %}">#{{ row.rank }}</span>{% else %}<span class="or-none">-</span>{% endif %}</td><td><span class="or-proj"><span class="or-ini">{{ row.title|first }}</span><span><strong>{{ row.title }}</strong><small>{{ row.project }}</small></span></span></td><td class="number">{% if row.raw is not None %}{{ row.raw|floatformat:2 }}{% else %}<span class="or-none">-</span>{% endif %}</td><td class="number">{% if row.normalized is not None %}<span class="or-score"><span>{{ row.normalized|floatformat:2 }}</span><span class="or-bar"><i style="width:{% widthratio row.normalized 5 100 %}%"></i></span></span>{% else %}<span class="or-none">Unscored</span>{% endif %}</td><td class="number">{{ row.reviews }}</td></tr>{% empty %}<tr><td colspan="5">No eligible projects yet.</td></tr>{% endfor %}</tbody></table></div><div class="or-foot"><h3>{% if event.published %}Published state{% else %}Before you publish{% endif %}</h3>{% if not event.published %}<ol class="rg-result-list"><li>Check unscored rows and review coverage. The imported fixture may include score rows without live assignments.</li><li>Compare raw and adjusted values before committing. Tied adjusted scores share a rank.</li><li>Confirm that the voting window and intended audience match your plan.</li></ol>{% endif %}<p class="rg-result-note">This organizer view is private. {% if event.published %}The public page is available only after the voting window closes.{% else %}Publication is a separate organizer POST and is not triggered here. The public page stays gated until publication and voting close.{% endif %}</p></div></section>
+</div>
 {% endblock %}

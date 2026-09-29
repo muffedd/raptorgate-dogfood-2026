@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 289 Django + 292 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independent amd64 cold-boot logs in `packaging/evidence/` cover source commit `24d9a638`, including the browser-flow fixes.
+`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. A separate pre-login signup POST with no CSRF cookie was independently reproduced as HTTP 403; the browser login/signup flow first obtains a CSRF token on GET. This is not a bypass or an application failure. The independent amd64 cold-boot logs in `packaging/evidence/` cover source commit `24d9a638`, including the browser-flow fixes.
 
 ## Features
 

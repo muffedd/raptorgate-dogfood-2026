@@ -6,6 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ event.title }} - Projects</title>
   <link rel="stylesheet" href="{% static 'widget.css' %}">
+  <style>
+:root{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--chip:#f1f5f9}
+[data-theme=dark]{--bg:#0b1020;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--soft:#2a1a4d;--chip:#1a2338}
+body.widget-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;letter-spacing:-.012em}
+.widget-main{max-width:1200px;margin:0 auto;padding:32px}
+.widget-title{display:inline;margin:0;font-size:clamp(32px,4vw,48px);line-height:.95;letter-spacing:-.06em}.widget-title::after{content:".";color:var(--a)}
+.widget-count{float:right;margin:14px 0 0;font-size:14px;font-weight:600;color:var(--sub)}
+.widget-list{clear:both;margin:20px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:16px}
+.widget-card{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--bg);border:1px solid var(--line);border-radius:14px;transition:border-color .15s}.widget-card:hover{border-color:var(--a)}
+.widget-thumb{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px}
+.widget-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.widget-card-title{margin:0;font-size:18px;line-height:1.25;letter-spacing:-.025em}
+.widget-track{flex-shrink:0;font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;background:var(--soft);color:var(--a)}
+.widget-summary{margin:0;font-size:14px;line-height:1.55;color:var(--sub);flex:1}
+.widget-tags{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0}.widget-tags li{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--sub)}
+.widget-meta{margin:0;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:10px;font-size:13px;color:var(--sub)}
+.widget-repo{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink);text-decoration:none}.widget-repo:hover{color:var(--a)}
+.widget-empty{grid-column:1/-1;font-size:14px;color:var(--sub)}
+  </style>
 </head>
 <body class="widget-body">
 <main class="widget-main">
@@ -23,7 +41,7 @@
       {% if project.tags %}<ul class="widget-tags">{% for tag in project.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}
       <p class="widget-meta">
         <span class="widget-team">{{ project.team.name }}</span>
-        {% if project.repo_url %}<a class="widget-repo" href="{{ project.repo_url }}" rel="noopener noreferrer">Repository</a>{% endif %}
+        {% if project.repo_url %}<a class="widget-repo" href="{{ project.repo_url }}" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>Repository</a>{% endif %}
       </p>
     </li>
     {% empty %}
