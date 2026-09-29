@@ -8,14 +8,14 @@
   <link rel="stylesheet" href="{% static 'widget.css' %}">
   <link rel="stylesheet" href="{% static 'rg_public_theme.css' %}">
   <style>
-:root{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--chip:#f1f5f9}
-[data-theme=dark]{--bg:#0b1020;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--soft:#2a1a4d;--chip:#1a2338}
+:root{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#f8fafc;--chip:#f1f5f9}
+[data-theme=dark]{--bg:#0b1020;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--soft:#2a1a4d;--chip:#1a2338;--card-bg:#0b1020}
 body.widget-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Owner Helvetica",system-ui,sans-serif;letter-spacing:-.012em}
 .widget-main{max-width:1200px;margin:0 auto;padding:32px}
 .widget-title{display:inline;margin:0;font-size:clamp(32px,4vw,48px);line-height:.95;letter-spacing:-.06em}.widget-title::after{content:".";color:var(--a)}
 .widget-count{float:right;margin:14px 0 0;font-size:14px;font-weight:600;color:var(--sub)}
 .widget-list{clear:both;margin:20px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:16px}
-.widget-card{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--bg);border:1px solid var(--line);border-radius:14px;transition:border-color .15s}.widget-card:hover{border-color:var(--a)}
+.widget-card{display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--card-bg,#fff);border:1px solid var(--line);border-radius:14px;transition:border-color .15s}.widget-card:hover{border-color:var(--a)}
 .widget-thumb{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px}
 .widget-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.widget-card-title{margin:0;font-size:18px;line-height:1.25;letter-spacing:-.025em}
 .widget-track{flex-shrink:0;font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;background:var(--soft);color:var(--a)}
