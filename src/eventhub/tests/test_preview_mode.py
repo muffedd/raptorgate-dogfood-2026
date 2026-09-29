@@ -19,8 +19,10 @@ assert settings.ALLOWED_HOSTS == ['example.onrender.com']
 assert settings.SESSION_COOKIE_SECURE and settings.CSRF_COOKIE_SECURE
 assert settings.SECURE_SSL_REDIRECT
 c=Client(HTTP_HOST='example.onrender.com',HTTP_X_FORWARDED_PROTO='https')
-for path in ['/signup/', '/vote', '/organizer/publish', '/events/new']:
+for path in ['/signup/', '/vote', '/organizer/publish', '/events/new', '/verify', '/projects/sample-project']:
     assert c.post(path, {}).status_code == 405
+for path in ['/ballot','/signup/','/login/','/organizer/overview']:
+    assert c.get(path).status_code == 302
 '''
         result=subprocess.run([sys.executable,'-c',code],env=env,capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stdout+'\n'+result.stderr)

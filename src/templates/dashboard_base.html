@@ -30,6 +30,7 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
 </header>
 
 <main class="wrap site-main" id="main-content" tabindex="-1">
+  {% if preview_mode %}<aside class="rg-preview-notice" role="note"><strong>Public preview</strong> · Sample event with published fixture results. Explore projects and rankings; voting, sign-in, and edits are disabled here. The full voting and judge workflow runs in the local seeded app.</aside>{% endif %}
   {% block content %}{% endblock %}
 </main>
 

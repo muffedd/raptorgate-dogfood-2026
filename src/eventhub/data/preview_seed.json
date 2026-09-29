@@ -1,0 +1,1701 @@
+{
+  "event": {
+    "id": "evt_01",
+    "name": "Sample Hack 2026",
+    "submissions_close": "2026-03-01T18:00:00Z"
+  },
+  "tracks": [
+    {
+      "slug": "trk_01",
+      "name": "Developer tools"
+    },
+    {
+      "slug": "trk_02",
+      "name": "Data and analytics"
+    },
+    {
+      "slug": "trk_03",
+      "name": "Accessibility"
+    },
+    {
+      "slug": "trk_04",
+      "name": "Security"
+    },
+    {
+      "slug": "trk_05",
+      "name": "Climate"
+    },
+    {
+      "slug": "trk_06",
+      "name": "Health"
+    },
+    {
+      "slug": "trk_07",
+      "name": "Education"
+    },
+    {
+      "slug": "trk_08",
+      "name": "Open hardware"
+    }
+  ],
+  "teams": [
+    {
+      "slug": "tm_01",
+      "name": "NorthKiln"
+    },
+    {
+      "slug": "tm_02",
+      "name": "LoudQuarry"
+    },
+    {
+      "slug": "tm_03",
+      "name": "StillTrail"
+    },
+    {
+      "slug": "tm_04",
+      "name": "SaltDrift"
+    },
+    {
+      "slug": "tm_05",
+      "name": "AmberSwitch"
+    },
+    {
+      "slug": "tm_06",
+      "name": "CopperBeacon"
+    },
+    {
+      "slug": "tm_07",
+      "name": "CopperLedger"
+    },
+    {
+      "slug": "tm_08",
+      "name": "GreenHours"
+    },
+    {
+      "slug": "tm_09",
+      "name": "IronLedger"
+    },
+    {
+      "slug": "tm_10",
+      "name": "AmberOrbit"
+    },
+    {
+      "slug": "tm_11",
+      "name": "OpenSignal"
+    },
+    {
+      "slug": "tm_12",
+      "name": "IronLoom"
+    },
+    {
+      "slug": "tm_13",
+      "name": "HollowHours"
+    },
+    {
+      "slug": "tm_14",
+      "name": "StillMeadow"
+    },
+    {
+      "slug": "tm_15",
+      "name": "WarmQuarry"
+    },
+    {
+      "slug": "tm_16",
+      "name": "OpenSignal"
+    },
+    {
+      "slug": "tm_17",
+      "name": "SmallSignal"
+    },
+    {
+      "slug": "tm_18",
+      "name": "CopperMeadow"
+    },
+    {
+      "slug": "tm_19",
+      "name": "PaperAnchor"
+    },
+    {
+      "slug": "tm_20",
+      "name": "HollowHarbour"
+    },
+    {
+      "slug": "tm_21",
+      "name": "SaltThread"
+    },
+    {
+      "slug": "tm_22",
+      "name": "GreenFerry"
+    },
+    {
+      "slug": "tm_23",
+      "name": "HollowOrbit"
+    },
+    {
+      "slug": "tm_24",
+      "name": "PaperLoom"
+    },
+    {
+      "slug": "tm_25",
+      "name": "GreenDrift"
+    },
+    {
+      "slug": "tm_26",
+      "name": "SaltMeadow"
+    },
+    {
+      "slug": "tm_27",
+      "name": "BrightSignal"
+    },
+    {
+      "slug": "tm_28",
+      "name": "BrightCompass"
+    },
+    {
+      "slug": "tm_29",
+      "name": "SmallLedger"
+    },
+    {
+      "slug": "tm_30",
+      "name": "StillTrail"
+    },
+    {
+      "slug": "tm_31",
+      "name": "GreenBeacon"
+    },
+    {
+      "slug": "tm_32",
+      "name": "DeepMeadow"
+    },
+    {
+      "slug": "tm_33",
+      "name": "WarmTrail"
+    },
+    {
+      "slug": "tm_34",
+      "name": "AmberSwitch"
+    },
+    {
+      "slug": "tm_35",
+      "name": "GlassDrift"
+    },
+    {
+      "slug": "tm_36",
+      "name": "HollowLoom"
+    },
+    {
+      "slug": "tm_37",
+      "name": "SaltCompass"
+    },
+    {
+      "slug": "tm_38",
+      "name": "GreenLedger"
+    },
+    {
+      "slug": "tm_39",
+      "name": "SlowCompass"
+    },
+    {
+      "slug": "tm_40",
+      "name": "StillTrail"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "prj_01",
+      "team": "tm_01",
+      "track": "trk_04",
+      "title": "Glass Signal",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T04:08:00Z"
+    },
+    {
+      "slug": "prj_02",
+      "team": "tm_02",
+      "track": "trk_03",
+      "title": "Small Meadow",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T20:06:00Z"
+    },
+    {
+      "slug": "prj_03",
+      "team": "tm_03",
+      "track": "trk_03",
+      "title": "Deep Compass",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T16:58:00Z"
+    },
+    {
+      "slug": "prj_04",
+      "team": "tm_04",
+      "track": "trk_07",
+      "title": "Green Switch",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T17:00:00Z"
+    },
+    {
+      "slug": "prj_05",
+      "team": "tm_05",
+      "track": "trk_02",
+      "title": "North Compass",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T04:40:00Z"
+    },
+    {
+      "slug": "prj_06",
+      "team": "tm_06",
+      "track": "trk_01",
+      "title": "Dry Compass",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T10:24:00Z"
+    },
+    {
+      "slug": "prj_07",
+      "team": "tm_07",
+      "track": "trk_03",
+      "title": "Dry Harbour",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T04:29:00Z"
+    },
+    {
+      "slug": "prj_08",
+      "team": "tm_08",
+      "track": "trk_04",
+      "title": "North Drift",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T01:09:00Z"
+    },
+    {
+      "slug": "prj_09",
+      "team": "tm_09",
+      "track": "trk_06",
+      "title": "Hollow Signal",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T15:47:00Z"
+    },
+    {
+      "slug": "prj_10",
+      "team": "tm_10",
+      "track": "trk_08",
+      "title": "Still Beacon",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T05:44:00Z"
+    },
+    {
+      "slug": "prj_11",
+      "team": "tm_11",
+      "track": "trk_02",
+      "title": "Salt Ledger",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T13:14:00Z"
+    },
+    {
+      "slug": "prj_12",
+      "team": "tm_12",
+      "track": "trk_07",
+      "title": "Open Beacon",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T09:46:00Z"
+    },
+    {
+      "slug": "prj_13",
+      "team": "tm_13",
+      "track": "trk_05",
+      "title": "Quiet Anchor",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T14:20:00Z"
+    },
+    {
+      "slug": "prj_14",
+      "team": "tm_14",
+      "track": "trk_07",
+      "title": "Green Lantern",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T10:21:00Z"
+    },
+    {
+      "slug": "prj_15",
+      "team": "tm_15",
+      "track": "trk_04",
+      "title": "Copper Orbit",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T08:30:00Z"
+    },
+    {
+      "slug": "prj_16",
+      "team": "tm_16",
+      "track": "trk_04",
+      "title": "Salt Kiln",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T14:00:00Z"
+    },
+    {
+      "slug": "prj_17",
+      "team": "tm_17",
+      "track": "trk_06",
+      "title": "Small Loom",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T09:09:00Z"
+    },
+    {
+      "slug": "prj_18",
+      "team": "tm_18",
+      "track": "trk_07",
+      "title": "Open Kiln",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T15:30:00Z"
+    },
+    {
+      "slug": "prj_19",
+      "team": "tm_19",
+      "track": "trk_06",
+      "title": "Small Relay",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T09:30:00Z"
+    },
+    {
+      "slug": "prj_20",
+      "team": "tm_20",
+      "track": "trk_08",
+      "title": "Paper Thread",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T05:18:00Z"
+    },
+    {
+      "slug": "prj_21",
+      "team": "tm_21",
+      "track": "trk_02",
+      "title": "Copper Kiln",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T01:03:00Z"
+    },
+    {
+      "slug": "prj_22",
+      "team": "tm_22",
+      "track": "trk_04",
+      "title": "Dry Bridge",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T07:47:00Z"
+    },
+    {
+      "slug": "prj_23",
+      "team": "tm_23",
+      "track": "trk_08",
+      "title": "Slow Quarry",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T10:30:00Z"
+    },
+    {
+      "slug": "prj_24",
+      "team": "tm_24",
+      "track": "trk_03",
+      "title": "Glass Beacon",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T17:09:00Z"
+    },
+    {
+      "slug": "prj_25",
+      "team": "tm_25",
+      "track": "trk_02",
+      "title": "Dry Relay",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T22:36:00Z"
+    },
+    {
+      "slug": "prj_26",
+      "team": "tm_26",
+      "track": "trk_05",
+      "title": "Amber Hours",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T03:56:00Z"
+    },
+    {
+      "slug": "prj_27",
+      "team": "tm_27",
+      "track": "trk_08",
+      "title": "Flat Thread",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T10:34:00Z"
+    },
+    {
+      "slug": "prj_28",
+      "team": "tm_28",
+      "track": "trk_02",
+      "title": "Flat Meadow",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T10:22:00Z"
+    },
+    {
+      "slug": "prj_29",
+      "team": "tm_29",
+      "track": "trk_01",
+      "title": "Flat Relay",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T20:34:00Z"
+    },
+    {
+      "slug": "prj_30",
+      "team": "tm_30",
+      "track": "trk_07",
+      "title": "Paper Harbour",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T13:45:00Z"
+    },
+    {
+      "slug": "prj_31",
+      "team": "tm_31",
+      "track": "trk_01",
+      "title": "Salt Ferry",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T05:43:00Z"
+    },
+    {
+      "slug": "prj_32",
+      "team": "tm_32",
+      "track": "trk_01",
+      "title": "Loud Ledger",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T14:58:00Z"
+    },
+    {
+      "slug": "prj_33",
+      "team": "tm_33",
+      "track": "trk_01",
+      "title": "Slow Trail",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T20:51:00Z"
+    },
+    {
+      "slug": "prj_34",
+      "team": "tm_34",
+      "track": "trk_08",
+      "title": "Iron Switch",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T01:13:00Z"
+    },
+    {
+      "slug": "prj_35",
+      "team": "tm_35",
+      "track": "trk_05",
+      "title": "Warm Beacon",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T09:33:00Z"
+    },
+    {
+      "slug": "prj_36",
+      "team": "tm_36",
+      "track": "trk_08",
+      "title": "Salt Drift",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T01:20:00Z"
+    },
+    {
+      "slug": "prj_37",
+      "team": "tm_37",
+      "track": "trk_07",
+      "title": "Salt Loom",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T21:42:00Z"
+    },
+    {
+      "slug": "prj_38",
+      "team": "tm_38",
+      "track": "trk_02",
+      "title": "Deep Beacon",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-27T03:39:00Z"
+    },
+    {
+      "slug": "prj_39",
+      "team": "tm_39",
+      "track": "trk_03",
+      "title": "Paper Anchor",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-26T23:30:00Z"
+    },
+    {
+      "slug": "prj_40",
+      "team": "tm_40",
+      "track": "trk_01",
+      "title": "Slow Loom",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-02-28T15:26:00Z"
+    },
+    {
+      "slug": "prj_41",
+      "team": "tm_07",
+      "track": "trk_03",
+      "title": "Dry Harbour",
+      "summary": "One line of what it does.",
+      "submitted_at": "2026-03-01T17:57:00Z"
+    }
+  ],
+  "judges": [
+    "jdg_01",
+    "jdg_02",
+    "jdg_03",
+    "jdg_04",
+    "jdg_05",
+    "jdg_06",
+    "jdg_07",
+    "jdg_08",
+    "jdg_09",
+    "jdg_10",
+    "jdg_11",
+    "jdg_12",
+    "jdg_13",
+    "jdg_14",
+    "jdg_15",
+    "jdg_16",
+    "jdg_17",
+    "jdg_18",
+    "jdg_19",
+    "jdg_20",
+    "jdg_21",
+    "jdg_22",
+    "jdg_23",
+    "jdg_24",
+    "jdg_25",
+    "jdg_26",
+    "jdg_27",
+    "jdg_28",
+    "jdg_29",
+    "jdg_30"
+  ],
+  "scores": [
+    {
+      "judge": "jdg_08",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 2,
+        "quality": 4,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_28",
+      "project": "prj_01",
+      "criteria": {
+        "functionality": 2,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_02",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_03",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_04",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_05",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_06",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_01",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_12",
+      "project": "prj_07",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_23",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_08",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_27",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_09",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_10",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_10",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_11",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_12",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_13",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 2,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_14",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_15",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_15",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_10",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_08",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_16",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_27",
+      "project": "prj_17",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_18",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_18",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_19",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_07",
+      "project": "prj_19",
+      "criteria": {
+        "functionality": 4,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_20",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_21",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_13",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 2,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 2,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_28",
+      "project": "prj_22",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_23",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_24",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_24",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_25",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 2,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_26",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_27",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_02",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_28",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_29",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_29",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_14",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_30",
+      "criteria": {
+        "functionality": 2,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 2,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_31",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_32",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_09",
+      "project": "prj_33",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_34",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 2,
+        "quality": 5,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_06",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_03",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 5,
+        "quality": 2,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_17",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_05",
+      "project": "prj_35",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_15",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_20",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 3,
+        "quality": 4,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_29",
+      "project": "prj_36",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_11",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_04",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_22",
+      "project": "prj_37",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_30",
+      "project": "prj_38",
+      "criteria": {
+        "functionality": 5,
+        "quality": 5,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_25",
+      "project": "prj_38",
+      "criteria": {
+        "functionality": 3,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_16",
+      "project": "prj_38",
+      "criteria": {
+        "functionality": 3,
+        "quality": 5,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_39",
+      "criteria": {
+        "functionality": 3,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_39",
+      "criteria": {
+        "functionality": 2,
+        "quality": 3,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_40",
+      "criteria": {
+        "functionality": 5,
+        "quality": 3,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_24",
+      "project": "prj_40",
+      "criteria": {
+        "functionality": 2,
+        "quality": 2,
+        "innovation": 4
+      }
+    },
+    {
+      "judge": "jdg_19",
+      "project": "prj_41",
+      "criteria": {
+        "functionality": 5,
+        "quality": 4,
+        "innovation": 2
+      }
+    },
+    {
+      "judge": "jdg_18",
+      "project": "prj_41",
+      "criteria": {
+        "functionality": 4,
+        "quality": 3,
+        "innovation": 3
+      }
+    },
+    {
+      "judge": "jdg_21",
+      "project": "prj_41",
+      "criteria": {
+        "functionality": 4,
+        "quality": 5,
+        "innovation": 5
+      }
+    },
+    {
+      "judge": "jdg_26",
+      "project": "prj_41",
+      "criteria": {
+        "functionality": 4,
+        "quality": 2,
+        "innovation": 5
+      }
+    }
+  ]
+}
