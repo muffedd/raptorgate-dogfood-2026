@@ -29,7 +29,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 - **Local-first design:** light-first UI with a saved dark choice across judge, gallery, ballot, organizer and results screens. A separately styled, read-only gallery widget can be embedded on other sites.
 - **Responsive and accessible:** the dual-theme sweep checked desktop, tablet and mobile widths, keyboard toggle, persisted choice and mobile overflow.
 
-Bonus work: `NORMALIZATION-PROOF.md` and `normalization-proof.csv` document and reproduce rank movement; `THREAT-MODEL.md` maps attack surfaces and mitigations. These are bonus attempts, not additional acceptance-checker PASS lines.
+Bonus challenge mapping: **+5 Normalization Proof** - `NORMALIZATION-PROOF.md` and `normalization-proof.csv` reproduce rank movement; **+3 Threat Model** - `THREAT-MODEL.md` maps attack surfaces and mitigations. These are bonus attempts, not additional acceptance-checker PASS lines.
 
 `.dogfood.toml` claims T1/T2, the scope verified by the official checker. The T3 voting features and T4 widget, JSON API, participation records, portable JSON certificates and one results-published webhook are working slices, not blanket tier claims. See `T3-VOTER-ACCESS.md` for the three access modes and their trust limits. See [Current routes](#current-routes), [Roadmap](#roadmap) and the design documents for details.
 
