@@ -1,1 +1,11 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New team | RaptorGate</title></head><body><h1>Create team</h1><form method="post">{% csrf_token %}<label>Team name<input name="name" required></label><button>Create</button></form></body></html>
+{% extends "dashboard_base.html" %}
+{% block title %}Create team | RaptorGate{% endblock %}
+{% block role_slug %}participant{% endblock %}{% block role %}participant{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'submit' %}">Submission</a>{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / participant</p><h1>Create a team</h1><p class="rg-result-lede">Start a team, then add your project.</p></div></header>
+<section class="rg-result-panel rg-form-panel"><form method="post" class="rg-lifecycle-form">{% csrf_token %}
+<div class="rg-form-field"><label for="team-name">Team name</label><input id="team-name" name="name" maxlength="160" required></div>
+<div class="rg-form-actions"><button class="btn" type="submit">Create team</button></div>
+</form></section>
+{% endblock %}

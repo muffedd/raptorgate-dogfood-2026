@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
-from eventhub.models import Event, Judge
+from eventhub.models import Event, Judge, Team
 
 
 class ParticipantSignupTests(TestCase):
@@ -19,6 +19,8 @@ class ParticipantSignupTests(TestCase):
         self.assertFalse(user.is_superuser)
         self.assertFalse(Judge.objects.filter(user=user).exists())
         self.assertTrue(self.client.login(username='newparticipant', password='UniquePassphrase2026!Fly'))
+        self.client.logout()
+        self.assertRedirects(self.client.post('/login/', {'username':'newparticipant', 'password':'UniquePassphrase2026!Fly'}), '/projects')
         self.assertEqual(self.client.get('/api/judge/scores').status_code, 403)
 
     def test_duplicate_username_and_password_validation(self):
@@ -43,3 +45,23 @@ class ParticipantSignupTests(TestCase):
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
         self.assertFalse(Judge.objects.filter(user=user).exists())
+
+
+class TeamBrowserFlowTests(TestCase):
+    def setUp(self):
+        Event.objects.create(slug='team-browser', title='Team browser', submissions_close=timezone.now())
+        self.user = get_user_model().objects.create_user(username='team-browser-user')
+        self.client.force_login(self.user)
+
+    def test_html_team_form_redirects_to_submission(self):
+        self.assertEqual(self.client.get('/teams/new').status_code, 200)
+        response = self.client.post('/teams/new', {'name': 'New team'},
+                                    HTTP_ACCEPT='text/html,application/xhtml+xml')
+        self.assertRedirects(response, '/projects/new')
+        self.assertTrue(Team.objects.filter(event__slug='team-browser', name='New team', members=self.user).exists())
+
+    def test_api_team_creation_still_returns_json(self):
+        response = self.client.post('/teams/new', {'name': 'API team'},
+                                    HTTP_ACCEPT='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(response.json()['team'].startswith('api-team-'))

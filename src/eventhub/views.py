@@ -233,7 +233,9 @@ def create_team(request):
     with transaction.atomic():
         team=Team.objects.create(event=event,slug=slug,name=name)
         team.members.add(request.user)
-    return JsonResponse({'team':slug},status=201)
+    if submission_wants_json(request):
+        return JsonResponse({'team':slug},status=201)
+    return redirect('submit')
 
 
 @login_required

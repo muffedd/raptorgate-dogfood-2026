@@ -56,6 +56,7 @@ if PREVIEW:
         raise ImproperlyConfigured('Public preview cannot use the local fixture database')
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 LOGIN_URL='/login/'
+LOGIN_REDIRECT_URL='/projects'
 
 EMAIL_BACKEND = os.environ.get('VOTER_EMAIL_BACKEND', '')
 VOTER_EMAIL_FROM = os.environ.get('VOTER_EMAIL_FROM', '')

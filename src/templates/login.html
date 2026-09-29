@@ -1,1 +1,11 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Sign in | RaptorGate</title></head><body><h1>Sign in</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button>Sign in</button></form><p>New participant? <a href="{% url 'signup' %}">Create an account</a></p></body></html>
+{% extends "dashboard_base.html" %}
+{% block title %}Sign in | RaptorGate{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a><a href="{% url 'signup' %}">Create account</a>{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / account</p><h1>Sign in</h1></div></header>
+<section class="rg-result-panel rg-form-panel"><form method="post" class="rg-lifecycle-form">{% csrf_token %}
+{% for field in form %}<div class="rg-form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}</div>{% endfor %}
+{% for error in form.non_field_errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}
+<div class="rg-form-actions"><button class="btn" type="submit">Sign in</button></div></form>
+<p>New participant? <a href="{% url 'signup' %}">Create an account</a></p></section>
+{% endblock %}
