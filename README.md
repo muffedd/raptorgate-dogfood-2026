@@ -2,9 +2,9 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 287/287 x2 (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
+`PostgreSQL: 287 Django + 290 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test status above is a local PostgreSQL run of this source, not automated CI or a Docker cold-boot result.
+`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independently reported amd64 cold-boot proof covers commit `4cd5a399`, before this documentation update.
 
 ## Features
 
@@ -39,7 +39,7 @@ docker compose up
 
 This fetches Python/PostgreSQL images and Python packages while online, then starts PostgreSQL 16 and Django 5.2, applies migrations and seeds `fixtures.json` when the database has no event. Open http://localhost:8080/projects. Compose binds to `127.0.0.1:8080`. This is a local demo configuration with fixed credentials; do not publish it directly.
 
-For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. The scripts are shipped; the archive and network-off cold-boot validation are next.
+For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. An independent Ubuntu 24.04 x86_64 VM cold-boot report for commit `4cd5a399` records a fresh Docker host, the network interface down during boot and proof, a checksum-verified image archive, healthy PostgreSQL, a seeded portal, HTTP 200 for gallery and CSS, and seven literal official checker PASS lines. See `packaging/README.md` for scope and limits. This was not a Windows or arm64 run.
 
 The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
 
@@ -52,7 +52,7 @@ python3 run.py .dogfood.toml > acceptance-report.txt
 cat acceptance-report.txt
 ```
 
-The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`, from the integrated source on a fresh migrated and fixture-seeded PostgreSQL database with the checker pointed at an isolated localhost port 18889; this is not a Docker or offline cold-boot result. The checked-in `.dogfood.toml` defaults to localhost:8080 for Compose. Rerun the checker on the final submission tree and read each result line; it can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
+The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`, from this source on a fresh migrated and fixture-seeded local PostgreSQL database with the checker pointed at an isolated localhost port 18909. It is a separate local check, not the independent Docker or offline cold-boot log. The checked-in `.dogfood.toml` defaults to localhost:8080 for Compose. Rerun the checker on the final submission tree and read each result line; it can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
 
 Install `requirements-dev.txt` into a Python environment, then run `python src/manage.py test eventhub.tests` and `PYTHONPATH=src pytest -q`. Run both against the final submission tree.
 
@@ -65,7 +65,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this source, both full runners passed on real PostgreSQL: **287/287 Django tests** and **287/287 pytest tests**, no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18889; the checker was rerun after these regression tests with the same seven PASS lines. These checks are not a Docker cold-boot proof. The separate local event-lifecycle video is not an offline cold-boot proof either.
+At this source, both full runners passed on real PostgreSQL: **287/287 Django tests** and **290/290 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are not the independent Docker cold-boot proof, which covers the earlier `4cd5a399` source tree. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
