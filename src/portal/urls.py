@@ -50,6 +50,7 @@ urlpatterns=[
  path('judge/accept/<str:token>',views.accept_judge,name='accept_judge'),
  path('judge/score/<slug:project_slug>',views.score_project,name='score_project'),
  path('organizer/assign',views.assign_judge,name='assign_judge'),
+ path('organizer/assign/batch',views.assign_batch,name='assign_batch'),
  path('organizer/overview',views.organizer_overview,name='organizer_overview'),
  path('organizer/results',views.results,name='results'),
  path('organizer/rubric',views.edit_rubric,name='edit_rubric'),
