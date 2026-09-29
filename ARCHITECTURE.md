@@ -1,6 +1,6 @@
 # Architecture
 
-Source architecture of the fresh private repository. This describes source and PostgreSQL tests, not an independently run Docker deployment.
+Source architecture of RaptorGate. This describes source and PostgreSQL tests, not an independently run Docker deployment.
 
 ## Process and storage
 
@@ -8,7 +8,7 @@ Source architecture of the fresh private repository. This describes source and P
 
 ## Request boundaries
 
-The active event is a global organizer-selected event (`active=True`); creating another event alone does not switch it. Some legacy reads fall back to the oldest event without an active selection, but voting/results/API requests fail closed. Gallery reads canonical projects (not duplicates) and filters by title/track. Submission takes a transaction and team row lock, checks team membership and the server's UTC time against the event close date, and creates or edits that team's canonical project. The project form restricts track to the active event. Team and judge invite tokens expire after seven days; judge acceptance consumes its token and sets a password.
+The active event is a global organizer-selected event (`active=True`); creating another event alone does not switch it. Some reads fall back to the oldest event without an active selection, but voting/results/API requests fail closed. Gallery reads canonical projects (not duplicates) and filters by title/track. Submission takes a transaction and team row lock, checks team membership and the server's UTC time against the event close date, and creates or edits that team's canonical project. The project form restricts track to the active event. Team and judge invite tokens expire after seven days; judge acceptance consumes its token and sets a password.
 
 The judge scores API derives the judge from the authenticated user and active event, and denies a mismatched `judge` query parameter. Organizer-only endpoints require `is_superuser` for assignment, rubric, results, audit, publication and CSV, and event creation also requires `is_superuser`. Judge assignment checks track membership and own-team conflicts; score writes require an assignment and current judge-track membership, and reject own-team scoring. Audit records are written on score creation/edit. The checked-in acceptance report records all seven T1/T2 probes as PASS, including peer-score and participant denial. These probes do not cover every path or prove production security.
 
