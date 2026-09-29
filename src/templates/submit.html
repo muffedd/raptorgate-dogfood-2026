@@ -5,7 +5,7 @@
 {% block content %}
 <header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / participant</p><h1>{% if project.draft %}Your draft{% elif project %}Edit your submission{% else %}Submit project{% endif %}</h1><p class="rg-result-lede">Deadline: {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div></header>
 <section class="rg-result-panel rg-form-panel">
-{% if project.draft %}<p class="rg-form-note">This draft is private and has not been submitted. Publish it before the deadline to enter the event.</p>{% elif project %}<p class="rg-form-note">Your project is published. You can edit it until the deadline.</p>{% endif %}
+{% if project.draft %}<p class="rg-form-note">This draft is private and has not been submitted. Publish it before the deadline to enter the event.</p>{% elif project %}<p class="rg-form-note">Your project is published.{% if can_edit %} You can edit it until the deadline.{% endif %}</p>{% endif %}
 {% if can_edit %}<form method="post" class="rg-lifecycle-form">{% csrf_token %}
 {% for field in form %}<div class="rg-form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}
 {% for error in form.non_field_errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}

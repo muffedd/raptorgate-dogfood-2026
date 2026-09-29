@@ -30,3 +30,12 @@ class LifecycleFormRenderTests(TestCase):
         self.assertContains(r,'value="publish"')
         Project.objects.create(event=self.event,team=self.team,track=self.track,slug='p',title='Draft',draft=True)
         self.assertContains(self.client.get('/projects/new'),'has not been submitted')
+
+    def test_closed_published_page_does_not_promise_editing(self):
+        Project.objects.create(event=self.event,team=self.team,track=self.track,slug='published',title='Published')
+        self.event.submissions_close=timezone.now()-timedelta(minutes=1)
+        self.event.save(update_fields=['submissions_close'])
+        self.client.force_login(self.participant)
+        r=self.client.get('/projects/new')
+        self.assertContains(r,'Submissions are closed')
+        self.assertNotContains(r,'You can edit it until the deadline')
