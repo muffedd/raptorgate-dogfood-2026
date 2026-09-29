@@ -19,3 +19,9 @@ Log in through `/login/` in a browser before requesting a token. `POST /api/v1/t
 The token is a bearer secret: store it as carefully as a password. Token issuance returns `Cache-Control: no-store`; never paste tokens into logs or publish fixture credentials. Login, token issue/revoke, grading and organizer operations do not gain CSRF exceptions from this API. An invalid, expired, inactive-user or revoked token is denied with 401; a valid non-judge token gets 403. A missing event is 404. `?event=` cannot switch an API request to an inactive event. Token bearer use is local demo capability; the Compose HTTP listener is on `127.0.0.1`, not HTTPS. Do not expose it over the internet as-is.
 
 The read routes are unversioned in their data schema despite `/v1` path naming; run the regression tests before changing field names. The source and tests are in `src/eventhub/api.py` and `src/eventhub/tests/test_api_slice.py`.
+
+Additional read-only routes: `GET /api/v1/projects/<slug>` returns one eligible
+public project, and `GET /api/v1/judge/scores` requires a valid bearer token
+for the active event's judge and returns only that judge's eligible scores.
+The latter rejects another judge's slug and sends `Cache-Control: no-store`.
+This is still not UI parity for writes, organizer actions or comment moderation.

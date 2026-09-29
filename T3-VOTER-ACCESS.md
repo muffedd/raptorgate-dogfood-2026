@@ -19,3 +19,13 @@ While voting is open, GET `/vote/email/request` shows the two forms. POST the ad
 ## Review boundaries
 
 All token/code redemption uses POST; GET previews do not write state. Browser CSRF checks apply. The event is locked on redemption/voting so duplicate first claims serialize under PostgreSQL. Changing access mode invalidates prior session grants of a different mode. The organizer is responsible for mode selection, SMTP operations, link distribution and abuse review. No external email provider is required for default authenticated voting or open-link voting. The test suite uses mocked mail transport for the email mode and real PostgreSQL for concurrency-sensitive logic; an actual SMTP delivery and real-device cold boot must be checked separately before claiming operational readiness.
+
+A local SMTP capture can prove code delivery through the real SMTP backend
+without an external account; see `python -m pytest
+src/eventhub/tests/test_smtp_delivery.py`. The integration test starts a
+loopback-only SMTP server, reads the delivered message, redeems the code and
+casts one ballot. Set `VOTER_SMTP_TLS=0` only for that local capture; deploy
+with TLS and a real SMTP provider in production. Email verification guesses
+now have both per-address and per-IP budgets, including malformed six-digit
+codes. The organizer's signals page separately shows retained code requests,
+verification attempts and repeated voting attempts; they are not fraud verdicts.

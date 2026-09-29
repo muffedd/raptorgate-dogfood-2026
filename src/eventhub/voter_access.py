@@ -129,7 +129,7 @@ def redeem_email_code(request):
     if not event:return JsonResponse({'error':'Email voting is not active'},status=403)
     email=request.POST.get('email','').strip().lower()
     code=request.POST.get('code','')
-    if len(email)>254 or len(code)!=6 or not code.isascii() or not code.isdigit():
+    if len(email)>254 or not email or len(code)>64:
         return JsonResponse({'error':'Invalid code'},status=403)
     with transaction.atomic():
         event=Event.objects.select_for_update().get(pk=event.pk)
@@ -137,8 +137,15 @@ def redeem_email_code(request):
             return JsonResponse({'error':'Email voting is closed'},status=403)
         # Rate limit all guesses by email and IP, even when no valid row exists.
         ip=request.META.get('REMOTE_ADDR') or 'unknown'
-        if not action_allowed(event,'verify:'+hashlib.sha256(email.encode()).hexdigest()+':'+ip,'verify',ip,limit=5):
+        # Independent per-address and per-network budgets: rotating either one
+        # cannot erase the other. Include malformed guesses in both budgets.
+        email_hash=hashlib.sha256(email.encode()).hexdigest()
+        address_ok=action_allowed(event,'verify-email:'+email_hash,'verify',ip,limit=5)
+        network_ok=action_allowed(event,'verify-ip:'+ip,'verify',ip,limit=20)
+        if not address_ok or not network_ok:
             return JsonResponse({'error':'Too many attempts'},status=429)
+        if len(code)!=6 or not code.isascii() or not code.isdigit():
+            return JsonResponse({'error':'Invalid code'},status=403)
         row=VoterAccess.objects.select_for_update().filter(event=event,kind='email',identity=email,secret_hash=_digest(event,email+':'+code)).first()
         if not row or row.redeemed_at or row.expires_at<=timezone.now():
             return JsonResponse({'error':'Invalid code'},status=403)

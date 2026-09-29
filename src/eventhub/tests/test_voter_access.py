@@ -114,6 +114,19 @@ class EmailCodeTests(TestCase):
         self.assertEqual(self.client.post('/vote/email/redeem',{'event':self.event.slug,'email':self.email,'code':code}).status_code,403)
         self.assertEqual(self.client.get('/ballot').status_code,403)
 
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend',VOTER_EMAIL_FROM='vote@example.org',EMAIL_HOST='smtp.example.org')
+    @patch('eventhub.voter_access.send_mail',return_value=1)
+    def test_guesses_across_ips_and_addresses_have_separate_limits(self,send):
+        self.client.post('/vote/email/request',{'event':self.event.slug,'email':self.email})
+        code=send.call_args.args[1].rsplit(' ',1)[-1]
+        wrong='000000' if code!='000000' else '000001'
+        for i in range(5):
+            self.assertEqual(self.client.post('/vote/email/redeem',{'event':self.event.slug,'email':self.email,'code':wrong},REMOTE_ADDR=f'192.0.2.{i+1}').status_code,403)
+        self.assertEqual(self.client.post('/vote/email/redeem',{'event':self.event.slug,'email':self.email,'code':code},REMOTE_ADDR='192.0.2.100').status_code,429)
+        for i in range(4):
+            self.assertEqual(self.client.post('/vote/email/redeem',{'event':self.event.slug,'email':f'other{i}@example.org','code':wrong},REMOTE_ADDR='192.0.2.200').status_code,403)
+        self.assertEqual(self.client.post('/vote/email/redeem',{'event':self.event.slug,'email':'other4@example.org','code':'malformed'},REMOTE_ADDR='192.0.2.200').status_code,403)
+
 class ModeCSRFTests(TestCase):
     def setUp(self):
         self.event=make_event('csrf-mode',access='open')
