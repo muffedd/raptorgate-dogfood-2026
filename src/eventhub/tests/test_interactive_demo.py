@@ -49,7 +49,7 @@ class InteractiveDemoTests(TestCase):
     def test_non_demo_roles_and_public_signup_blocked_by_boundary(self):
         from portal.demo_middleware import InteractiveDemoBoundary
         boundary=InteractiveDemoBoundary(lambda request: None)
-        for path in ('/signup/','/admin/','/organizer/publish','/events/new','/api/v1/tokens'):
+        for path in ('/signup/','/admin/','/organizer/publish','/events/new','/api/v1/tokens','/projects/another-project'):
             response=boundary(type('Request',(),{'path':path,'method':'POST'})())
             self.assertEqual(response.status_code,405,path)
         self.assertEqual(self.client.post('/demo/switch',{'role':'organizer'}).status_code,405)
@@ -59,3 +59,23 @@ class InteractiveDemoTests(TestCase):
             client=self.client_class()
             self.assertEqual(client.post('/demo/enter').status_code,302)
         self.assertEqual(self.client.post('/demo/enter').status_code,429)
+
+    def test_real_csrf_and_actual_workflows(self):
+        from django.test import Client
+        browser=Client(enforce_csrf_checks=True)
+        self.assertEqual(browser.post('/demo/enter').status_code,403)
+        browser.get('/demo')
+        token=browser.cookies['csrftoken'].value
+        self.assertEqual(browser.post('/demo/enter',HTTP_X_CSRFTOKEN=token).status_code,302)
+        token=browser.cookies['csrftoken'].value
+        self.assertEqual(browser.post('/teams/new', {'name':'Visitor team'},HTTP_X_CSRFTOKEN=token).status_code,201)
+        track=self.track
+        self.assertEqual(browser.post('/projects/new',{'title':'Visitor project','track':track.pk,'action':'publish'},HTTP_X_CSRFTOKEN=token).status_code,201)
+        self.assertEqual(browser.post('/demo/switch',{'role':'judge'},HTTP_X_CSRFTOKEN=token).status_code,302)
+        token=browser.cookies['csrftoken'].value
+        self.assertEqual(browser.post('/judge/score/sample',{'functionality':5,'quality':4,'innovation':3},HTTP_X_CSRFTOKEN=token).status_code,200)
+        self.assertEqual(browser.post('/demo/switch',{'role':'participant'},HTTP_X_CSRFTOKEN=token).status_code,302)
+        token=browser.cookies['csrftoken'].value
+        self.assertEqual(browser.get('/ballot').status_code,200)
+        self.assertEqual(browser.post('/vote',{'project':'sample','event':'interactive-demo'},HTTP_X_CSRFTOKEN=token).status_code,201)
+        self.assertEqual(browser.post('/vote',{'project':'sample','event':'interactive-demo'},HTTP_X_CSRFTOKEN=token).status_code,409)

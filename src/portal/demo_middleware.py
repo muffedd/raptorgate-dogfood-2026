@@ -12,7 +12,7 @@ class InteractiveDemoBoundary:
             return HttpResponseNotAllowed(['GET']) if request.method not in ('GET', 'HEAD') else HttpResponseRedirect('/demo')
         if path.startswith('/tour/'):
             return HttpResponseRedirect('/demo')
-        allowed_write = path in ('/demo/enter', '/demo/switch', '/teams/new', '/projects/new', '/vote', '/logout/') or path.startswith(('/judge/score/', '/projects/'))
+        allowed_write = path in ('/demo/enter', '/demo/switch', '/teams/new', '/projects/new', '/vote', '/logout/') or path.startswith('/judge/score/')
         if request.method not in ('GET', 'HEAD', 'OPTIONS') and not allowed_write:
             return HttpResponseNotAllowed(['GET', 'HEAD', 'OPTIONS'])
         return self.get_response(request)
