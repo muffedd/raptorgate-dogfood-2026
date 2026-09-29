@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `License: MIT`
 
-- Local PostgreSQL: 291 Django and 294 pytest tests passed on the integrated UI source; see [Testing and proof](#testing-and-proof).
+- Local PostgreSQL: 294 Django and 297 pytest tests passed on the integrated UI source; see [Testing and proof](#testing-and-proof).
 - Official checker: 7/7 literal T1/T2 PASS lines on the integrated UI source. The checker exit code alone is not a verdict.
 - Independent cold boot: a hash-verified amd64 image archive booted offline for exact earlier source `24d9a638`; [scope and logs](packaging/evidence/EVIDENCE-README.md). It does not cover later UI commits.
 
@@ -80,7 +80,7 @@ cat acceptance-report.txt
 
 The committed report records three T1 and four T2 PASS lines, `claimed T1 T2, verified T1 T2`, from this source on a fresh migrated and fixture-seeded local PostgreSQL database with the checker pointed at an isolated localhost port 18909. It is a separate local check, not the independent Docker or offline cold-boot log. The checked-in `.dogfood.toml` defaults to localhost:8080 for Compose. Rerun the checker on the final submission tree and read each result line; it can exit zero even when a line says FAIL. `.dogfood.toml` supplies local demo sessions and routes, not production credentials.
 
-Install `requirements-dev.txt` into a Python environment, then run `python src/manage.py test eventhub.tests` and `PYTHONPATH=src pytest -q`. Run both against the final submission tree.
+Install `requirements-dev.txt` into a Python environment, then run `PYTHONPATH=src python src/manage.py test eventhub.tests` and `PYTHONPATH=src pytest -q`. Run both against the final submission tree.
 
 ## Architecture
 
@@ -91,7 +91,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-On the integrated UI source, both full runners passed on real PostgreSQL: **291/291 Django tests** and **294/294 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after the full Django and pytest suites with the same seven PASS lines. These local checks are separate from the earlier-source independent Docker cold-boot logs linked above. The separate local event-lifecycle video is not an offline cold-boot proof either.
+On the integrated UI source, both full runners passed on real PostgreSQL: **294/294 Django tests** and **297/297 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after the full Django and pytest suites with the same seven PASS lines. These local checks are separate from the earlier-source independent Docker cold-boot logs linked above. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -175,4 +175,4 @@ Publication needs a separate review of repository contents and demo credentials.
 
 ## Optional hosted UI preview
 
-`preview.Dockerfile` and `preview-start.sh` provide an optional public preview alongside the unchanged local `docker compose up` path. It requires unique runtime `DJANGO_SECRET_KEY`, `RAPTORGATE_PUBLIC_PREVIEW=1`, `DJANGO_DEBUG=0`, `RAPTORGATE_PREVIEW_HOST=<exact service>.onrender.com`, and `DATABASE_URL` for a separate PostgreSQL database. The preview starts from a sanitized copy of the official fictional fixture: 41 project rows (40 canonical) and 126 score rows, with published results. It stores 30 unusable-password placeholder judge accounts solely to preserve score relations, no participant/admin logins, no sessions, no judge emails or score comments, and no fixture tokens. The preview shows the gallery, standings, coverage and ranking method for UI review, not live voting or scoring. Every write request returns 405; links to inactive vote/login/organizer pages are removed or redirected to the gallery. Do not run the fixture `seed_event` command or use `.dogfood.toml` demo cookies against the public preview. Free Render sleeps when idle and its free PostgreSQL expires in 30 days, without backups. The hosted preview does not replace the offline, seeded, one-command submission requirement.
+`preview.Dockerfile` and `preview-start.sh` provide an optional public preview alongside the unchanged local `docker compose up` path. It requires unique runtime `DJANGO_SECRET_KEY`, `RAPTORGATE_PUBLIC_PREVIEW=1`, `DJANGO_DEBUG=0`, `RAPTORGATE_PREVIEW_HOST=<exact service>.onrender.com`, and `DATABASE_URL` for a separate PostgreSQL database. The preview starts from a sanitized copy of the official fictional fixture: 41 project rows (40 canonical) and 126 score rows, with published results. It stores 30 unusable-password placeholder judge accounts solely to preserve score relations, no participant/admin logins, no sessions, no judge emails or score comments, and no fixture tokens. The preview shows the gallery, standings, coverage and ranking method, plus a GET-only UI tour at `/tour/judge`, `/tour/ballot`, `/tour/organizer`, `/tour/standings`, `/tour/voter`, `/tour/login`, `/tour/signup`, `/tour/event`, `/tour/questions`, `/tour/submit`, `/tour/team`, `/tour/invite`, and `/tour/signals`. These tour pages render sanitized sample context and are not live voting, scoring, account access, or organizer operation. Every write request returns 405; operational vote/login/organizer URLs still redirect to the gallery. Do not run the fixture `seed_event` command or use `.dogfood.toml` demo cookies against the public preview. Free Render sleeps when idle and its free PostgreSQL expires in 30 days, without backups. The hosted preview does not replace the offline, seeded, one-command submission requirement.

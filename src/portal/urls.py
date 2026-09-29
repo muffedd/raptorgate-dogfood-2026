@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, lifecycle_export, voter_access, api, records, certificates, webhooks, verify_public, vote_signals, public_proofs
+from eventhub import views, public_views, widget, bulk, lifecycle_export, voter_access, api, records, certificates, webhooks, verify_public, vote_signals, public_proofs, preview_tour
 urlpatterns=[
+ path('tour/<slug:page>', preview_tour.page, name='preview_tour'),
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
  path('ballot',public_views.ballot,name='ballot'),

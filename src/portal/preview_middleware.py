@@ -8,6 +8,8 @@ class PreviewReadOnlyMiddleware:
     def __call__(self, request):
         if request.method not in ('GET', 'HEAD', 'OPTIONS'):
             return HttpResponseNotAllowed(['GET', 'HEAD', 'OPTIONS'])
+        if request.path.startswith('/tour/'):
+            return self.get_response(request)
         if request.path in ('/ballot', '/signup/', '/login/', '/admin/') or request.path.startswith(('/organizer/', '/judge/', '/teams/')):
             return HttpResponseRedirect('/projects')
         return self.get_response(request)

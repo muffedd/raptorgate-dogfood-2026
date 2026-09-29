@@ -15,7 +15,7 @@
 .public-ballot .pb-rules{list-style:none;margin:0;padding:0;display:grid;gap:0;background:var(--ui-panel);border:1px solid var(--ui-rule);border-radius:12px;overflow:hidden}
 .public-ballot .pb-rules li{display:flex;justify-content:space-between;gap:16px;padding:14px 16px;border-bottom:1px solid var(--ui-rule);font-size:14px;color:var(--ui-sub)}
 .public-ballot .pb-rules li:last-child{border-bottom:0}
-.public-ballot .pb-rules strong{font-family:"Suisse Intl",Inter,system-ui,sans-serif;font-weight:600;color:var(--ui-ink);font-variant-numeric:tabular-nums;text-align:right}
+.public-ballot .pb-rules strong{font-family:"Suisse Intl",system-ui,sans-serif;font-weight:600;color:var(--ui-ink);font-variant-numeric:tabular-nums;text-align:right}
 .public-ballot .pb-list-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;margin:32px 0 8px}
 .public-ballot .pb-list-head h2{font-size:24px;letter-spacing:-.03em;margin:0}
 .public-ballot .pb-list-head p{margin:0;font-size:14px;color:var(--ui-sub)}
@@ -36,7 +36,7 @@
 </style>
 <section class="public-hero pb-hero"><div><p class="eyebrow">Community ballot / {{ event.title }}</p><h1><span style="display:block;white-space:nowrap">Good work deserves</span><span style="display:block;white-space:nowrap">a closer <span style="font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:500">look</span><span style="color:var(--ui-accent)">.</span></span></h1><p class="hero-lede">Read what each team built, then back your favorite. One vote each. Keep your receipt private.</p></div><ul class="pb-rules ballot-meta" aria-label="Voting rules"><li>Votes per verified voter <strong>1</strong></li><li>Voting closes <strong>{{ event.voting_closes|date:'M j, Y H:i' }} UTC</strong></li><li>Ballot order <strong>Different for every voter</strong></li></ul></section>
 <div class="pb-list-head section-heading"><h2>On the <span style="color:var(--ui-accent)">ballot</span></h2><p>{{ projects|length }} project{{ projects|length|pluralize }}</p></div>
-<p class="rg-ballot-notice" role="note">Choose carefully. Voting is one per account, with no remove or change option.</p>
+<p class="rg-ballot-notice" role="note">{% if tour_page %}Read-only ballot preview. Voting is disabled here.{% else %}Choose carefully. Voting is one per account, with no remove or change option.{% endif %}</p>
 <div class="ballot-grid" id="ballot-grid">{% for project in projects %}<article class="ballot-card"><div class="ballot-card-top"><span class="ballot-index">{{ forloop.counter|stringformat:'02d' }}</span><span class="track-pill">{{ project.track.name }}</span></div><h3><a href="{% url 'project_detail' project.slug %}?event={{ event.slug }}">{{ project.title }}</a></h3><p class="ballot-description">{{ project.summary }}</p><div class="ballot-card-bottom"><span class="team-label">{{ project.team.name }}</span><form action="{% url 'vote' %}" method="post">{% csrf_token %}<input type="hidden" name="event" value="{{ event.slug }}"><input type="hidden" name="project" value="{{ project.slug }}"><button class="btn" aria-label="Cast vote for {{ project.title }}">Cast vote <span aria-hidden="true">↗</span></button></form></div></article>{% endfor %}</div>
 <script>function rgBallotCursor(box){
   if(!box||box.__hand||!window.matchMedia('(pointer:fine)').matches)return;box.__hand=1;

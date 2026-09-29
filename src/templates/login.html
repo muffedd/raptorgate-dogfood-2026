@@ -1,8 +1,13 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in | RaptorGate</title>
+{% load static %}
+<html lang="en"><head><script src="{% static 'rg_theme_boot.js' %}"></script><link rel="stylesheet" href="{% static 'rg_public_theme.css' %}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in | RaptorGate</title>
 <style>
 :root{--accent:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--bg:#f8fafc}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;letter-spacing:-.012em;color:var(--ink)}
+*{box-sizing:border-box}body{margin:0;font-family:"Suisse Intl",system-ui,sans-serif;letter-spacing:-.012em;color:var(--ink)}
+[data-theme=dark]{--ink:#eef1f8;--sub:#a3adc2;--bg:#0b1020;--soft:#2a1a4d}
+[data-theme=dark] .li,[data-theme=dark] .li-card{background:var(--bg)}
+[data-theme=dark] .li-field input{background:#151d31;color:var(--ink);border-color:#35405b}
+[data-theme=dark] .li-skip{color:var(--ink);box-shadow:inset 0 0 0 1px #35405b}
 a{color:var(--accent)}a:hover{color:#5b13c0}
 .li{display:flex;flex-direction:column;min-height:100vh;background:#fff}
 .li-card{flex:1;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:#fff}
@@ -12,30 +17,31 @@ a{color:var(--accent)}a:hover{color:#5b13c0}
 .li-copy{position:absolute;left:28px;right:28px;bottom:28px}
 .li-copy p{margin:0 0 8px;font-size:15px;font-weight:500}
 .li-copy h2{margin:0;font-size:clamp(26px,3vw,34px);line-height:1.15;letter-spacing:-.03em;font-weight:600;text-wrap:balance}
-.li-form{position:relative;display:flex;flex-direction:column;justify-content:center;padding:112px clamp(24px,5vw,64px) 40px}.li-skip{position:absolute;top:20px;right:24px;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;font:600 14px Inter,system-ui,sans-serif;color:var(--ink);text-decoration:none;white-space:nowrap;box-shadow:inset 0 0 0 1px #d1d1d6}.li-skip:hover{background:var(--bg);color:var(--ink)}
+.li-form{position:relative;display:flex;flex-direction:column;justify-content:center;padding:112px clamp(24px,5vw,64px) 40px}.li-skip{position:absolute;top:20px;right:24px;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;font:600 14px "Suisse Intl",system-ui,sans-serif;color:var(--ink);text-decoration:none;white-space:nowrap;box-shadow:inset 0 0 0 1px #d1d1d6}.li-skip:hover{background:var(--bg);color:var(--ink)}
 .li-in{max-width:380px;width:100%;margin:0 auto;display:grid;gap:20px}
 .li-mark{display:block;width:28px;height:28px;border-radius:8px;background:var(--accent);box-shadow:inset 0 0 0 6px var(--accent),inset 0 0 0 14px var(--soft)}
 .li-in h1{margin:16px 0 0;font-size:32px;line-height:1.1;letter-spacing:-.05em}.li-in h1 span{color:var(--accent)}
 .li-lede{margin:8px 0 0;font-size:14px;line-height:1.5;color:var(--sub)}
 .li-in form{display:grid;gap:16px}
 .li-field{display:grid;gap:6px}.li-field label{font-size:14px;font-weight:600}
-.li-field input{width:100%;height:44px;padding:0 14px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:var(--ink)}
+.li-field input{width:100%;height:44px;padding:0 14px;font:400 14px "Suisse Intl",system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:var(--ink)}
 .li-field input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px var(--soft)}
 .li-field small{font-size:12px;color:var(--sub)}.li-err{margin:0;font-size:12px;color:#b42318}
-.li-btn{height:48px;margin-top:4px;border:0;border-radius:999px;font:600 15px Inter,system-ui,sans-serif;color:#fff;background:var(--accent);cursor:pointer}.li-btn:hover{filter:brightness(1.07)}
+.li-btn{height:48px;margin-top:4px;border:0;border-radius:999px;font:600 15px "Suisse Intl",system-ui,sans-serif;color:#fff;background:var(--accent);cursor:pointer}.li-btn:hover{filter:brightness(1.07)}
 .li-alt{margin:0;text-align:center;font-size:14px;color:var(--sub)}.li-alt a{font-weight:600;text-decoration:none}
 @media(max-width:860px){.li-card{grid-template-columns:1fr}.li-art{min-height:280px}}
 
 .li-chip{position:absolute;top:68px;right:24px;display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:600;background:var(--soft);color:var(--accent);white-space:nowrap}
 .li-skip:hover{color:var(--ink)}
 </style></head>
-<body><div class="li"><div class="li-card">
+<body>{% if tour_page %}<p class="rg-preview-notice" role="note" style="margin:0">Read-only UI tour · Sign-in is disabled. <a href="{% url 'preview_tour' 'signup' %}">View signup</a> · <a href="{% url 'gallery' %}">Gallery</a></p>{% endif %}<div class="li"><div class="li-card">
 <div class="li-art"><canvas id="li-fluid" aria-hidden="true"></canvas><span class="li-star"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/></svg></span><div class="li-copy"><p>Welcome back</p><h2>Judge, vote and follow your projects in one place.</h2></div></div>
 <div class="li-form"><a href="{% url 'gallery' %}" class="li-skip">Skip for now <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><span class="li-chip">For hackathon</span><div class="li-in"><div><span class="li-mark"></span><h1>Sign in<span>.</span></h1><p class="li-lede">Use your RaptorGate account to continue.</p></div>
 <form method="post">{% csrf_token %}{% for field in form %}<div class="li-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="li-err">{{ error }}</p>{% endfor %}</div>{% endfor %}{% for error in form.non_field_errors %}<p class="li-err">{{ error }}</p>{% endfor %}<button class="li-btn" type="submit">Sign in</button></form>
 <p class="li-alt">New participant? <a href="{% url 'signup' %}">Create an account</a></p></div></div>
 </div></div>
 
+{% if tour_page %}<script>document.addEventListener('submit',function(e){e.preventDefault();e.stopImmediatePropagation()},true);</script>{% endif %}
 <script>function rgFluid(cv){
   var gl=cv.getContext('webgl',{antialias:false,powerPreference:'low-power'});if(!gl)return;
   var vs='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';

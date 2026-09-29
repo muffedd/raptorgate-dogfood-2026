@@ -24,9 +24,10 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
     .site-header .site-nav a{padding:8px 14px;border-radius:10px;font-size:14px;font-weight:500;color:var(--ui-ink);white-space:nowrap}
     .site-header .site-nav a:hover{background:var(--ui-bg)}
     .site-header .site-nav a[aria-current=page]{background:var(--ui-soft);color:var(--ui-accent);font-weight:600}
-    .site-header .role-badge{display:inline-flex;align-items:center;flex-shrink:0;height:40px;padding:0 18px;border-radius:10px;font:600 14px Inter,system-ui;color:#fff;border:0;background:linear-gradient(180deg,#8f3cff,#7f22fe);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px #6a12e0,0 4px 10px -2px rgba(127,34,254,.45)}
+    .site-header .role-badge{display:inline-flex;align-items:center;flex-shrink:0;height:40px;padding:0 18px;border-radius:10px;font:600 14px "Suisse Intl",system-ui;color:#fff;border:0;background:linear-gradient(180deg,#8f3cff,#7f22fe);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px #6a12e0,0 4px 10px -2px rgba(127,34,254,.45)}
     .site-header .rg-theme-toggle{border-radius:10px;border:0;flex-shrink:0;box-shadow:0 0 0 1px rgba(15,23,43,.06),0 1px 2px rgba(15,23,43,.06)}[data-theme=dark] .site-header .header-inner{box-shadow:0 0 0 1px rgba(255,255,255,.06),0 12px 28px -8px rgba(0,0,0,.6)}
-    @media(max-width:760px){.site-header .header-inner{flex-wrap:wrap;border-radius:14px;padding:10px 12px}.site-header .event-name{display:none}.site-header .site-nav{order:3;width:100%;margin:0;overflow-x:auto}.site-header .role-badge{margin-left:auto}}
+    @media(max-width:900px){.site-header .event-name{display:none}}
+    @media(max-width:760px){.site-header .header-inner{flex-wrap:wrap;border-radius:14px;padding:10px 12px}.site-header .event-name{display:none}.site-header .site-nav{order:3;width:100%;margin:0;overflow-x:auto}.site-header .role-badge{margin-left:auto}.site-header .rg-theme-toggle{order:2}.site-header .role-badge{order:1}.site-header .brand{order:0;font-size:15px;gap:6px;padding-right:0}.site-header .role-badge{padding:0 12px}.site-header .site-nav a{padding:8px 9px;font-size:13px}}
     .site-main.wrap,.site-footer .wrap{max-width:1200px;padding-left:32px;padding-right:32px}
   </style>
 </head>
@@ -37,7 +38,7 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
     <a class="brand" href="{% url 'gallery' %}">RaptorGate</a>
     <span class="event-name">{% block event_name %}{{ event.title|default:'RaptorGate' }}{% endblock %}</span>
     <nav class="site-nav" aria-label="Primary navigation">
-      {% block nav %}{% endblock %}
+      {% block nav %}{% endblock %}{% if preview_mode and not tour_page %}<a href="{% url 'preview_tour' 'judge' %}">UI tour</a>{% endif %}
     </nav>
     <span class="role-badge role-{% block role_slug %}visitor{% endblock %}">{% block role %}visitor{% endblock %}</span>
     <button type="button" class="rg-theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">D</span></button>
@@ -45,7 +46,8 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
 </header>
 
 <main class="wrap site-main" id="main-content" tabindex="-1">
-  {% if preview_mode %}<aside class="rg-preview-notice" role="note"><strong>Public preview</strong> · Sample event with published fixture results. Explore projects and rankings; voting, sign-in, and edits are disabled here. The full voting and judge workflow runs in the local seeded app.</aside>{% endif %}
+  {% if preview_mode %}<aside class="rg-preview-notice" role="note"><strong>Public preview</strong> · Sample event with published fixture results. Explore projects and rankings, or <a href="{% url 'preview_tour' 'judge' %}">take the UI tour</a>. Tour screens are read-only; voting, sign-in, edits and exports are disabled.</aside>{% endif %}
+  {% if tour_page %}<nav class="rg-tour-nav" aria-label="Read-only UI tour">UI tour: {% for item in tour_pages %}<a href="{% url 'preview_tour' item %}"{% if item == tour_page %} aria-current="page"{% endif %}>{{ item|capfirst }}</a>{% endfor %}</nav>{% endif %}
   {% block content %}{% endblock %}
 </main>
 
@@ -56,5 +58,6 @@ Adapted from Jasper's preview for the live public gallery. Other dashboard draft
   </div>
 </footer>
 <script src="{% static 'judge_theme.js' %}" defer></script>
+{% if tour_page %}<script>document.addEventListener('submit',function(e){e.preventDefault();e.stopImmediatePropagation()},true);</script>{% endif %}
 </body>
 </html>

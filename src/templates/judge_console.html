@@ -6,8 +6,9 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Judging | {{ event.title }}</title>
   <link rel="stylesheet" href="{% static 'judge_console.css' %}">
+  <link rel="stylesheet" href="{% static 'rg_public_theme.css' %}">
   <style>
-body .rg-shell{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--panel:#fff;--mut:#f8fafc;display:grid;grid-template-columns:64px 300px minmax(0,1fr);min-height:100vh;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;letter-spacing:-.012em}
+body .rg-shell{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--panel:#fff;--mut:#f8fafc;display:grid;grid-template-columns:64px 300px minmax(0,1fr);min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Suisse Intl",system-ui,sans-serif;letter-spacing:-.012em}
 html[data-theme=dark] body .rg-shell,body[data-theme=dark] .rg-shell{--bg:#0b1020;--panel:#121a2e;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--mut:#0f1626;--soft:#2a1a4d}
 body .rg-rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0;position:sticky;top:0;height:100vh;background:var(--bg)}
 body .rg-rail a{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--ink);text-decoration:none}
@@ -46,9 +47,9 @@ body .rg-options span{display:grid;place-items:center;height:44px;border-radius:
 body .rg-options label:hover span{border-color:var(--a)}body .rg-options input:checked+span{background:var(--a);border-color:var(--a);color:#fff;transform:scale(1.06)}
 body .rg-options input:focus-visible+span{box-shadow:0 0 0 4px var(--soft);border-color:var(--a)}
 body .rg-comment{display:block;margin-top:8px;padding-top:16px;border-top:1px solid var(--line);font-size:15px;font-weight:600}body .rg-comment small{margin-left:8px;font-size:12px;font-weight:400;color:var(--sub)}
-body #rg-comment{width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;font:400 14px Inter,system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--panel);color:var(--ink);resize:vertical}body #rg-comment:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 4px var(--soft)}
+body #rg-comment{width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;font:400 14px "Suisse Intl",system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--panel);color:var(--ink);resize:vertical}body #rg-comment:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 4px var(--soft)}
 body .rg-feedback{min-height:0;margin-top:8px;font-size:13px;color:#b42318}
-body .rg-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}body .rg-actions button{flex:1;height:48px;border:0;border-radius:999px;font:600 15px Inter,system-ui,sans-serif;color:#fff;background:var(--a);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .15s}body .rg-actions button:hover{filter:brightness(1.07)}body .rg-actions button:active{transform:scale(.97)}
+body .rg-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}body .rg-actions button{flex:1;height:48px;border:0;border-radius:999px;font:600 15px "Suisse Intl",system-ui,sans-serif;color:#fff;background:var(--a);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .15s}body .rg-actions button:hover{filter:brightness(1.07)}body .rg-actions button:active{transform:scale(.97)}
 body .rg-actions a{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 22px;border-radius:999px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;box-shadow:inset 0 0 0 1px #d1d1d6}
 body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub);padding:0 8px}
 @keyframes jcFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes jcPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
@@ -57,13 +58,14 @@ body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub
   </style>
 </head>
 <body>
+  {% if tour_page %}<div class="rg-preview-notice" role="note" style="margin:0;border-radius:0">Read-only UI tour · Sample project queue, not actual assignments. Scoring and sign-in are disabled. <a href="{% url 'preview_tour' 'ballot' %}">Next: ballot</a> · <a href="{% url 'gallery' %}">Gallery</a></div>{% endif %}
   <div class="rg-shell">
-    <aside class="rg-rail"><a href="{% url 'gallery' %}" aria-label="RaptorGate gallery">RG</a><a class="rg-rail-label" href="{% url 'judge_console' %}" title="Judging" aria-label="Judging console">J</a>
+    <aside class="rg-rail"><a href="{% url 'gallery' %}" aria-label="RaptorGate gallery">RG</a><a class="rg-rail-label" href="{% if tour_page %}{% url 'preview_tour' 'judge' %}{% else %}{% url 'judge_console' %}{% endif %}" title="Judging" aria-label="Judging console">J</a>
       <button type="button" class="rg-theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">D</span></button></aside>
     <nav class="rg-queue" aria-label="Assigned projects">
       <div class="rg-queue-head"><span class="rg-overline">{{ event.title }}</span><h2>Queue</h2><p>{{ completed }} reviewed · {{ total }} assigned</p></div>
       {% for assignment, done in queue %}
-      <a class="rg-queue-item{% if current.pk == assignment.project_id %} is-current{% endif %}{% if done %} is-done{% endif %}" href="{% url 'judge_console_project' assignment.project.slug %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>
+      <a class="rg-queue-item{% if current.pk == assignment.project_id %} is-current{% endif %}{% if done %} is-done{% endif %}" href="{% if tour_page %}{% url 'preview_tour' 'judge' %}{% else %}{% url 'judge_console_project' assignment.project.slug %}{% endif %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>
         <span class="rg-queue-title">{{ forloop.counter|stringformat:'02d' }} · {{ assignment.project.title }}</span>
         <small>{{ assignment.project.track.name }} · {% if done %}Saved{% else %}Not scored{% endif %}</small>
       </a>
@@ -71,7 +73,7 @@ body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub
       {% if not queue %}<p class="rg-empty">No projects assigned yet. Ask the organizer to assign a project in your track.</p>{% endif %}
     </nav>
     <main class="rg-main" id="main">
-      <details class="rg-mobile-queue"><summary>Assigned projects · {{ completed }} saved of {{ total }}</summary>{% for assignment, done in queue %}<a href="{% url 'judge_console_project' assignment.project.slug %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>{{ assignment.project.title }} · {% if done %}Saved{% else %}Not scored{% endif %}</a>{% endfor %}</details>
+      <details class="rg-mobile-queue"><summary>Assigned projects · {{ completed }} saved of {{ total }}</summary>{% for assignment, done in queue %}<a href="{% if tour_page %}{% url 'preview_tour' 'judge' %}{% else %}{% url 'judge_console_project' assignment.project.slug %}{% endif %}"{% if current.pk == assignment.project_id %} aria-current="page"{% endif %}>{{ assignment.project.title }} · {% if done %}Saved{% else %}Not scored{% endif %}</a>{% endfor %}</details>
       <div class="rg-breadcrumb">{{ event.title }} <span aria-hidden="true">/</span> Judging</div>
       {% if current %}
       <header class="rg-heading"><div><p class="rg-overline">{{ current.track.name }} · Project {{ position }} of {{ total }}</p><h1>{{ current.title }}<span>.</span></h1><p>{{ current.team.name }}</p></div><span class="rg-state{% if completed == total %} is-complete{% endif %}">{{ completed }} of {{ total }} complete · {{ remaining }} remaining</span></header>
@@ -87,7 +89,7 @@ body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub
             {% for value in '12345' %}<label><input type="radio" name="{{ criterion.key }}" value="{{ value }}" required {% if criterion.selected|stringformat:'s' == value %}checked{% endif %}><span>{{ value }}</span></label>{% endfor %}
             </div></fieldset>{% endfor %}
             <label class="rg-comment" for="rg-comment">Notes for the organizer <small>optional</small></label><textarea id="rg-comment" name="comment" rows="4" maxlength="2000">{{ score.comment|default:'' }}</textarea>
-            <div class="rg-feedback" role="alert" aria-live="assertive"></div><div class="rg-actions"><button type="submit">{% if following %}Save and next{% else %}Save score{% endif %}</button>{% if previous %}<a href="{% url 'judge_console_project' previous.slug %}">Previous</a>{% endif %}{% if following %}<a data-next-project href="{% url 'judge_console_project' following.slug %}">Next</a>{% endif %}</div>
+            <div class="rg-feedback" role="alert" aria-live="assertive"></div><div class="rg-actions"><button type="submit">{% if following %}Save and next{% else %}Save score{% endif %}</button>{% if previous %}<a href="{% url 'judge_console_project' previous.slug %}">Previous</a>{% endif %}{% if following %}<a data-next-project href="{% if tour_page %}{% url 'preview_tour' 'judge' %}{% else %}{% url 'judge_console_project' following.slug %}{% endif %}">Next</a>{% endif %}</div>
           </form>
         </section>
       </div>
@@ -95,5 +97,5 @@ body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub
     </main>
   </div>
 <script src="{% static 'judge_theme.js' %}" defer></script>
-<script src="{% static 'judge_console.js' %}" defer></script>
+{% if not tour_page %}<script src="{% static 'judge_console.js' %}" defer></script>{% else %}<script>document.addEventListener('submit',function(e){e.preventDefault();e.stopImmediatePropagation()},true);</script>{% endif %}
 </body></html>

@@ -6,10 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ event.title }} - Projects</title>
   <link rel="stylesheet" href="{% static 'widget.css' %}">
+  <link rel="stylesheet" href="{% static 'rg_public_theme.css' %}">
   <style>
 :root{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--chip:#f1f5f9}
 [data-theme=dark]{--bg:#0b1020;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--soft:#2a1a4d;--chip:#1a2338}
-body.widget-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;letter-spacing:-.012em}
+body.widget-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Suisse Intl",system-ui,sans-serif;letter-spacing:-.012em}
 .widget-main{max-width:1200px;margin:0 auto;padding:32px}
 .widget-title{display:inline;margin:0;font-size:clamp(32px,4vw,48px);line-height:.95;letter-spacing:-.06em}.widget-title::after{content:".";color:var(--a)}
 .widget-count{float:right;margin:14px 0 0;font-size:14px;font-weight:600;color:var(--sub)}
@@ -27,6 +28,7 @@ body.widget-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inte
 </head>
 <body class="widget-body">
 <main class="widget-main">
+  {% if preview_mode %}<p class="rg-preview-notice" role="note">Read-only sample gallery. <a href="{% url 'preview_tour' 'judge' %}">UI tour</a> · <a href="{% url 'gallery' %}">Full gallery</a></p>{% endif %}
   <h1 class="widget-title">{{ event.title }}</h1>
   <p class="widget-count">{{ projects|length }} project{{ projects|length|pluralize }}</p>
   <ul class="widget-list">
