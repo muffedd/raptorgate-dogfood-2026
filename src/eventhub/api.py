@@ -51,7 +51,7 @@ def projects(request):
     event=active_event(request)
     if not event:return JsonResponse({'error':'No active event'},status=404)
     rows=Project.objects.filter(event=event,draft=False,duplicate_of__isnull=True).select_related('team','track').order_by('slug')[:500]
-    return JsonResponse({'event':event.slug,'projects':[{'slug':p.slug,'title':p.title,'summary':p.summary,'repo_url':p.repo_url,'team':p.team.name,'track':p.track.name} for p in rows]})
+    return JsonResponse({'event':event.slug,'projects':[{'slug':p.slug,'title':p.title,'summary':p.summary,'repo_url':p.repo_url,'team':p.team.name,'track':p.track.name,'thumbnail_url':p.thumbnail_url,'gallery_images':p.gallery_images,'demo_video_url':p.demo_video_url,'live_url':p.live_url,'tags':p.tags,'custom_answers':p.custom_answers} for p in rows]})
 
 
 def results(request):
