@@ -27,6 +27,8 @@ class Command(BaseCommand):
                 User.objects.exists() or Session.objects.exists()):
             raise CommandError('Refusing to replace a database with unexpected data')
         if existing:
+            # Project protects its track/team, so remove the lone seed row first.
+            Project.objects.filter(event=existing[0]).delete()
             existing[0].delete()
         data=json.loads((Path(__file__).resolve().parents[2]/'data'/'preview_seed.json').read_text())
         if len(data['projects']) != 41 or len(data['scores']) != 126:
