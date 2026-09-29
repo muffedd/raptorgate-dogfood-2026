@@ -56,6 +56,14 @@ class BatchAssignmentTests(TestCase):
         self.assertEqual(Assignment.objects.filter(judge=self.judges[0],project=self.projects[0]).count(),1)
         self.assertTrue(all(Assignment.objects.filter(judge=j).count()<=2 for j in self.judges))
 
+    def test_stale_off_track_assignment_does_not_satisfy_target(self):
+        Assignment.objects.create(judge=self.judges[2],project=self.projects[0])
+        self.client.force_login(self.organizer)
+        result=self.batch(reviews_per_project='1',max_per_judge='4').json()
+        self.assertEqual(result['created'],5)
+        self.assertEqual(result['under_target_projects'],0)
+        self.assertEqual(Assignment.objects.filter(project=self.projects[0],judge__in=self.judges[:2]).count(),1)
+
     def test_role_method_and_limits(self):
         self.client.force_login(self.participant)
         self.assertEqual(self.batch().status_code,403)

@@ -238,9 +238,13 @@ def assign_batch(request):
                       .values_list('judge_id','project_id'))
         assigned={p['pk']:set() for p in projects}
         loads={j.pk:0 for j in judges}
+        project_tracks={p['pk']:p['track_id'] for p in projects}
         for judge_id, project_id in existing:
-            assigned[project_id].add(judge_id)
-            if judge_id in loads: loads[judge_id]+=1
+            if judge_id in loads:
+                loads[judge_id]+=1
+                # A stale off-track assignment cannot count as valid coverage.
+                if project_tracks[project_id] in allowed[judge_id]:
+                    assigned[project_id].add(judge_id)
         created=[]
         # Project-level coverage first; then least-loaded judge. No cross-track
         # assignment, duplicate row, competing-team judge, or draft project.
