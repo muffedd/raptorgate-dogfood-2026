@@ -7,6 +7,8 @@ class InteractiveDemoBoundary:
 
     def __call__(self, request):
         path = request.path
+        if path == '/' and request.method in ('GET','HEAD'):
+            return HttpResponseRedirect('/demo')
         # Do not let non-demo users exercise the organizer, staff or token APIs.
         if path.startswith(('/admin/', '/organizer/', '/api/', '/events/', '/embed/', '/receipt/', '/records/', '/certificates/')) or path in ('/admin', '/signup/', '/login/') or path.startswith(('/vote/email/', '/vote/open/', '/judge/accept/')):
             return HttpResponseNotAllowed(['GET']) if request.method not in ('GET', 'HEAD') else HttpResponseRedirect('/demo')

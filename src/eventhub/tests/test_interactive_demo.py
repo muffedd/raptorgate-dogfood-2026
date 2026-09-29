@@ -19,6 +19,8 @@ class InteractiveDemoTests(TestCase):
         Project.objects.create(event=cls.event,slug='sample',team=team,track=cls.track,title='Sample')
 
     def test_role_switch_and_identity_isolation(self):
+        self.assertEqual(self.client.get('/').status_code,302)
+        self.assertEqual(self.client.get('/')['Location'],'/demo')
         self.assertContains(self.client.get('/demo'),'Sign in to the demo')
         self.assertContains(self.client.get('/demo'),'li-card')
         self.assertEqual(self.client.get('/demo/enter').status_code,405)
