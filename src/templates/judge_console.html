@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="{% static 'judge_console.css' %}">
   <link rel="stylesheet" href="{% static 'rg_public_theme.css' %}">
   <style>
-body .rg-shell{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--panel:#fff;--mut:#f8fafc;display:grid;grid-template-columns:64px 300px minmax(0,1fr);min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Suisse Intl",system-ui,sans-serif;letter-spacing:-.012em}
+body .rg-shell{--a:#7f22fe;--soft:#f3eaff;--ink:#0f172b;--sub:#526179;--line:#e5e7eb;--bg:#fff;--panel:#fff;--mut:#f8fafc;display:grid;grid-template-columns:64px 300px minmax(0,1fr);min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Owner Helvetica",system-ui,sans-serif;letter-spacing:-.012em}
 html[data-theme=dark] body .rg-shell,body[data-theme=dark] .rg-shell{--bg:#0b1020;--panel:#121a2e;--ink:#eef1f8;--sub:#a3adc2;--line:#232c44;--mut:#0f1626;--soft:#2a1a4d}
 body .rg-rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0;position:sticky;top:0;height:100vh;background:var(--bg)}
 body .rg-rail a{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--ink);text-decoration:none}
@@ -47,9 +47,9 @@ body .rg-options span{display:grid;place-items:center;height:44px;border-radius:
 body .rg-options label:hover span{border-color:var(--a)}body .rg-options input:checked+span{background:var(--a);border-color:var(--a);color:#fff;transform:scale(1.06)}
 body .rg-options input:focus-visible+span{box-shadow:0 0 0 4px var(--soft);border-color:var(--a)}
 body .rg-comment{display:block;margin-top:8px;padding-top:16px;border-top:1px solid var(--line);font-size:15px;font-weight:600}body .rg-comment small{margin-left:8px;font-size:12px;font-weight:400;color:var(--sub)}
-body #rg-comment{width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;font:400 14px "Suisse Intl",system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--panel);color:var(--ink);resize:vertical}body #rg-comment:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 4px var(--soft)}
+body #rg-comment{width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;font:400 14px "Owner Helvetica",system-ui,sans-serif;border:1px solid #d1d1d6;border-radius:10px;background:var(--panel);color:var(--ink);resize:vertical}body #rg-comment:focus{outline:0;border-color:var(--a);box-shadow:0 0 0 4px var(--soft)}
 body .rg-feedback{min-height:0;margin-top:8px;font-size:13px;color:#b42318}
-body .rg-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}body .rg-actions button{flex:1;height:48px;border:0;border-radius:999px;font:600 15px "Suisse Intl",system-ui,sans-serif;color:#fff;background:var(--a);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .15s}body .rg-actions button:hover{filter:brightness(1.07)}body .rg-actions button:active{transform:scale(.97)}
+body .rg-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}body .rg-actions button{flex:1;height:48px;border:0;border-radius:999px;font:600 15px "Owner Helvetica",system-ui,sans-serif;color:#fff;background:var(--a);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .15s}body .rg-actions button:hover{filter:brightness(1.07)}body .rg-actions button:active{transform:scale(.97)}
 body .rg-actions a{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 22px;border-radius:999px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;box-shadow:inset 0 0 0 1px #d1d1d6}
 body .rg-mobile-queue{display:none}body .rg-empty{font-size:14px;color:var(--sub);padding:0 8px}
 @keyframes jcFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes jcPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
