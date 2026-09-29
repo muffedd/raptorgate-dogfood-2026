@@ -95,3 +95,5 @@ class InteractiveDemoTests(TestCase):
         self.assertEqual(browser.get('/ballot').status_code,200)
         self.assertEqual(browser.post('/vote',{'project':'sample','event':'interactive-demo'},HTTP_X_CSRFTOKEN=token).status_code,201)
         self.assertEqual(browser.post('/vote',{'project':'sample','event':'interactive-demo'},HTTP_X_CSRFTOKEN=token).status_code,409)
+        self.assertEqual(browser.post('/vote',{'project':'sample','event':'interactive-demo'},HTTP_X_CSRFTOKEN=token,HTTP_ACCEPT='text/html').status_code,302)
+        self.assertContains(browser.get('/ballot'),'already recorded')

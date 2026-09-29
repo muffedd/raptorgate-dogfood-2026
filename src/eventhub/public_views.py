@@ -65,7 +65,11 @@ def ballot(request):
     projects = list(eligible(event).select_related("team", "track"))
     projects.sort(key=lambda p: hmac.new(settings.SECRET_KEY.encode(),
         (str(event.pk)+":"+key+":"+str(p.pk)).encode(), hashlib.sha256).digest())
-    return render(request, "ballot.html", {"event":event, "projects":projects})
+    voted = PublicVote.objects.filter(event=event, voter_key=key).exists() if settings.DEMO else False
+    status = request.session.pop('demo_vote_status', None) if settings.DEMO else None
+    receipt = request.session.get('demo_vote_receipt') if settings.DEMO else None
+    return render(request, "ballot.html", {"event":event, "projects":projects,
+        'demo_voted':voted, 'demo_vote_status':status, 'demo_vote_receipt':receipt})
 
 
 def vote(request):
@@ -80,6 +84,12 @@ def vote(request):
     if not voting_open(event):
         return JsonResponse({"error":"Voting is closed"}, status=403)
     project = get_object_or_404(eligible(event), slug=request.POST.get("project", ""))
+    demo_html = settings.DEMO and 'text/html' in request.headers.get('Accept','')
+    def already_voted():
+        if demo_html:
+            request.session['demo_vote_status']='Your vote was already recorded. Each demo identity gets one vote.'
+            return redirect('ballot')
+        return JsonResponse({"error":"Vote already cast"}, status=409)
     try:
         with transaction.atomic():
             # Lock the event to serialize the first vote even if no voter row exists yet.
@@ -89,13 +99,17 @@ def vote(request):
             if not action_allowed(event,key,"vote",request.META.get("REMOTE_ADDR"),limit=8):
                 return JsonResponse({"error":"Too many attempts"}, status=429)
             if PublicVote.objects.filter(event=event, voter_key=key).exists():
-                return JsonResponse({"error":"Vote already cast"}, status=409)
+                return already_voted()
             receipt=secrets.token_hex(16)
             PublicVote.objects.create(event=event,project=project,voter_key=key,receipt=receipt)
             PublicVoteAudit.objects.create(event=event,voter_key=key,project=project,action="cast",
                 observed_ip=request.META.get("REMOTE_ADDR"))
     except IntegrityError:
-        return JsonResponse({"error":"Vote already cast"}, status=409)
+        return already_voted()
+    if demo_html:
+        request.session['demo_vote_status']='Vote recorded. Keep your receipt private.'
+        request.session['demo_vote_receipt']=receipt
+        return redirect('ballot')
     return JsonResponse({"receipt":receipt}, status=201)
 
 
