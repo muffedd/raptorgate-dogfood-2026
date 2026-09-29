@@ -1,0 +1,9 @@
+# Final-tree offline evidence
+
+`rg-evidence-final.tgz` is the unchanged sanitized log archive supplied by the independent Ubuntu operator. SHA-256: `9261dc432f31ebab268df9b0f1dab206261207a794ff29d0ee8ebec83ebdefa5`. The archive's `head-commit.log` names the tested source as `24d9a638f3f244ab98b7881e47aa8b91886e2ba0`, before this evidence-only commit. It contains text logs, not the large Docker image archive.
+
+The logs show a fresh amd64 Docker host with no pre-build images or volumes, a checksum-verified archive, the target portal image absent before load, failed network access while disconnected, healthy PostgreSQL, 41 seeded project rows and 40 canonical titles, gallery and CSS HTTP 200, and seven literal official checker PASS lines ending `claimed T1 T2, verified T1 T2`. `network-off.log` alone shows curl exit 6 / DNS failure; the operator separately reported that the NIC was disabled. The archive does not by itself prove the NIC state. It does not prove arm64 or Windows boots or a later source commit.
+
+`sweep-notes.log` includes an initial `/teams/new` POST returning 403. A separate relay says this was a harness error from reusing a pre-login CSRF token and that a later attempt with an authenticated token returned 302 to `/projects/new`; that retry log is **not included** in this archive. Do not count the archived team-form step as a PASS. Our separate local browser sweep on the tested source confirmed the team flow; see `ACCEPTANCE-SWEEP.md`. The offline VM had no GUI, so the archive's viewport checks are source/HTTP-level, not visual rendering.
+
+The archive was independently checked for common secret patterns before committing; fixed demo session strings in the boot logs have been redacted in the supplied archive. No image archive, actual session token, or personal email address was found in its members. Keep the archive intact, including the initial 403 and the operator's own scan output.

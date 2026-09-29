@@ -4,7 +4,7 @@ A self-hosted hackathon portal from submission to judged results, built fresh fo
 
 `PostgreSQL: 289 Django + 292 pytest PASS (this source); SQLite differs` · `Official checker: 7/7 PASS` · `License: MIT`
 
-`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independently reported amd64 cold-boot proof covers commit `4cd5a399`, before these documentation and browser-flow fixes.
+`API.md` describes the current partial JSON API. The test counts are local PostgreSQL runs on this source, not automated CI. The independent amd64 cold-boot logs in `packaging/evidence/` cover source commit `24d9a638`, including the browser-flow fixes.
 
 ## Features
 
@@ -39,7 +39,7 @@ docker compose up
 
 This fetches Python/PostgreSQL images and Python packages while online, then starts PostgreSQL 16 and Django 5.2, applies migrations and seeds `fixtures.json` when the database has no event. Open http://localhost:8080/projects. Compose binds to `127.0.0.1:8080`. This is a local demo configuration with fixed credentials; do not publish it directly.
 
-For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. An independent Ubuntu 24.04 x86_64 VM cold-boot report for commit `4cd5a399` records a fresh Docker host, the network interface down during boot and proof, a checksum-verified image archive, healthy PostgreSQL, a seeded portal, HTTP 200 for gallery and CSS, and seven literal official checker PASS lines. See `packaging/README.md` for scope and limits. This was not a Windows or arm64 run.
+For an offline demonstration, `packaging/README.md` gives the online image-build/archive-export and offline load/boot steps, including Windows PowerShell scripts. Docker Desktop and a prebuilt archive must be available on the target Windows PC. Independent Ubuntu x86_64 cold-boot logs for source commit `24d9a638` in `packaging/evidence/` record a fresh Docker host, an offline DNS failure and an operator-reported network interface down during boot and proof, a checksum-verified image archive, healthy PostgreSQL, a seeded portal, HTTP 200 for gallery and CSS, and seven literal official checker PASS lines. See `packaging/README.md` for scope and limits. This was not a Windows or arm64 run.
 
 The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
 
@@ -65,7 +65,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this source, both full runners passed on real PostgreSQL: **289/289 Django tests** and **292/292 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are not the independent Docker cold-boot proof, which covers the earlier `4cd5a399` source tree. The separate local event-lifecycle video is not an offline cold-boot proof either.
+At this source, both full runners passed on real PostgreSQL: **289/289 Django tests** and **292/292 pytest tests** (including three packaging checks), no skips. Pytest reported four Django 6 URL-field default-scheme deprecation warnings, not failing tests. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` captures the seven PASS lines on isolated port 18909; the checker was rerun after these regression tests with the same seven PASS lines. These local checks are separate from the independent Docker cold-boot logs, which cover source commit `24d9a638` and are linked from `packaging/README.md`. The separate local event-lifecycle video is not an offline cold-boot proof either.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -99,7 +99,7 @@ The sweep prompted fixes that automated checks alone miss: a visible-on-focus �
 - Public results methodology panel shows the event rubric weights, per-judge centering and clamping formula, zero-spread fallback and tie policy, with sparse-judging and statistical-fairness caveats. It reveals no individual judge values or identities.
 - Organizer-only vote activity panel at `/organizer/vote-signals` showing signals, not verdicts: retained attempt frequency, shared-IP actor counts, and accepted vote/cast-audit count differences. No IPs, actor keys, voter identities or receipts are shown on that panel.
 
-Offline Docker cold boot remains a separate proof step. Do not treat the independent reviewer’s probes or the official checker as a security audit.
+An independent amd64 offline Docker cold boot is documented in `packaging/evidence/`. Do not treat the reviewer’s probes or the official checker as a security audit.
 
 ## Current routes
 
@@ -132,7 +132,7 @@ Open-link voting adds organizer-issued one-use links; email voting adds a one-ti
 
 ## Roadmap
 
-Loopback SMTP delivery is covered by `test_smtp_delivery.py` using a local `aiosmtpd` server: code delivery, redemption and ballot casting run against the real Django SMTP backend. This is not proof of an external provider or production mail delivery. Next: external SMTP operations proof; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+Loopback SMTP delivery is covered by `test_smtp_delivery.py` using a local `aiosmtpd` server: code delivery, redemption and ballot casting run against the real Django SMTP backend. This is not proof of an external provider or production mail delivery. Next: external SMTP operations proof; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. The amd64 network-off Docker run and its checker output are recorded in `packaging/evidence/`; arm64 and Windows remain unproved. The local event-lifecycle video still needs its final linked delivery. These are not blanket higher-tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
 The repository is private during the build. Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
 
