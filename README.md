@@ -2,7 +2,7 @@
 
 A self-hosted hackathon portal from submission to judged results, built fresh for Dogfood 2026.
 
-`PostgreSQL: 230/230 x2 (this source); SQLite differs` 路 `Official checker: 7/7 PASS` 路 `License: MIT`
+`PostgreSQL: 232/232 x2 (this source); SQLite differs` 路 `Official checker: 7/7 PASS` 路 `License: MIT`
 
 `API.md` describes the current partial JSON API. The test status above describes the current tested source before its final release commit, not automated CI or a Docker cold-boot result.
 
@@ -63,7 +63,7 @@ Install `requirements-dev.txt` into a Python environment, then run `python src/m
 
 ## Testing and proof
 
-At this review-cycle source, both full runners passed on real PostgreSQL: **230/230 Django tests** and **230/230 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is an earlier capture; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
+At this review-cycle source, both full runners passed on real PostgreSQL: **232/232 Django tests** and **232/232 pytest tests**, no skips. Pytest reported one Django 6 URL-field default-scheme deprecation warning, not a failing test. SQLite can skip PostgreSQL-only concurrency cases, so its total is not comparable. On a fresh migrated and fixture-seeded PostgreSQL database, the official checker returned **7/7 literal PASS lines** for the claimed T1/T2 probes. The checked-in `acceptance-report.txt` is an earlier capture; rerun it on the final submission tree. These checks are not a Docker cold-boot proof or a five-minute demo video.
 
 Selected regression cases that can be inspected in `src/eventhub/tests/`:
 
@@ -94,6 +94,7 @@ The sweep prompted fixes that automated checks alone miss: a visible-on-focus 鈥
 - Public `/verify` and standalone `verify.py` with distinct claims for certificates, receipts and HMAC records; the offline command checks Ed25519 and can compare a trusted organizer key.
 - Published standings row expander for aggregate raw-versus-normalized math and rank movement, without individual judge details.
 - Public scoring coverage counts on results: eligible canonical non-draft projects, projects with at least one valid weighted score, and unscored projects. Ranks exclude unscored projects; these counts do not prove equal judging coverage or fairness.
+- Public results methodology panel shows the event rubric weights, per-judge centering and clamping formula, zero-spread fallback and tie policy, with sparse-judging and statistical-fairness caveats. It reveals no individual judge values or identities.
 - Organizer-only vote activity panel at `/organizer/vote-signals` showing signals, not verdicts: retained attempt frequency, shared-IP actor counts, and accepted vote/cast-audit count differences. No IPs, actor keys, voter identities or receipts are shown on that panel.
 
 Offline Docker cold boot remains a separate proof step. Do not treat the independent reviewer鈥檚 probes or the official checker as a security audit.

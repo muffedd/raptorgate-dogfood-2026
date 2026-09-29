@@ -9,7 +9,7 @@ from django.http import HttpResponseForbidden, HttpResponseNotAllowed, JsonRespo
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from .models import Event, Project, ProjectComment, PublicVote, PublicVoteAudit, PublicActionAttempt
-from .ranking import standings
+from .ranking import CRITERIA, standings
 
 
 def event_for_request(request):
@@ -135,7 +135,12 @@ def public_results(request):
     scored_count = sum(row['rank'] is not None for row in rows)
     return render(request,"results_public.html",{"event":event,"standings":rows,
         "eligible_count":eligible_count,"scored_count":scored_count,
-        "unscored_count":eligible_count-scored_count})
+        "unscored_count":eligible_count-scored_count,
+        "rubric_weights": [
+            ("Functionality", (event.rubric or CRITERIA)["functionality"] * 100),
+            ("Quality", (event.rubric or CRITERIA)["quality"] * 100),
+            ("Innovation", (event.rubric or CRITERIA)["innovation"] * 100),
+        ]})
 
 
 def receipt_lookup(request, token):
