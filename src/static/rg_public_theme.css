@@ -30,3 +30,4 @@ body{font-family:Inter,system-ui,sans-serif;letter-spacing:-.012em;--bg:var(--ui
 .rg-preview-notice{margin-top:20px;padding:12px 16px;border:1px solid var(--ui-rule);border-left:4px solid var(--ui-accent);border-radius:8px;background:var(--ui-panel);color:var(--ui-sub);font-size:14px;line-height:1.6}.rg-preview-notice strong{color:var(--ui-ink)}
 
 .rg-judge-progress{margin-top:16px}.rg-assignment-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:16px 0}.rg-assignment-form label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--ui-sub)}.rg-assignment-form input{width:145px;padding:9px;border:1px solid var(--ui-rule);border-radius:6px;background:var(--ui-panel);color:var(--ui-ink);font:inherit}.rg-assignment-form button{padding:10px 14px;cursor:pointer}
+.rg-export-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.rg-export-links .rg-link-button{margin:0}

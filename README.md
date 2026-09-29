@@ -43,6 +43,8 @@ For an offline demonstration, `packaging/README.md` gives the online image-build
 
 The seeded sample event closes submissions at `2026-03-01T18:00:00Z`; create a separate open event for a live submission demonstration and select it with the organizer-only `POST /events/select` route. The imported fixture has 41 project rows, including one duplicate retained in storage and hidden from the public gallery.
 
+Organizer-only lifecycle CSV snapshots for the active event are at `/organizer/export/{teams,submissions,assignments,scores,results}.csv` and linked from the organizer overview. Teams include individual member email addresses; submissions include drafts and duplicates; scores include raw criteria and comments; results include raw and normalized ranks even before publication. Keep downloaded CSVs private. These read-only exports do not import participant, assignment or score state and are limited to 5,000 rows per file. The legacy `/api/export.csv` route remains unchanged for the checker.
+
 Run the official checker:
 
 ```sh
@@ -130,7 +132,7 @@ Open-link voting adds organizer-issued one-use links; email voting adds a one-ti
 
 ## Roadmap
 
-Next: live SMTP delivery proof for email-gated voting; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with full lifecycle migration still on the roadmap. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
+Next: live SMTP delivery proof for email-gated voting; expand the read-only `/api/v1` slice into complete REST and webhook coverage beyond one results-published callback; a judge-facing certificate distribution UI. The HMAC record snapshot is not a certificate; see `PARTICIPATION-RECORDS.md`. Portable Ed25519 JSON certificate issuance is a separate tested slice with key-pinning limits in `CERTIFICATES.md`. An organizer-scoped CSV project import/export slice is available at `/organizer/projects/import` and `/organizer/projects.csv`, with organizer lifecycle CSV snapshots now available; read-only export is not a full migration or import facility. Complete a Docker-capable network-off cold run using the packaged image archive, record its checker output, and link the five-minute event-lifecycle demo video. These are planned deliverables, not shipped tier claims. Keep `.dogfood.toml` at T1/T2 until a later tier is finished and independently checked.
 
 The repository is private during the build. Publication needs a separate review of repository contents and demo credentials. Freeze: Tuesday 29 September 2026, 18:00 UTC (23:30 IST), per https://dogfoodhack.com/ and https://dogfoodhack.com/spec/ checked 28 September 2026.
 

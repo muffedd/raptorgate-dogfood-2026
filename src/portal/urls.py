@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import path
-from eventhub import views, public_views, widget, bulk, voter_access, api, records, certificates, webhooks, verify_public, vote_signals
+from eventhub import views, public_views, widget, bulk, lifecycle_export, voter_access, api, records, certificates, webhooks, verify_public, vote_signals
 urlpatterns=[
  path('admin/',admin.site.urls),
  path('embed/<slug:event_slug>/gallery',widget.widget_gallery,name='widget_gallery'),
@@ -41,6 +41,7 @@ urlpatterns=[
  path('organizer/records/issue',records.issue,name='issue_judge_record'),
  path('records/<int:pk>/verify',records.verify,name='verify_judge_record'),
  path('organizer/projects.csv',bulk.projects_csv,name='bulk_projects_csv'),
+ path('organizer/export/<slug:dataset>.csv',lifecycle_export.export,name='lifecycle_export'),
  path('organizer/projects/import',bulk.import_projects_csv,name='bulk_import_projects'),
  path('api/export.csv',views.export_csv,name='export_csv'),
  path('judge/assignments',views.judge_assignments,name='judge_assignments'),

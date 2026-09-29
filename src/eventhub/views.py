@@ -347,6 +347,7 @@ def organizer_overview(request):
                'not_started':bool(assigned[j.pk] and not scored[j.pk])} for j in judges]
     return render(request,'organizer_overview.html',{
         'event':event,'judge_progress':progress,
+        'export_datasets': ('teams', 'submissions', 'assignments', 'scores', 'results'),
         'projects_count':Project.objects.filter(event=event,duplicate_of__isnull=True,draft=False).count(),
         'assignments_count':Assignment.objects.filter(judge__event=event,project__event=event).count(),
         'scores_count':Score.objects.filter(judge__event=event,project__event=event).count(),
