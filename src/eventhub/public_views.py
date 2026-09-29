@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseNotAllowed, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from .models import Event, Project, ProjectComment, PublicVote, PublicVoteAudit, PublicActionAttempt
 from .ranking import CRITERIA, standings
@@ -122,10 +122,15 @@ def project_detail(request, slug):
             if not action_allowed(event,"user:"+str(request.user.pk),"comment",request.META.get("REMOTE_ADDR"),limit=5):
                 return JsonResponse({"error":"Too many comments"}, status=429)
             ProjectComment.objects.create(event=event,project=project,author=request.user,body=body)
+        if settings.DEMO and "text/html" in request.headers.get("Accept", ""):
+            return redirect("project_detail",slug=project.slug)
         return JsonResponse({"commented":True}, status=201)
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET","POST"])
-    comments=ProjectComment.objects.filter(event=event,project=project,hidden=False).select_related("author").order_by("created_at","pk")
+    comments=ProjectComment.objects.filter(event=event,project=project,hidden=False)
+    if settings.DEMO:
+        comments=comments.filter(author=request.user.pk)
+    comments=comments.select_related("author").order_by("created_at","pk")
     answers=project.custom_answers or {}
     custom_qa=[{"label":q["label"],"answer":answers[q["key"]]}
                for q in (event.custom_questions or [])

@@ -1,5 +1,6 @@
 """Constrain the disposable public demo to participant, judge and voter workflows."""
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect, JsonResponse
+from django.urls import resolve, Resolver404
 
 class InteractiveDemoBoundary:
     def __init__(self, get_response):
@@ -14,7 +15,12 @@ class InteractiveDemoBoundary:
             return HttpResponseNotAllowed(['GET']) if request.method not in ('GET', 'HEAD') else HttpResponseRedirect('/demo')
         if path.startswith('/tour/'):
             return HttpResponseRedirect('/demo')
-        allowed_write = path in ('/demo/enter', '/demo/switch', '/teams/new', '/projects/new', '/vote', '/logout/') or path.startswith('/judge/score/')
+        # Resolve the exact project-detail route; broad /projects/* would reopen other writes.
+        try:
+            project_comment = resolve(path).url_name == 'project_detail'
+        except Resolver404:
+            project_comment = False
+        allowed_write = path in ('/demo/enter', '/demo/switch', '/teams/new', '/projects/new', '/vote', '/logout/') or path.startswith('/judge/score/') or project_comment
         if request.method not in ('GET', 'HEAD', 'OPTIONS') and not allowed_write:
             return HttpResponseNotAllowed(['GET', 'HEAD', 'OPTIONS'])
         return self.get_response(request)
@@ -29,6 +35,8 @@ class InteractiveDemoRoleBoundary:
             if request.session.get('demo_role') == 'judge':
                 if request.path.startswith(('/teams/', '/projects/')) or request.path == '/vote':
                     return HttpResponseNotAllowed(['GET', 'HEAD', 'OPTIONS'])
+            if request.path.startswith('/projects/') and request.path != '/projects/new' and request.session.get('demo_role') != 'participant':
+                return JsonResponse({'error':'Switch to participant to comment'}, status=403)
             if request.path in ('/teams/new', '/projects/new'):
                 from eventhub.models import Event, Project, Team
                 event = Event.objects.filter(active=True,slug='interactive-demo').first()

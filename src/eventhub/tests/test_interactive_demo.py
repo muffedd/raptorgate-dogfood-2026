@@ -55,10 +55,11 @@ class InteractiveDemoTests(TestCase):
     def test_non_demo_roles_and_public_signup_blocked_by_boundary(self):
         from portal.demo_middleware import InteractiveDemoBoundary
         boundary=InteractiveDemoBoundary(lambda request: None)
-        for path in ('/signup/','/admin/','/organizer/publish','/events/new','/api/v1/tokens','/projects/another-project'):
+        for path in ('/signup/','/admin/','/organizer/publish','/events/new','/api/v1/tokens'):
             response=boundary(type('Request',(),{'path':path,'method':'POST'})())
             self.assertEqual(response.status_code,405,path)
         self.assertEqual(self.client.post('/demo/switch',{'role':'organizer'}).status_code,405)
+        self.assertEqual(boundary(type('Request',(),{'path':'/projects/another-project','method':'POST'})()),None)
 
     def test_limit_new_identities(self):
         for i in range(6):
@@ -84,6 +85,8 @@ class InteractiveDemoTests(TestCase):
         outsider=Client()
         self.assertNotContains(outsider.get('/projects'),'Visitor project')
         self.assertEqual(outsider.get('/projects/'+slug).status_code,404)
+        self.assertEqual(browser.post('/projects/'+slug,{'body':'Private visitor comment'},HTTP_X_CSRFTOKEN=token,HTTP_ACCEPT='text/html').status_code,302)
+        self.assertContains(browser.get('/projects/'+slug),'Private visitor comment')
         self.assertEqual(browser.post('/demo/switch',{'role':'judge'},HTTP_X_CSRFTOKEN=token).status_code,302)
         token=browser.cookies['csrftoken'].value
         self.assertEqual(browser.post('/judge/score/sample',{'functionality':5,'quality':4,'innovation':3},HTTP_X_CSRFTOKEN=token).status_code,200)
