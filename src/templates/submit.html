@@ -1,14 +1,15 @@
 {% extends "dashboard_base.html" %}
 {% block title %}Submission - RaptorGate{% endblock %}
+{% block role_slug %}participant{% endblock %}{% block role %}participant{% endblock %}
+{% block nav %}<a href="{% url 'gallery' %}">Projects</a>{% endblock %}
 {% block content %}
-<h1>{% if project.draft %}Your draft{% elif project %}Edit your submission{% else %}Submit project{% endif %}</h1>
-<p>Deadline: {{ event.submissions_close }}.</p>
-{% if project.draft %}<p>This draft is private and has not been submitted. Publish it before the deadline to enter the event.</p>{% elif project %}<p>Your project is published. You can edit it until the deadline.</p>{% endif %}
-{% if can_edit %}
-<form method="post">{% csrf_token %}{{ form.as_p }}
-{% if not project or project.draft %}<button type="submit" name="action" value="draft">Save draft</button>{% endif %}
-<button type="submit" name="action" value="publish">{% if project.draft %}Publish draft{% elif project %}Save published project{% else %}Publish project{% endif %}</button>
-</form>
-{% else %}<p>Submissions are closed. You can view your saved details, but cannot publish or edit them.</p>
-{{ form.as_p }}{% endif %}
+<header class="rg-result-head"><div><p class="rg-result-overline">{{ event.title }} / participant</p><h1>{% if project.draft %}Your draft{% elif project %}Edit your submission{% else %}Submit project{% endif %}</h1><p class="rg-result-lede">Deadline: {{ event.submissions_close|date:'M j, Y H:i' }} UTC</p></div></header>
+<section class="rg-result-panel rg-form-panel">
+{% if project.draft %}<p class="rg-form-note">This draft is private and has not been submitted. Publish it before the deadline to enter the event.</p>{% elif project %}<p class="rg-form-note">Your project is published. You can edit it until the deadline.</p>{% endif %}
+{% if can_edit %}<form method="post" class="rg-lifecycle-form">{% csrf_token %}
+{% for field in form %}<div class="rg-form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}
+{% for error in form.non_field_errors %}<p class="rg-form-error">{{ error }}</p>{% endfor %}
+<div class="rg-form-actions">{% if not project or project.draft %}<button class="btn btn-secondary" type="submit" name="action" value="draft">Save draft</button>{% endif %}<button class="btn" type="submit" name="action" value="publish">{% if project.draft %}Publish draft{% elif project %}Save published project{% else %}Publish project{% endif %}</button></div>
+</form>{% else %}<p>Submissions are closed. You can view your saved details, but cannot publish or edit them.</p><div class="rg-lifecycle-form">{% for field in form %}<div class="rg-form-field"><strong>{{ field.label }}</strong><p>{{ field.value|default:'-' }}</p></div>{% endfor %}</div>{% endif %}
+</section>
 {% endblock %}

@@ -1,1 +1,13 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New event | RaptorGate</title></head><body><h1>Create event</h1><form method="post">{% csrf_token %}<label>Name<input name="name" required></label><label>Slug<input name="slug" required></label><label>Submission close (ISO UTC)<input name="submissions_close" required></label><label>Custom submission questions (JSON array, optional)<textarea name="custom_questions" rows="4" placeholder='[{"key":"stack","label":"Tech stack","required":true}]'></textarea></label><button>Create</button></form></body></html>
+{% extends "dashboard_base.html" %}
+{% block title %}Create event | RaptorGate{% endblock %}
+{% block role_slug %}organizer{% endblock %}{% block role %}organizer{% endblock %}
+{% block nav %}<a href="{% url 'organizer_overview' %}">Overview</a><a href="{% url 'gallery' %}">Gallery</a>{% endblock %}
+{% block content %}
+<header class="rg-result-head"><div><p class="rg-result-overline">RaptorGate / organizer</p><h1>Create event</h1><p class="rg-result-lede">Set the submission deadline and optional questions before teams begin.</p></div></header>
+<section class="rg-result-panel rg-form-panel"><form method="post" class="rg-lifecycle-form">{% csrf_token %}
+<div class="rg-form-field"><label for="event-name">Name</label><input id="event-name" name="name" maxlength="160" autocomplete="off" required></div>
+<div class="rg-form-field"><label for="event-slug">Slug</label><input id="event-slug" name="slug" pattern="[a-z0-9-]{3,50}" maxlength="50" autocomplete="off" required><small>3-50 lowercase letters, digits or dashes. Used in links.</small></div>
+<div class="rg-form-field"><label for="event-close">Submission close (ISO 8601 with timezone)</label><input id="event-close" name="submissions_close" placeholder="2026-10-01T18:00:00Z" required><small>Use UTC (Z) or an explicit offset.</small></div>
+<div class="rg-form-field"><label for="event-questions">Custom submission questions (JSON array, optional)</label><textarea id="event-questions" name="custom_questions" rows="5" placeholder='[{"key":"stack","label":"Tech stack","required":true}]'></textarea><small>Up to ten questions. You can edit them before submissions arrive.</small></div>
+<button class="btn" type="submit">Create event</button></form></section>
+{% endblock %}
