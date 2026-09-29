@@ -18,7 +18,7 @@ For each judge, calculate mean `mu_j` and population standard deviation `sigma_j
 
 ## Publication, export and limits
 
-The superuser can fetch standings at `/organizer/results`, and `/organizer/publish` sets an event flag and publication time only after submission close. There is no public results endpoint in the URL map; publication does not yet deliver a participant-facing result. Organizer CSV contains raw criterion rows, not normalized standings. The rubric is fixed to three criterion names, and the current system has no pairwise mode or full judge UI. The official contest weights submissions by Tier Completion & Correctness 40%, Judging Integrity 25%, Adoptability & Operability 20%, and Code Quality & Innovation 15%; optional bonuses break ties, not the main weighted score.
+The superuser can fetch standings at `/organizer/results`, and `/organizer/publish` sets an event flag and publication time only after submission close. `GET /results` shows participant-facing aggregate standings only after voting closes and the organizer publishes; before that release gate it stays private. Organizer CSV exports include raw criterion score rows and a separate results dataset with raw and normalized standings, including unpublished values, so keep those downloads private. The rubric is fixed to three criterion names, and the current system has no pairwise mode or full judge UI. The official contest weights submissions by Tier Completion & Correctness 40%, Judging Integrity 25%, Adoptability & Operability 20%, and Code Quality & Innovation 15%; optional bonuses break ties, not the main weighted score.
 
 ## Batch assignment and live progress
 
